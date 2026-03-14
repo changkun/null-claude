@@ -247,6 +247,24 @@ class Grid:
 SPEEDS = [2.0, 1.0, 0.5, 0.25, 0.1, 0.05, 0.02, 0.01]
 SPEED_LABELS = ["0.5×", "1×", "2×", "4×", "10×", "20×", "50×", "100×"]
 
+SPARKLINE_CHARS = "▁▂▃▄▅▆▇█"
+
+
+def sparkline(values: list[int], width: int) -> str:
+    """Return a Unicode sparkline string for the given values, scaled to fit width."""
+    if not values:
+        return ""
+    # Use the last `width` values
+    vals = values[-width:]
+    lo = min(vals)
+    hi = max(vals)
+    rng = hi - lo if hi > lo else 1
+    result = []
+    for v in vals:
+        idx = int((v - lo) / rng * (len(SPARKLINE_CHARS) - 1))
+        result.append(SPARKLINE_CHARS[idx])
+    return "".join(result)
+
 
 class App:
     def __init__(self, stdscr, pattern: str | None, grid_rows: int, grid_cols: int):
@@ -264,6 +282,7 @@ class App:
         self.pattern_menu = False
         self.pattern_list = sorted(PATTERNS.keys())
         self.pattern_sel = 0
+        self.pop_history: list[int] = []
 
         if pattern:
             self._place_pattern(pattern)
@@ -288,11 +307,15 @@ class App:
         self.message = msg
         self.message_time = time.monotonic()
 
+    def _record_pop(self):
+        self.pop_history.append(self.grid.population)
+
     def run(self):
         _init_colors()
         curses.curs_set(0)
         self.stdscr.nodelay(True)
         self.stdscr.timeout(50)
+        self._record_pop()
 
         while True:
             self._draw()
@@ -313,6 +336,7 @@ class App:
                 delay = SPEEDS[self.speed_idx]
                 time.sleep(delay)
                 self.grid.step()
+                self._record_pop()
 
     # ── Key handling ──
 
@@ -331,6 +355,7 @@ class App:
         if key == ord("n") or key == ord("."):
             self.running = False
             self.grid.step()
+            self._record_pop()
             return True
         if key == ord("+") or key == ord("="):
             if self.speed_idx < len(SPEEDS) - 1:
@@ -345,6 +370,8 @@ class App:
         if key == ord("c"):
             self.grid.clear()
             self.running = False
+            self.pop_history.clear()
+            self._record_pop()
             self._flash("Cleared")
             return True
         if key == ord("r"):
@@ -355,6 +382,8 @@ class App:
                 for c in range(self.grid.cols):
                     if random.random() < 0.2:
                         self.grid.set_alive(r, c)
+            self.pop_history.clear()
+            self._record_pop()
             self._flash("Randomised")
             return True
         if key == ord("p"):
@@ -402,6 +431,8 @@ class App:
             self._place_pattern(name)
             self.pattern_menu = False
             self.running = False
+            self.pop_history.clear()
+            self._record_pop()
             return True
         return True
 
@@ -508,6 +539,8 @@ class App:
                         data = json.load(f)
                     self.grid.load_dict(data)
                     self.running = False
+                    self.pop_history.clear()
+                    self._record_pop()
                     self._flash(f"Loaded: {self._save_list[self._save_sel].removesuffix('.json')}")
                 except (json.JSONDecodeError, KeyError, TypeError) as e:
                     self._flash(f"Error loading save: {e}")
@@ -532,7 +565,7 @@ class App:
 
         # Compute viewport
         # Each cell takes 2 columns on screen
-        vis_rows = max_y - 3  # leave room for status bar
+        vis_rows = max_y - 4  # leave room for status bar + sparkline
         vis_cols = (max_x - 1) // 2
 
         # Centre viewport on cursor
@@ -563,6 +596,19 @@ class App:
                             self.stdscr.addstr(py, px, "▒▒", curses.color_pair(6) | curses.A_DIM)
                         except curses.error:
                             pass
+
+        # Population sparkline
+        spark_y = max_y - 3
+        if spark_y > 0 and len(self.pop_history) > 1:
+            spark_width = max_x - 16  # reserve space for label
+            if spark_width > 0:
+                spark_str = sparkline(self.pop_history, spark_width)
+                label = " Pop history: "
+                try:
+                    self.stdscr.addstr(spark_y, 0, label, curses.color_pair(6) | curses.A_DIM)
+                    self.stdscr.addstr(spark_y, len(label), spark_str, curses.color_pair(1))
+                except curses.error:
+                    pass
 
         # Status bar
         status_y = max_y - 2
