@@ -4,6 +4,7 @@
 import argparse
 import copy
 import curses
+import hashlib
 import json
 import os
 import sys
@@ -223,6 +224,17 @@ class Grid:
                 self.cells[r][c] = age
                 self.population += 1
 
+    def state_hash(self) -> str:
+        """Return a hash of the current alive-cell positions for cycle detection."""
+        # Build a compact bytes representation of alive cell positions
+        alive = []
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.cells[r][c] > 0:
+                    alive.append(r * self.cols + c)
+        data = b"".join(int.to_bytes(v, 4, "little") for v in alive)
+        return hashlib.md5(data).hexdigest()
+
     def step(self):
         """Advance one generation."""
         new = [[0] * self.cols for _ in range(self.rows)]
@@ -283,6 +295,9 @@ class App:
         self.pattern_list = sorted(PATTERNS.keys())
         self.pattern_sel = 0
         self.pop_history: list[int] = []
+        # Cycle detection: map state_hash -> generation when first seen
+        self.state_history: dict[str, int] = {}
+        self.cycle_detected = False
 
         if pattern:
             self._place_pattern(pattern)
@@ -310,12 +325,36 @@ class App:
     def _record_pop(self):
         self.pop_history.append(self.grid.population)
 
+    def _reset_cycle_detection(self):
+        """Reset cycle detection state (call when grid is modified externally)."""
+        self.state_history.clear()
+        self.cycle_detected = False
+
+    def _check_cycle(self):
+        """Check if the current grid state has been seen before. Auto-pauses on detection."""
+        h = self.grid.state_hash()
+        gen = self.grid.generation
+        if h in self.state_history:
+            period = gen - self.state_history[h]
+            self.running = False
+            self.cycle_detected = True
+            if self.grid.population == 0:
+                self._flash("Extinction detected — all cells dead")
+            elif period == 1:
+                self._flash("Still life detected")
+            else:
+                self._flash(f"Cycle detected (period {period})")
+        else:
+            self.state_history[h] = gen
+
     def run(self):
         _init_colors()
         curses.curs_set(0)
         self.stdscr.nodelay(True)
         self.stdscr.timeout(50)
         self._record_pop()
+        # Seed initial state for cycle detection
+        self.state_history[self.grid.state_hash()] = self.grid.generation
 
         while True:
             self._draw()
@@ -337,6 +376,7 @@ class App:
                 time.sleep(delay)
                 self.grid.step()
                 self._record_pop()
+                self._check_cycle()
 
     # ── Key handling ──
 
@@ -350,12 +390,15 @@ class App:
             return True
         if key == ord(" "):
             self.running = not self.running
+            if self.running and self.cycle_detected:
+                self._reset_cycle_detection()
             self._flash("Playing" if self.running else "Paused")
             return True
         if key == ord("n") or key == ord("."):
             self.running = False
             self.grid.step()
             self._record_pop()
+            self._check_cycle()
             return True
         if key == ord("+") or key == ord("="):
             if self.speed_idx < len(SPEEDS) - 1:
@@ -372,6 +415,7 @@ class App:
             self.running = False
             self.pop_history.clear()
             self._record_pop()
+            self._reset_cycle_detection()
             self._flash("Cleared")
             return True
         if key == ord("r"):
@@ -384,6 +428,7 @@ class App:
                         self.grid.set_alive(r, c)
             self.pop_history.clear()
             self._record_pop()
+            self._reset_cycle_detection()
             self._flash("Randomised")
             return True
         if key == ord("p"):
@@ -397,6 +442,7 @@ class App:
             return True
         if key == ord("e"):
             self.grid.toggle(self.cursor_r, self.cursor_c)
+            self._reset_cycle_detection()
             return True
         # Arrow keys / vim keys for cursor movement
         if key in (curses.KEY_UP, ord("k")):
@@ -433,6 +479,7 @@ class App:
             self.running = False
             self.pop_history.clear()
             self._record_pop()
+            self._reset_cycle_detection()
             return True
         return True
 
@@ -541,6 +588,7 @@ class App:
                     self.running = False
                     self.pop_history.clear()
                     self._record_pop()
+                    self._reset_cycle_detection()
                     self._flash(f"Loaded: {self._save_list[self._save_sel].removesuffix('.json')}")
                 except (json.JSONDecodeError, KeyError, TypeError) as e:
                     self._flash(f"Error loading save: {e}")
