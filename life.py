@@ -492,6 +492,11 @@ PATTERNS = {
 # curses colour pair index.  We set up the pairs in _init_colors().
 
 CELL_CHAR = "\u2588\u2588"  # Full block × 2 for squarish cells
+
+# Zoom levels: 1 = normal (1:1), 2 = zoom out (2×2 → 1 glyph), 4 = (4×4 → 1 glyph), etc.
+ZOOM_LEVELS = [1, 2, 4, 8]
+# Density glyphs for zoomed-out rendering (maps alive-cell fraction to visual)
+DENSITY_CHARS = ["  ", "░░", "▒▒", "▓▓", CELL_CHAR]
 DEAD_CHAR = "  "
 
 # Age-based colour tiers (pair indices 1–5)
@@ -1257,6 +1262,7 @@ class App:
         self.speed_idx = 2  # default 2× (0.5s)
         self.view_r = 0  # viewport top-left
         self.view_c = 0
+        self.zoom_level = 1  # 1=normal, 2/4/8=zoomed out
         self.cursor_r = grid_rows // 2
         self.cursor_c = grid_cols // 2
         self.show_help = False
@@ -1865,11 +1871,29 @@ class App:
                 self._flash("No bookmarks yet (press b to bookmark)")
             return True
         if key == ord("+") or key == ord("="):
+            # Zoom in (decrease zoom level)
+            idx = ZOOM_LEVELS.index(self.zoom_level)
+            if idx > 0:
+                self.zoom_level = ZOOM_LEVELS[idx - 1]
+            self._flash(f"Zoom: {self.zoom_level}:1" if self.zoom_level > 1 else "Zoom: 1:1 (normal)")
+            return True
+        if key == ord("-") or key == ord("_"):
+            # Zoom out (increase zoom level)
+            idx = ZOOM_LEVELS.index(self.zoom_level)
+            if idx < len(ZOOM_LEVELS) - 1:
+                self.zoom_level = ZOOM_LEVELS[idx + 1]
+            self._flash(f"Zoom: {self.zoom_level}:1" if self.zoom_level > 1 else "Zoom: 1:1 (normal)")
+            return True
+        if key == ord("0"):
+            self.zoom_level = 1
+            self._flash("Zoom: 1:1 (normal)")
+            return True
+        if key == ord(">"):
             if self.speed_idx < len(SPEEDS) - 1:
                 self.speed_idx += 1
             self._flash(f"Speed: {SPEED_LABELS[self.speed_idx]}")
             return True
-        if key == ord("-") or key == ord("_"):
+        if key == ord("<"):
             if self.speed_idx > 0:
                 self.speed_idx -= 1
             self._flash(f"Speed: {SPEED_LABELS[self.speed_idx]}")
@@ -3456,12 +3480,17 @@ class App:
 
         # Compute viewport
         # Each cell takes 2 columns on screen
+        zoom = self.zoom_level
         vis_rows = max_y - 5  # leave room for timeline + sparkline + status + hint
         vis_cols = (max_x - 1) // 2
 
+        # At zoom > 1, each screen cell covers zoom×zoom grid cells
+        grid_vis_rows = vis_rows * zoom
+        grid_vis_cols = vis_cols * zoom
+
         # Centre viewport on cursor
-        self.view_r = self.cursor_r - vis_rows // 2
-        self.view_c = self.cursor_c - vis_cols // 2
+        self.view_r = self.cursor_r - grid_vis_rows // 2
+        self.view_c = self.cursor_c - grid_vis_cols // 2
 
         # Build pattern highlight lookup: (gr, gc) -> category string
         pat_highlight = {}
@@ -3475,25 +3504,53 @@ class App:
         if self.blueprint_mode and self.blueprint_anchor:
             bp_min_r, bp_min_c, bp_max_r, bp_max_c = self._blueprint_region()
 
-        for sy in range(min(vis_rows, self.grid.rows)):
-            gr = (self.view_r + sy) % self.grid.rows
-            for sx in range(min(vis_cols, self.grid.cols)):
-                gc = (self.view_c + sx) % self.grid.cols
-                age = self.grid.cells[gr][gc]
-                is_cursor = (gr == self.cursor_r and gc == self.cursor_c)
-                in_blueprint = (self.blueprint_mode and self.blueprint_anchor and
-                                bp_min_r <= gr <= bp_max_r and bp_min_c <= gc <= bp_max_c)
-                px = sx * 2
-                py = sy
-                if py >= max_y - 2 or px + 1 >= max_x:
-                    continue
-                if self.heatmap_mode and self.heatmap_max > 0:
-                    heat = self.heatmap[gr][gc]
-                    if heat > 0:
-                        frac = heat / self.heatmap_max
-                        attr = color_for_heat(frac)
-                        if age > 0:
-                            attr |= curses.A_BOLD
+        if zoom == 1:
+            # Normal 1:1 rendering
+            for sy in range(min(vis_rows, self.grid.rows)):
+                gr = (self.view_r + sy) % self.grid.rows
+                for sx in range(min(vis_cols, self.grid.cols)):
+                    gc = (self.view_c + sx) % self.grid.cols
+                    age = self.grid.cells[gr][gc]
+                    is_cursor = (gr == self.cursor_r and gc == self.cursor_c)
+                    in_blueprint = (self.blueprint_mode and self.blueprint_anchor and
+                                    bp_min_r <= gr <= bp_max_r and bp_min_c <= gc <= bp_max_c)
+                    px = sx * 2
+                    py = sy
+                    if py >= max_y - 2 or px + 1 >= max_x:
+                        continue
+                    if self.heatmap_mode and self.heatmap_max > 0:
+                        heat = self.heatmap[gr][gc]
+                        if heat > 0:
+                            frac = heat / self.heatmap_max
+                            attr = color_for_heat(frac)
+                            if age > 0:
+                                attr |= curses.A_BOLD
+                            if is_cursor:
+                                attr |= curses.A_REVERSE
+                            try:
+                                self.stdscr.addstr(py, px, CELL_CHAR, attr)
+                            except curses.error:
+                                pass
+                        else:
+                            if is_cursor:
+                                try:
+                                    self.stdscr.addstr(py, px, "▒▒", curses.color_pair(6) | curses.A_DIM)
+                                except curses.error:
+                                    pass
+                            elif in_blueprint:
+                                try:
+                                    self.stdscr.addstr(py, px, "░░", curses.color_pair(40) | curses.A_DIM)
+                                except curses.error:
+                                    pass
+                    elif age > 0:
+                        # Pattern search highlighting
+                        pcat = pat_highlight.get((gr, gc))
+                        if pcat:
+                            attr = self._pattern_color(pcat) | curses.A_BOLD
+                        else:
+                            attr = color_for_age(age)
+                        if in_blueprint:
+                            attr = curses.color_pair(40) | curses.A_BOLD
                         if is_cursor:
                             attr |= curses.A_REVERSE
                         try:
@@ -3511,32 +3568,83 @@ class App:
                                 self.stdscr.addstr(py, px, "░░", curses.color_pair(40) | curses.A_DIM)
                             except curses.error:
                                 pass
-                elif age > 0:
-                    # Pattern search highlighting
-                    pcat = pat_highlight.get((gr, gc))
-                    if pcat:
-                        attr = self._pattern_color(pcat) | curses.A_BOLD
+        else:
+            # Zoomed-out rendering: each screen cell covers zoom×zoom grid cells
+            screen_rows = min(vis_rows, (self.grid.rows + zoom - 1) // zoom)
+            screen_cols = min(vis_cols, (self.grid.cols + zoom - 1) // zoom)
+            for sy in range(screen_rows):
+                for sx in range(screen_cols):
+                    px = sx * 2
+                    py = sy
+                    if py >= max_y - 2 or px + 1 >= max_x:
+                        continue
+                    # Compute density of the zoom×zoom block
+                    alive_count = 0
+                    total = 0
+                    heat_sum = 0
+                    max_age = 0
+                    has_cursor = False
+                    has_blueprint = False
+                    base_r = self.view_r + sy * zoom
+                    base_c = self.view_c + sx * zoom
+                    for dr in range(zoom):
+                        for dc in range(zoom):
+                            gr = (base_r + dr) % self.grid.rows
+                            gc = (base_c + dc) % self.grid.cols
+                            total += 1
+                            age = self.grid.cells[gr][gc]
+                            if age > 0:
+                                alive_count += 1
+                                if age > max_age:
+                                    max_age = age
+                            if gr == self.cursor_r and gc == self.cursor_c:
+                                has_cursor = True
+                            if (self.blueprint_mode and self.blueprint_anchor and
+                                    bp_min_r <= gr <= bp_max_r and bp_min_c <= gc <= bp_max_c):
+                                has_blueprint = True
+                            if self.heatmap_mode and self.heatmap_max > 0:
+                                heat_sum += self.heatmap[gr][gc]
+                    # Pick density glyph
+                    if alive_count == 0:
+                        density_idx = 0
                     else:
-                        attr = color_for_age(age)
-                    if in_blueprint:
-                        attr = curses.color_pair(40) | curses.A_BOLD
-                    if is_cursor:
+                        frac = alive_count / total
+                        if frac <= 0.25:
+                            density_idx = 1
+                        elif frac <= 0.5:
+                            density_idx = 2
+                        elif frac <= 0.75:
+                            density_idx = 3
+                        else:
+                            density_idx = 4
+                    char = DENSITY_CHARS[density_idx]
+                    # Determine color/attr
+                    if self.heatmap_mode and self.heatmap_max > 0:
+                        if heat_sum > 0:
+                            heat_frac = (heat_sum / total) / self.heatmap_max
+                            attr = color_for_heat(min(1.0, heat_frac))
+                            if alive_count > 0:
+                                attr |= curses.A_BOLD
+                        else:
+                            attr = curses.color_pair(6) | curses.A_DIM
+                            if alive_count == 0 and not has_cursor and not has_blueprint:
+                                continue
+                    elif alive_count > 0:
+                        attr = color_for_age(max_age)
+                    elif has_blueprint:
+                        attr = curses.color_pair(40) | curses.A_DIM
+                        char = "░░"
+                    elif has_cursor:
+                        attr = curses.color_pair(6) | curses.A_DIM
+                        char = "▒▒"
+                    else:
+                        continue  # empty, nothing to draw
+                    if has_cursor:
                         attr |= curses.A_REVERSE
                     try:
-                        self.stdscr.addstr(py, px, CELL_CHAR, attr)
+                        self.stdscr.addstr(py, px, char, attr)
                     except curses.error:
                         pass
-                else:
-                    if is_cursor:
-                        try:
-                            self.stdscr.addstr(py, px, "▒▒", curses.color_pair(6) | curses.A_DIM)
-                        except curses.error:
-                            pass
-                    elif in_blueprint:
-                        try:
-                            self.stdscr.addstr(py, px, "░░", curses.color_pair(40) | curses.A_DIM)
-                        except curses.error:
-                            pass
 
         # Draw pattern labels (name tags near detected patterns)
         if self.pattern_search_mode and self.detected_patterns:
@@ -3544,9 +3652,9 @@ class App:
                 # Label position: just above the pattern's top-left, or on top row
                 label_gr = pat["r"]
                 label_gc = pat["c"]
-                # Convert to screen coords
-                sy = (label_gr - self.view_r) % self.grid.rows
-                sx = (label_gc - self.view_c) % self.grid.cols
+                # Convert to screen coords (accounting for zoom)
+                sy = ((label_gr - self.view_r) % self.grid.rows) // zoom
+                sx = ((label_gc - self.view_c) % self.grid.cols) // zoom
                 lpy = sy - 1  # one row above
                 lpx = sx * 2
                 label = pat["name"]
@@ -3642,12 +3750,13 @@ class App:
             elif self.draw_mode == "erase":
                 mode += "  │  ✘ ERASE"
             rs = rule_string(self.grid.birth, self.grid.survival)
+            zoom_str = f"  │  Zoom: {self.zoom_level}:1" if self.zoom_level > 1 else ""
             status = (
                 f" Gen: {self.grid.generation}  │  "
                 f"Pop: {self.grid.population}  │  "
                 f"{state}  │  Speed: {speed}  │  "
                 f"Rule: {rs}  │  "
-                f"Cursor: ({self.cursor_r},{self.cursor_c}){mode}"
+                f"Cursor: ({self.cursor_r},{self.cursor_c}){zoom_str}{mode}"
             )
             status = status[:max_x - 1]
             try:
@@ -3662,7 +3771,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [M]=sound [R]=rules [V]=compare [Z]=race [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=speed [?]=help [q]=quit"
+                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [M]=sound [R]=rules [V]=compare [Z]=race [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=zoom [0]=reset zoom [</>]=speed [?]=help [q]=quit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
@@ -4123,7 +4232,9 @@ class App:
             "║  [ / ]     Scrub timeline back/forward 10     ║",
             "║  b         Bookmark current generation        ║",
             "║  B         List/jump to bookmarks             ║",
-            "║  + / -     Increase / decrease speed          ║",
+            "║  + / -     Zoom in / out (density glyphs)     ║",
+            "║  0         Reset zoom to 1:1                  ║",
+            "║  < / >     Decrease / increase speed          ║",
             "║  Arrows    Move cursor (also vim hjkl)        ║",
             "║  e         Toggle cell under cursor           ║",
             "║  d         Draw mode (paint while moving)     ║",
