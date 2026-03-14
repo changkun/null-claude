@@ -13,6 +13,194 @@ import time
 
 SAVE_DIR = os.path.expanduser("~/.life_saves")
 
+# ── Pattern recognition library ─────────────────────────────────────────────
+
+# Canonical patterns stored as frozensets of (row, col) tuples, normalised to
+# top-left origin.  For each pattern we pre-compute all distinct orientations
+# (rotations × reflections, up to 8) so recognition is orientation-agnostic.
+
+
+def _normalise(cells):
+    """Shift a set of (r,c) tuples so the minimum row and column are 0."""
+    if not cells:
+        return frozenset()
+    min_r = min(r for r, c in cells)
+    min_c = min(c for r, c in cells)
+    return frozenset((r - min_r, c - min_c) for r, c in cells)
+
+
+def _orientations(cells):
+    """Return all distinct orientations (rotations + reflections) of a pattern."""
+    fs = _normalise(cells)
+    seen = set()
+    results = []
+    cur = set(fs)
+    for _ in range(4):
+        for reflect in (False, True):
+            if reflect:
+                oriented = frozenset((-r, c) for r, c in cur)
+            else:
+                oriented = frozenset(cur)
+            normed = _normalise(oriented)
+            if normed not in seen:
+                seen.add(normed)
+                results.append(normed)
+        # Rotate 90° clockwise: (r, c) -> (c, -r)
+        cur = {(c, -r) for r, c in cur}
+    return results
+
+
+def _build_recognition_db():
+    """Build the pattern recognition database from PATTERNS.
+
+    Returns a list of (name, category, width, height, orientations) tuples.
+    Only includes small/medium patterns suitable for real-time scanning
+    (skips patterns larger than 15 cells).
+    """
+    # Categories for display
+    categories = {
+        "block": "Still life",
+        "beehive": "Still life",
+        "blinker": "Oscillator",
+        "toad": "Oscillator",
+        "beacon": "Oscillator",
+        "glider": "Spaceship",
+        "lwss": "Spaceship",
+    }
+    # Additional well-known small patterns not in the PATTERNS dict
+    extra_patterns = {
+        "loaf": {
+            "cells": [(0, 1), (0, 2), (1, 0), (1, 3), (2, 1), (2, 3), (3, 2)],
+            "category": "Still life",
+        },
+        "boat": {
+            "cells": [(0, 0), (0, 1), (1, 0), (1, 2), (2, 1)],
+            "category": "Still life",
+        },
+        "tub": {
+            "cells": [(0, 1), (1, 0), (1, 2), (2, 1)],
+            "category": "Still life",
+        },
+        "ship": {
+            "cells": [(0, 0), (0, 1), (1, 0), (1, 2), (2, 1), (2, 2)],
+            "category": "Still life",
+        },
+        "pond": {
+            "cells": [(0, 1), (0, 2), (1, 0), (1, 3), (2, 0), (2, 3), (3, 1), (3, 2)],
+            "category": "Still life",
+        },
+    }
+
+    db = []
+    for name, pdata in PATTERNS.items():
+        cells = pdata["cells"]
+        if len(cells) > 15:
+            continue
+        cat = categories.get(name, "Pattern")
+        orients = _orientations(cells)
+        h = max(r for r, c in cells) + 1
+        w = max(c for r, c in cells) + 1
+        db.append((name, cat, w, h, orients))
+    for name, info in extra_patterns.items():
+        cells = info["cells"]
+        cat = info["category"]
+        orients = _orientations(cells)
+        h = max(r for r, c in cells) + 1
+        w = max(c for r, c in cells) + 1
+        db.append((name, cat, w, h, orients))
+    return db
+
+
+# Deferred init: built once on first use (after PATTERNS is defined)
+_RECOGNITION_DB = None
+
+
+def _get_recognition_db():
+    global _RECOGNITION_DB
+    if _RECOGNITION_DB is None:
+        _RECOGNITION_DB = _build_recognition_db()
+    return _RECOGNITION_DB
+
+
+def scan_patterns(grid):
+    """Scan the grid and return a list of detected patterns.
+
+    Each result is a dict: {name, category, r, c, w, h, cells}
+    where (r, c) is the top-left corner and cells is the set of (gr, gc)
+    absolute grid positions belonging to the match.
+    """
+    db = _get_recognition_db()
+    rows, cols = grid.rows, grid.cols
+
+    # Build a set of all alive positions for fast lookup
+    alive = set()
+    for r in range(rows):
+        for c in range(cols):
+            if grid.cells[r][c] > 0:
+                alive.add((r, c))
+
+    if not alive:
+        return []
+
+    # For each alive cell, try to match each pattern orientation starting at that cell
+    # as the top-left corner of the pattern's bounding box.
+    found = []
+    claimed = set()  # cells already claimed by a detected pattern
+
+    # Sort DB so larger patterns match first (avoids sub-pattern conflicts)
+    sorted_db = sorted(db, key=lambda x: max(len(o) for o in x[4]), reverse=True)
+
+    for name, cat, pw, ph, orients in sorted_db:
+        for orient in orients:
+            oh = max(r for r, c in orient) + 1
+            ow = max(c for r, c in orient) + 1
+            for ar, ac in alive:
+                if (ar, ac) in claimed:
+                    continue
+                # Check if (ar, ac) could be part of this orientation
+                # Try it as the min-row, min-col anchor
+                match_cells = set()
+                ok = True
+                for pr, pc in orient:
+                    gr = (ar + pr) % rows
+                    gc = (ac + pc) % cols
+                    if (gr, gc) not in alive:
+                        ok = False
+                        break
+                    match_cells.add((gr, gc))
+                if not ok:
+                    continue
+                # Verify no extra alive cells in the bounding box
+                # (otherwise we'd match subsets of larger structures)
+                extra = False
+                for dr in range(oh):
+                    for dc in range(ow):
+                        gr = (ar + dr) % rows
+                        gc = (ac + dc) % cols
+                        if (gr, gc) in alive and (gr, gc) not in match_cells:
+                            extra = True
+                            break
+                    if extra:
+                        break
+                if extra:
+                    continue
+                # Check that none of these cells are already claimed
+                if match_cells & claimed:
+                    continue
+                claimed |= match_cells
+                found.append({
+                    "name": name,
+                    "category": cat,
+                    "r": ar,
+                    "c": ac,
+                    "w": ow,
+                    "h": oh,
+                    "cells": match_cells,
+                })
+
+    return found
+
+
 # ── Rule presets (Life-like cellular automata) ───────────────────────────────
 
 RULE_PRESETS = {
@@ -299,6 +487,11 @@ def _init_colors():
     curses.init_pair(20, curses.COLOR_YELLOW, -1)
     curses.init_pair(21, curses.COLOR_RED, -1)
     curses.init_pair(22, curses.COLOR_WHITE, -1)
+    # Pattern search highlight colours (pairs 30–33)
+    curses.init_pair(30, curses.COLOR_CYAN, -1)     # Still life
+    curses.init_pair(31, curses.COLOR_YELLOW, -1)    # Oscillator
+    curses.init_pair(32, curses.COLOR_MAGENTA, -1)   # Spaceship
+    curses.init_pair(33, curses.COLOR_WHITE, -1)     # Other / label text
 
 
 def color_for_age(age: int) -> int:
@@ -520,6 +713,10 @@ class App:
         self.heatmap_mode = False
         self.heatmap = [[0] * grid_cols for _ in range(grid_rows)]
         self.heatmap_max = 0  # track peak for normalisation
+        # Pattern search mode: detect and highlight known patterns
+        self.pattern_search_mode = False
+        self.detected_patterns: list[dict] = []
+        self._pattern_scan_gen = -1  # generation of last scan
 
         if pattern:
             self._place_pattern(pattern)
@@ -559,6 +756,22 @@ class App:
 
     def _record_pop(self):
         self.pop_history.append(self.grid.population)
+
+    def _scan_patterns(self):
+        """Run pattern recognition on the current grid."""
+        self.detected_patterns = scan_patterns(self.grid)
+        self._pattern_scan_gen = self.grid.generation
+
+    @staticmethod
+    def _pattern_color(category: str) -> int:
+        """Return curses color pair for a pattern category."""
+        if category == "Still life":
+            return curses.color_pair(30)
+        if category == "Oscillator":
+            return curses.color_pair(31)
+        if category == "Spaceship":
+            return curses.color_pair(32)
+        return curses.color_pair(33)
 
     def _update_heatmap(self):
         """Increment heatmap counters for every currently alive cell."""
@@ -723,6 +936,8 @@ class App:
                 self._update_heatmap()
                 self._record_pop()
                 self._check_cycle()
+                if self.pattern_search_mode:
+                    self._scan_patterns()
                 # Step the second grid in comparison mode
                 if self.compare_mode and self.grid2:
                     self.grid2.step()
@@ -751,6 +966,8 @@ class App:
             self._update_heatmap()
             self._record_pop()
             self._check_cycle()
+            if self.pattern_search_mode:
+                self._scan_patterns()
             if self.compare_mode and self.grid2:
                 self.grid2.step()
                 self.pop_history2.append(self.grid2.population)
@@ -837,6 +1054,16 @@ class App:
             else:
                 self._flash("Heatmap OFF")
             return True
+        if key == ord("F"):
+            self.pattern_search_mode = not self.pattern_search_mode
+            if self.pattern_search_mode:
+                self._scan_patterns()
+                n = len(self.detected_patterns)
+                self._flash(f"Pattern search ON — {n} pattern{'s' if n != 1 else ''} found")
+            else:
+                self.detected_patterns.clear()
+                self._flash("Pattern search OFF")
+            return True
         if key == ord("V"):
             if self.compare_mode:
                 self._exit_compare_mode()
@@ -846,6 +1073,8 @@ class App:
         if key == ord("e"):
             self.grid.toggle(self.cursor_r, self.cursor_c)
             self._reset_cycle_detection()
+            if self.pattern_search_mode:
+                self._scan_patterns()
             return True
         if key == ord("d"):
             if self.draw_mode == "draw":
@@ -896,9 +1125,13 @@ class App:
         if self.draw_mode == "draw":
             self.grid.set_alive(self.cursor_r, self.cursor_c)
             self._reset_cycle_detection()
+            if self.pattern_search_mode:
+                self._scan_patterns()
         elif self.draw_mode == "erase":
             self.grid.set_dead(self.cursor_r, self.cursor_c)
             self._reset_cycle_detection()
+            if self.pattern_search_mode:
+                self._scan_patterns()
 
     def _handle_bookmark_menu_key(self, key: int) -> bool:
         if key == -1:
@@ -1337,6 +1570,13 @@ class App:
         self.view_r = self.cursor_r - vis_rows // 2
         self.view_c = self.cursor_c - vis_cols // 2
 
+        # Build pattern highlight lookup: (gr, gc) -> category string
+        pat_highlight = {}
+        if self.pattern_search_mode and self.detected_patterns:
+            for pat in self.detected_patterns:
+                for cell in pat["cells"]:
+                    pat_highlight[cell] = pat["category"]
+
         for sy in range(min(vis_rows, self.grid.rows)):
             gr = (self.view_r + sy) % self.grid.rows
             for sx in range(min(vis_cols, self.grid.cols)):
@@ -1367,7 +1607,12 @@ class App:
                             except curses.error:
                                 pass
                 elif age > 0:
-                    attr = color_for_age(age)
+                    # Pattern search highlighting
+                    pcat = pat_highlight.get((gr, gc))
+                    if pcat:
+                        attr = self._pattern_color(pcat) | curses.A_BOLD
+                    else:
+                        attr = color_for_age(age)
                     if is_cursor:
                         attr |= curses.A_REVERSE
                     try:
@@ -1380,6 +1625,27 @@ class App:
                             self.stdscr.addstr(py, px, "▒▒", curses.color_pair(6) | curses.A_DIM)
                         except curses.error:
                             pass
+
+        # Draw pattern labels (name tags near detected patterns)
+        if self.pattern_search_mode and self.detected_patterns:
+            for pat in self.detected_patterns:
+                # Label position: just above the pattern's top-left, or on top row
+                label_gr = pat["r"]
+                label_gc = pat["c"]
+                # Convert to screen coords
+                sy = (label_gr - self.view_r) % self.grid.rows
+                sx = (label_gc - self.view_c) % self.grid.cols
+                lpy = sy - 1  # one row above
+                lpx = sx * 2
+                label = pat["name"]
+                if lpy < 0:
+                    lpy = sy + pat["h"]  # below if no room above
+                if 0 <= lpy < vis_rows and 0 <= lpx < max_x - len(label):
+                    attr = self._pattern_color(pat["category"]) | curses.A_DIM
+                    try:
+                        self.stdscr.addstr(lpy, lpx, label, attr)
+                    except curses.error:
+                        pass
 
         # Timeline bar
         timeline_y = max_y - 4
@@ -1450,6 +1716,9 @@ class App:
             mode = ""
             if self.heatmap_mode:
                 mode = "  │  🔥 HEATMAP"
+            if self.pattern_search_mode:
+                n = len(self.detected_patterns)
+                mode += f"  │  🔍 SEARCH({n})"
             if self.draw_mode == "draw":
                 mode += "  │  ✏ DRAW"
             elif self.draw_mode == "erase":
@@ -1475,7 +1744,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [e]=edit [d]=draw [H]=heatmap [R]=rules [V]=compare [s]=save [o]=load [+/-]=speed [?]=help [q]=quit"
+                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [e]=edit [d]=draw [F]=search [H]=heatmap [R]=rules [V]=compare [s]=save [o]=load [+/-]=speed [?]=help [q]=quit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
@@ -1646,6 +1915,7 @@ class App:
             "║  p         Open pattern selector              ║",
             "║  t         Stamp pattern at cursor            ║",
             "║  R         Rule editor (B../S.. presets)      ║",
+            "║  F         Pattern search (find known shapes) ║",
             "║  H         Toggle heatmap (cell activity)      ║",
             "║  V         Compare two rules side-by-side     ║",
             "║  i         Import RLE pattern file            ║",
