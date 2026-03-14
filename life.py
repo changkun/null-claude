@@ -720,6 +720,25 @@ def _init_colors():
         curses.init_pair(75, curses.COLOR_RED, -1)
         curses.init_pair(76, curses.COLOR_MAGENTA, -1)
         curses.init_pair(77, curses.COLOR_WHITE, -1)
+    # Physarum colour pairs (80–87): yellow/amber bio-network gradient
+    if curses.COLORS >= 256:
+        curses.init_pair(80, 22, -1)    # dark green (faint trail)
+        curses.init_pair(81, 58, -1)    # olive
+        curses.init_pair(82, 100, -1)   # dark yellow
+        curses.init_pair(83, 142, -1)   # yellow
+        curses.init_pair(84, 178, -1)   # gold
+        curses.init_pair(85, 214, -1)   # orange
+        curses.init_pair(86, 220, -1)   # bright yellow
+        curses.init_pair(87, 231, -1)   # white (dense trail)
+    else:
+        curses.init_pair(80, curses.COLOR_GREEN, -1)
+        curses.init_pair(81, curses.COLOR_GREEN, -1)
+        curses.init_pair(82, curses.COLOR_YELLOW, -1)
+        curses.init_pair(83, curses.COLOR_YELLOW, -1)
+        curses.init_pair(84, curses.COLOR_YELLOW, -1)
+        curses.init_pair(85, curses.COLOR_RED, -1)
+        curses.init_pair(86, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(87, curses.COLOR_WHITE, -1)
 
 
 def color_for_age(age: int) -> int:
@@ -1637,6 +1656,25 @@ class App:
         self.lenia_dt = 0.1        # time step
         self.lenia_steps_per_frame = 1
         self.lenia_preset_name = ""
+        # Physarum (slime mold) mode
+        self.physarum_mode = False
+        self.physarum_menu = False
+        self.physarum_menu_sel = 0
+        self.physarum_running = False
+        self.physarum_generation = 0
+        self.physarum_rows = 0
+        self.physarum_cols = 0
+        self.physarum_trail: list[list[float]] = []  # chemical trail [0,1]
+        self.physarum_agents: list[list[float]] = []  # [row, col, angle]
+        self.physarum_num_agents = 0
+        self.physarum_sensor_angle = 0.4   # radians
+        self.physarum_sensor_dist = 9.0
+        self.physarum_turn_speed = 0.3     # radians per step
+        self.physarum_move_speed = 1.0
+        self.physarum_deposit = 0.5
+        self.physarum_decay = 0.02
+        self.physarum_steps_per_frame = 2
+        self.physarum_preset_name = ""
         self._rebuild_pattern_list()
 
         if pattern:
@@ -2131,6 +2169,17 @@ class App:
                         for _ in range(self.lenia_steps_per_frame):
                             self._lenia_step()
                     continue
+            elif self.physarum_menu:
+                if self._handle_physarum_menu_key(key):
+                    continue
+            elif self.physarum_mode:
+                if self._handle_physarum_key(key):
+                    if self.physarum_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        for _ in range(self.physarum_steps_per_frame):
+                            self._physarum_step()
+                    continue
             elif self.evo_menu:
                 if self._handle_evo_menu_key(key):
                     continue
@@ -2433,6 +2482,12 @@ class App:
                 self._exit_lenia_mode()
             else:
                 self._enter_lenia_mode()
+            return True
+        if key == ord("8"):
+            if self.physarum_mode:
+                self._exit_physarum_mode()
+            else:
+                self._enter_physarum_mode()
             return True
         if key == ord("M"):
             on = self.sound_engine.toggle()
@@ -5322,6 +5377,16 @@ class App:
 
         if self.lenia_mode:
             self._draw_lenia(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.physarum_menu:
+            self._draw_physarum_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.physarum_mode:
+            self._draw_physarum(max_y, max_x)
             self.stdscr.refresh()
             return
 
@@ -8612,6 +8677,314 @@ class App:
             except curses.error:
                 pass
 
+    # ── Physarum (slime mold) mode ─────────────────────────────────────────────
+
+    PHYSARUM_PRESETS = [
+        # (name, description, sensor_angle, sensor_dist, turn_speed, move_speed, deposit, decay, num_agents_ratio)
+        ("Explorer", "Sparse network — long-range foraging", 0.4, 9.0, 0.3, 1.0, 0.5, 0.02, 0.15),
+        ("Dense Web", "Thick interconnected veins", 0.3, 5.0, 0.4, 1.0, 0.8, 0.01, 0.30),
+        ("Tendrils", "Thin branching filaments", 0.6, 12.0, 0.2, 1.5, 0.3, 0.03, 0.10),
+        ("Pulsing", "Rhythmic contraction patterns", 0.35, 7.0, 0.5, 0.8, 1.0, 0.04, 0.20),
+        ("Maze Solver", "Finds shortest paths between food", 0.25, 8.0, 0.6, 1.0, 0.6, 0.015, 0.25),
+        ("Galaxy", "Spiral arm formation", 0.8, 10.0, 0.15, 1.2, 0.4, 0.025, 0.12),
+    ]
+
+    PHYSARUM_DENSITY = ["  ", "░░", "▒▒", "▓▓", "██"]
+
+    def _enter_physarum_mode(self):
+        """Enter Physarum mode — show preset menu."""
+        self.physarum_menu = True
+        self.physarum_menu_sel = 0
+        self._flash("Physarum — select a configuration")
+
+    def _exit_physarum_mode(self):
+        """Exit Physarum mode."""
+        self.physarum_mode = False
+        self.physarum_menu = False
+        self.physarum_running = False
+        self.physarum_trail = []
+        self.physarum_agents = []
+        self._flash("Physarum mode OFF")
+
+    def _physarum_init(self, preset_idx: int):
+        """Initialize Physarum simulation with the given preset."""
+        name, _desc, sa, sd, ts, ms, dep, dec, ratio = self.PHYSARUM_PRESETS[preset_idx]
+        self.physarum_preset_name = name
+        self.physarum_sensor_angle = sa
+        self.physarum_sensor_dist = sd
+        self.physarum_turn_speed = ts
+        self.physarum_move_speed = ms
+        self.physarum_deposit = dep
+        self.physarum_decay = dec
+        self.physarum_generation = 0
+        self.physarum_running = False
+
+        max_y, max_x = self.stdscr.getmaxyx()
+        self.physarum_rows = max(10, max_y - 3)
+        self.physarum_cols = max(10, (max_x - 1) // 2)
+
+        rows, cols = self.physarum_rows, self.physarum_cols
+        self.physarum_trail = [[0.0] * cols for _ in range(rows)]
+
+        # Spawn agents in a circle in the centre
+        self.physarum_num_agents = max(50, int(rows * cols * ratio))
+        self.physarum_agents = []
+        cr, cc = rows / 2.0, cols / 2.0
+        radius = min(rows, cols) * 0.3
+        for _ in range(self.physarum_num_agents):
+            angle = random.random() * 2 * math.pi
+            r_off = random.random() * radius
+            ar = cr + math.sin(angle) * r_off
+            ac = cc + math.cos(angle) * r_off
+            heading = angle + math.pi + random.uniform(-0.5, 0.5)
+            self.physarum_agents.append([ar % rows, ac % cols, heading])
+
+        self.physarum_menu = False
+        self.physarum_mode = True
+        self._flash(f"Physarum: {name} — Space to start")
+
+    def _physarum_sense(self, ar: float, ac: float, heading: float, offset: float) -> float:
+        """Sense trail concentration at sensor position."""
+        rows, cols = self.physarum_rows, self.physarum_cols
+        angle = heading + offset
+        sr = ar + math.sin(angle) * self.physarum_sensor_dist
+        sc = ac + math.cos(angle) * self.physarum_sensor_dist
+        ri = int(sr) % rows
+        ci = int(sc) % cols
+        return self.physarum_trail[ri][ci]
+
+    def _physarum_step(self):
+        """Advance Physarum simulation by one step."""
+        rows, cols = self.physarum_rows, self.physarum_cols
+        trail = self.physarum_trail
+        sa = self.physarum_sensor_angle
+        ts = self.physarum_turn_speed
+        ms = self.physarum_move_speed
+        dep = self.physarum_deposit
+
+        # Move agents: sense, rotate, move, deposit
+        for agent in self.physarum_agents:
+            ar, ac, heading = agent[0], agent[1], agent[2]
+
+            # Sense left, centre, right
+            fl = self._physarum_sense(ar, ac, heading, sa)
+            fc = self._physarum_sense(ar, ac, heading, 0.0)
+            fr = self._physarum_sense(ar, ac, heading, -sa)
+
+            # Steer towards strongest signal
+            if fc > fl and fc > fr:
+                pass  # go straight
+            elif fc < fl and fc < fr:
+                # random turn
+                heading += ts if random.random() < 0.5 else -ts
+            elif fl > fr:
+                heading += ts
+            elif fr > fl:
+                heading -= ts
+
+            # Move forward
+            nr = ar + math.sin(heading) * ms
+            nc = ac + math.cos(heading) * ms
+            nr = nr % rows
+            nc = nc % cols
+            agent[0] = nr
+            agent[1] = nc
+            agent[2] = heading
+
+            # Deposit trail
+            ri, ci = int(nr) % rows, int(nc) % cols
+            trail[ri][ci] = min(1.0, trail[ri][ci] + dep)
+
+        # Diffuse and decay trail (simple 3x3 box blur + decay)
+        decay = self.physarum_decay
+        new_trail = [[0.0] * cols for _ in range(rows)]
+        for r in range(rows):
+            rp = (r - 1) % rows
+            rn = (r + 1) % rows
+            for c in range(cols):
+                cp = (c - 1) % cols
+                cn = (c + 1) % cols
+                total = (
+                    trail[rp][cp] + trail[rp][c] + trail[rp][cn] +
+                    trail[r][cp] + trail[r][c] + trail[r][cn] +
+                    trail[rn][cp] + trail[rn][c] + trail[rn][cn]
+                ) / 9.0
+                new_trail[r][c] = max(0.0, total - decay)
+        self.physarum_trail = new_trail
+        self.physarum_generation += 1
+
+    def _handle_physarum_menu_key(self, key: int) -> bool:
+        """Handle input in Physarum preset menu."""
+        n = len(self.PHYSARUM_PRESETS)
+        if key in (ord("j"), curses.KEY_DOWN):
+            self.physarum_menu_sel = (self.physarum_menu_sel + 1) % n
+        elif key in (ord("k"), curses.KEY_UP):
+            self.physarum_menu_sel = (self.physarum_menu_sel - 1) % n
+        elif key in (ord("\n"), ord("\r")):
+            self._physarum_init(self.physarum_menu_sel)
+        elif key in (ord("q"), 27):
+            self.physarum_menu = False
+            self._flash("Physarum cancelled")
+        return True
+
+    def _handle_physarum_key(self, key: int) -> bool:
+        """Handle input in active Physarum simulation."""
+        if key == ord(" "):
+            self.physarum_running = not self.physarum_running
+        elif key in (ord("n"), ord(".")):
+            for _ in range(self.physarum_steps_per_frame):
+                self._physarum_step()
+        elif key == ord("r"):
+            # Reseed with current parameters
+            idx = next((i for i, p in enumerate(self.PHYSARUM_PRESETS)
+                        if p[0] == self.physarum_preset_name), 0)
+            self._physarum_init(idx)
+            self.physarum_running = False
+        elif key in (ord("R"), ord("m")):
+            self.physarum_mode = False
+            self.physarum_running = False
+            self.physarum_menu = True
+            self.physarum_menu_sel = 0
+        elif key == ord("a") or key == ord("A"):
+            # Adjust sensor angle
+            delta = 0.05 if key == ord("a") else -0.05
+            self.physarum_sensor_angle = max(0.05, min(1.5, self.physarum_sensor_angle + delta))
+            self._flash(f"Sensor angle: {self.physarum_sensor_angle:.2f}")
+        elif key == ord("s") or key == ord("S"):
+            # Adjust sensor distance
+            delta = 1.0 if key == ord("s") else -1.0
+            self.physarum_sensor_dist = max(1.0, min(30.0, self.physarum_sensor_dist + delta))
+            self._flash(f"Sensor dist: {self.physarum_sensor_dist:.1f}")
+        elif key == ord("t") or key == ord("T"):
+            # Adjust turn speed
+            delta = 0.05 if key == ord("t") else -0.05
+            self.physarum_turn_speed = max(0.05, min(1.5, self.physarum_turn_speed + delta))
+            self._flash(f"Turn speed: {self.physarum_turn_speed:.2f}")
+        elif key == ord("d") or key == ord("D"):
+            # Adjust decay
+            delta = 0.005 if key == ord("d") else -0.005
+            self.physarum_decay = max(0.001, min(0.1, self.physarum_decay + delta))
+            self._flash(f"Decay: {self.physarum_decay:.3f}")
+        elif key == ord("+") or key == ord("="):
+            self.physarum_steps_per_frame = min(20, self.physarum_steps_per_frame + 1)
+            self._flash(f"Steps/frame: {self.physarum_steps_per_frame}")
+        elif key == ord("-"):
+            self.physarum_steps_per_frame = max(1, self.physarum_steps_per_frame - 1)
+            self._flash(f"Steps/frame: {self.physarum_steps_per_frame}")
+        elif key == ord("<") or key == ord(","):
+            self.speed_idx = max(0, self.speed_idx - 1)
+        elif key == ord(">") or key == ord("."):
+            self.speed_idx = min(len(SPEEDS) - 1, self.speed_idx + 1)
+        elif key in (ord("q"), 27):
+            self._exit_physarum_mode()
+        else:
+            return True
+        return True
+
+    def _draw_physarum_menu(self, max_y: int, max_x: int):
+        """Draw the Physarum preset selection menu."""
+        self.stdscr.erase()
+        title = "── Physarum Slime Mold ── Select Configuration ──"
+        try:
+            self.stdscr.addstr(1, max(0, (max_x - len(title)) // 2), title,
+                               curses.color_pair(7) | curses.A_BOLD)
+        except curses.error:
+            pass
+
+        for i, (name, desc, sa, sd, ts, ms, dep, dec, ratio) in enumerate(self.PHYSARUM_PRESETS):
+            y = 3 + i * 2
+            if y >= max_y - 2:
+                break
+            line = f"  {name:<14s}  {desc}"
+            params = f"    SA={sa:.2f}  SD={sd:.1f}  TS={ts:.2f}  dep={dep:.1f}  dec={dec:.3f}"
+            attr = curses.color_pair(6)
+            if i == self.physarum_menu_sel:
+                attr = curses.color_pair(7) | curses.A_REVERSE
+            try:
+                self.stdscr.addstr(y, 2, line[:max_x - 4], attr)
+                self.stdscr.addstr(y + 1, 2, params[:max_x - 4], curses.color_pair(6) | curses.A_DIM)
+            except curses.error:
+                pass
+
+        hint = " [j/k]=navigate  [Enter]=select  [q]=cancel"
+        try:
+            self.stdscr.addstr(max_y - 1, 0, hint[:max_x - 1], curses.color_pair(6) | curses.A_DIM)
+        except curses.error:
+            pass
+
+    def _draw_physarum(self, max_y: int, max_x: int):
+        """Draw the active Physarum simulation."""
+        self.stdscr.erase()
+        trail = self.physarum_trail
+        rows, cols = self.physarum_rows, self.physarum_cols
+        density = self.PHYSARUM_DENSITY
+        state = "▶ RUNNING" if self.physarum_running else "⏸ PAUSED"
+
+        # Title bar
+        title = (f" Physarum: {self.physarum_preset_name}  |  gen {self.physarum_generation}"
+                 f"  |  SA={self.physarum_sensor_angle:.2f}  SD={self.physarum_sensor_dist:.1f}"
+                 f"  TS={self.physarum_turn_speed:.2f}  dec={self.physarum_decay:.3f}"
+                 f"  |  {state}")
+        try:
+            self.stdscr.addstr(0, 0, title[:max_x - 1], curses.color_pair(7) | curses.A_BOLD)
+        except curses.error:
+            pass
+
+        # Grid area
+        view_rows = min(rows, max_y - 3)
+        view_cols = min(cols, (max_x - 1) // 2)
+        for r in range(view_rows):
+            for c in range(view_cols):
+                v = trail[r][c]
+                # Density glyph
+                di = int(v * 4.99)
+                if di < 0:
+                    di = 0
+                elif di > 4:
+                    di = 4
+                ch = density[di]
+                # Colour tier (0-7)
+                ci = int(v * 7.99)
+                if ci < 0:
+                    ci = 0
+                elif ci > 7:
+                    ci = 7
+                attr = curses.color_pair(80 + ci)
+                if v > 0.5:
+                    attr |= curses.A_BOLD
+                try:
+                    self.stdscr.addstr(1 + r, c * 2, ch, attr)
+                except curses.error:
+                    pass
+
+        # Status bar
+        status_y = max_y - 2
+        if status_y > 1:
+            total_trail = sum(trail[r][c] for r in range(rows) for c in range(cols))
+            avg_trail = total_trail / (rows * cols) if rows * cols > 0 else 0
+            max_trail = max(trail[r][c] for r in range(rows) for c in range(cols))
+            info = (f" Gen {self.physarum_generation}  |  agents={self.physarum_num_agents}"
+                    f"  |  avg={avg_trail:.4f}  max={max_trail:.3f}"
+                    f"  |  steps/f={self.physarum_steps_per_frame}")
+            try:
+                self.stdscr.addstr(status_y, 0, info[:max_x - 1], curses.color_pair(6))
+            except curses.error:
+                pass
+
+        # Hint bar
+        hint_y = max_y - 1
+        if hint_y > 0:
+            now = time.monotonic()
+            if self.message and now - self.message_time < 3.0:
+                hint = f" {self.message}"
+            else:
+                hint = " [Space]=play [n]=step [a/A]=angle+/- [s/S]=dist+/- [t/T]=turn+/- [d/D]=decay+/- [r]=reseed [R]=menu [q]=exit"
+            hint = hint[:max_x - 1]
+            try:
+                self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
+            except curses.error:
+                pass
+
     def _draw_help(self, max_y: int, max_x: int):
         help_lines = [
             "╔══════════════════════════════════════════════╗",
@@ -8653,6 +9026,7 @@ class App:
             "║  5         Falling Sand (particle sim)        ║",
             "║  6         Reaction-Diffusion (Gray-Scott)    ║",
             "║  7         Lenia (continuous automaton)        ║",
+            "║  8         Physarum (slime mold simulation)    ║",
             "║  G         Record/stop GIF (export frames)   ║",
             "║  i         Import RLE pattern file            ║",
             "║  r         Fill grid randomly                 ║",
