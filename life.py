@@ -298,6 +298,8 @@ class App:
         # Cycle detection: map state_hash -> generation when first seen
         self.state_history: dict[str, int] = {}
         self.cycle_detected = False
+        # Draw mode: None, "draw" (paint alive), or "erase" (paint dead)
+        self.draw_mode: str | None = None
 
         if pattern:
             self._place_pattern(pattern)
@@ -444,20 +446,58 @@ class App:
             self.grid.toggle(self.cursor_r, self.cursor_c)
             self._reset_cycle_detection()
             return True
+        if key == ord("d"):
+            if self.draw_mode == "draw":
+                self.draw_mode = None
+                self._flash("Draw mode OFF")
+            else:
+                self.draw_mode = "draw"
+                self.grid.set_alive(self.cursor_r, self.cursor_c)
+                self._reset_cycle_detection()
+                self._flash("Draw mode ON (move to paint, d/Esc=exit)")
+            return True
+        if key == ord("x"):
+            if self.draw_mode == "erase":
+                self.draw_mode = None
+                self._flash("Erase mode OFF")
+            else:
+                self.draw_mode = "erase"
+                self.grid.set_dead(self.cursor_r, self.cursor_c)
+                self._reset_cycle_detection()
+                self._flash("Erase mode ON (move to erase, x/Esc=exit)")
+            return True
+        if key == 27:  # ESC
+            if self.draw_mode:
+                self.draw_mode = None
+                self._flash("Draw/erase mode OFF")
+            return True
         # Arrow keys / vim keys for cursor movement
         if key in (curses.KEY_UP, ord("k")):
             self.cursor_r = (self.cursor_r - 1) % self.grid.rows
+            self._apply_draw_mode()
             return True
         if key in (curses.KEY_DOWN, ord("j")):
             self.cursor_r = (self.cursor_r + 1) % self.grid.rows
+            self._apply_draw_mode()
             return True
         if key in (curses.KEY_LEFT, ord("l") - 4):  # 'h' already used for help
             self.cursor_c = (self.cursor_c - 1) % self.grid.cols
+            self._apply_draw_mode()
             return True
         if key in (curses.KEY_RIGHT, ord("l")):
             self.cursor_c = (self.cursor_c + 1) % self.grid.cols
+            self._apply_draw_mode()
             return True
         return True
+
+    def _apply_draw_mode(self):
+        """If in draw/erase mode, paint or erase the cell under the cursor."""
+        if self.draw_mode == "draw":
+            self.grid.set_alive(self.cursor_r, self.cursor_c)
+            self._reset_cycle_detection()
+        elif self.draw_mode == "erase":
+            self.grid.set_dead(self.cursor_r, self.cursor_c)
+            self._reset_cycle_detection()
 
     def _handle_menu_key(self, key: int) -> bool:
         if key == -1:
@@ -663,11 +703,16 @@ class App:
         if status_y > 0:
             state = "▶ PLAY" if self.running else "⏸ PAUSE"
             speed = SPEED_LABELS[self.speed_idx]
+            mode = ""
+            if self.draw_mode == "draw":
+                mode = "  │  ✏ DRAW"
+            elif self.draw_mode == "erase":
+                mode = "  │  ✘ ERASE"
             status = (
                 f" Gen: {self.grid.generation}  │  "
                 f"Pop: {self.grid.population}  │  "
                 f"{state}  │  Speed: {speed}  │  "
-                f"Cursor: ({self.cursor_r},{self.cursor_c})"
+                f"Cursor: ({self.cursor_r},{self.cursor_c}){mode}"
             )
             status = status[:max_x - 1]
             try:
@@ -682,7 +727,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play/pause [n]=step [p]=patterns [e]=edit [s]=save [o]=load [+/-]=speed [r]=random [c]=clear [?]=help [q]=quit"
+                hint = " [Space]=play/pause [n]=step [p]=patterns [e]=edit [d]=draw [x]=erase [s]=save [o]=load [+/-]=speed [r]=random [c]=clear [?]=help [q]=quit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
@@ -702,6 +747,9 @@ class App:
             "║  + / -     Increase / decrease speed      ║",
             "║  Arrows    Move cursor (also vim hjkl)    ║",
             "║  e         Toggle cell under cursor       ║",
+            "║  d         Draw mode (paint while moving) ║",
+            "║  x         Erase mode (erase while moving)║",
+            "║  Esc       Exit draw/erase mode           ║",
             "║  p         Open pattern selector          ║",
             "║  r         Fill grid randomly              ║",
             "║  s         Save grid state to file            ║",
