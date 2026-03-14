@@ -606,6 +606,14 @@ PUZZLES = [
 # curses colour pair index.  We set up the pairs in _init_colors().
 
 CELL_CHAR = "\u2588\u2588"  # Full block × 2 for squarish cells
+HEX_CELL = "\u2b22 "       # Hexagon character for hex mode
+HEX_DEAD = "\u00b7 "       # Middle dot for empty hex cells
+
+# Hex neighbor offsets for offset-row (even-q) coordinates
+# Even rows: neighbors are at these (dr, dc) offsets
+HEX_NEIGHBORS_EVEN = [(-1, 0), (-1, 1), (0, -1), (0, 1), (1, 0), (1, 1)]
+# Odd rows: neighbors are at these (dr, dc) offsets
+HEX_NEIGHBORS_ODD = [(-1, -1), (-1, 0), (0, -1), (0, 1), (1, -1), (1, 0)]
 
 # Zoom levels: 1 = normal (1:1), 2 = zoom out (2×2 → 1 glyph), 4 = (4×4 → 1 glyph), etc.
 ZOOM_LEVELS = [1, 2, 4, 8]
@@ -922,6 +930,8 @@ class Grid:
         # Birth/survival rules (default: Conway's B3/S23)
         self.birth = {3}
         self.survival = {2, 3}
+        # Hex mode: use 6 neighbors instead of 8
+        self.hex_mode = False
 
     def set_alive(self, r: int, c: int):
         if 0 <= r < self.rows and 0 <= c < self.cols:
@@ -955,14 +965,22 @@ class Grid:
 
     def _count_neighbours(self, r: int, c: int) -> int:
         count = 0
-        for dr in (-1, 0, 1):
-            for dc in (-1, 0, 1):
-                if dr == 0 and dc == 0:
-                    continue
+        if self.hex_mode:
+            offsets = HEX_NEIGHBORS_EVEN if r % 2 == 0 else HEX_NEIGHBORS_ODD
+            for dr, dc in offsets:
                 nr = (r + dr) % self.rows
                 nc = (c + dc) % self.cols
                 if self.cells[nr][nc]:
                     count += 1
+        else:
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    if dr == 0 and dc == 0:
+                        continue
+                    nr = (r + dr) % self.rows
+                    nc = (c + dc) % self.cols
+                    if self.cells[nr][nc]:
+                        count += 1
         return count
 
     def to_dict(self) -> dict:
@@ -1520,6 +1538,8 @@ class App:
         self.ant_rows = 0
         self.ant_cols = 0
         self.ant_steps_per_frame = 1    # how many steps per display frame
+        # Hexagonal grid mode
+        self.hex_mode = False
         self._rebuild_pattern_list()
 
         if pattern:
@@ -2236,6 +2256,20 @@ class App:
                 self._exit_ant_mode()
             else:
                 self._enter_ant_mode()
+            return True
+        if key == ord("3"):
+            self.hex_mode = not self.hex_mode
+            self.grid.hex_mode = self.hex_mode
+            if self.hex_mode:
+                # Switch to B2/S3,4 — a common hex life rule that produces interesting patterns
+                self.grid.birth = {2}
+                self.grid.survival = {3, 4}
+                self._flash("Hex grid ON (6 neighbors, rule B2/S34) — press R to change rule")
+            else:
+                # Restore standard Conway B3/S23
+                self.grid.birth = {3}
+                self.grid.survival = {2, 3}
+                self._flash("Hex grid OFF (8 neighbors, rule B3/S23)")
             return True
         if key == ord("M"):
             on = self.sound_engine.toggle()
@@ -5166,15 +5200,18 @@ class App:
 
         if zoom == 1:
             # Normal 1:1 rendering
+            hex_offset_cols = vis_cols - 1 if self.hex_mode else vis_cols
             for sy in range(min(vis_rows, self.grid.rows)):
                 gr = (self.view_r + sy) % self.grid.rows
-                for sx in range(min(vis_cols, self.grid.cols)):
+                for sx in range(min(hex_offset_cols, self.grid.cols)):
                     gc = (self.view_c + sx) % self.grid.cols
                     age = self.grid.cells[gr][gc]
                     is_cursor = (gr == self.cursor_r and gc == self.cursor_c)
                     in_blueprint = (self.blueprint_mode and self.blueprint_anchor and
                                     bp_min_r <= gr <= bp_max_r and bp_min_c <= gc <= bp_max_c)
-                    px = sx * 2
+                    # Hex mode: offset odd grid rows by 1 column for hex tiling
+                    hex_shift = 1 if (self.hex_mode and gr % 2 == 1) else 0
+                    px = sx * 2 + hex_shift
                     py = sy
                     if py >= max_y - 2 or px + 1 >= max_x:
                         continue
@@ -5187,8 +5224,9 @@ class App:
                                 attr |= curses.A_BOLD
                             if is_cursor:
                                 attr |= curses.A_REVERSE
+                            heat_ch = HEX_CELL if self.hex_mode else CELL_CHAR
                             try:
-                                self.stdscr.addstr(py, px, CELL_CHAR, attr)
+                                self.stdscr.addstr(py, px, heat_ch, attr)
                             except curses.error:
                                 pass
                         else:
@@ -5213,19 +5251,27 @@ class App:
                             attr = curses.color_pair(40) | curses.A_BOLD
                         if is_cursor:
                             attr |= curses.A_REVERSE
+                        cell_ch = HEX_CELL if self.hex_mode else CELL_CHAR
                         try:
-                            self.stdscr.addstr(py, px, CELL_CHAR, attr)
+                            self.stdscr.addstr(py, px, cell_ch, attr)
                         except curses.error:
                             pass
                     else:
                         if is_cursor:
+                            cursor_ch = HEX_CELL if self.hex_mode else "▒▒"
                             try:
-                                self.stdscr.addstr(py, px, "▒▒", curses.color_pair(6) | curses.A_DIM)
+                                self.stdscr.addstr(py, px, cursor_ch, curses.color_pair(6) | curses.A_DIM)
                             except curses.error:
                                 pass
                         elif in_blueprint:
                             try:
                                 self.stdscr.addstr(py, px, "░░", curses.color_pair(40) | curses.A_DIM)
+                            except curses.error:
+                                pass
+                        elif self.hex_mode:
+                            # Show hex grid structure with dots
+                            try:
+                                self.stdscr.addstr(py, px, HEX_DEAD, curses.color_pair(6) | curses.A_DIM)
                             except curses.error:
                                 pass
         else:
@@ -5405,6 +5451,8 @@ class App:
                 mode += f"  │  ⏺ REC({len(self.recorded_frames)})"
             if self.sound_engine.enabled:
                 mode += "  │  ♪ SOUND"
+            if self.hex_mode:
+                mode += "  │  ⬡ HEX"
             if self.iso_mode:
                 mode += "  │  🏙 ISO-3D"
             if self.draw_mode == "draw":
@@ -5433,7 +5481,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [I]=3D [1]=wolfram [M]=sound [R]=rules [V]=compare [Z]=race [C]=puzzles [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=zoom [0]=reset zoom [</>]=speed [?]=help [q]=quit"
+                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [I]=3D [1]=wolfram [2]=ant [3]=hex [M]=sound [R]=rules [V]=compare [Z]=race [C]=puzzles [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=zoom [0]=reset zoom [</>]=speed [?]=help [q]=quit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
@@ -6624,6 +6672,7 @@ class App:
             "║  M         Toggle sound/music mode             ║",
             "║  1         Wolfram 1D automaton (Rules 0-255) ║",
             "║  2         Langton's Ant (turmite simulation) ║",
+            "║  3         Hexagonal grid (6 neighbors)       ║",
             "║  G         Record/stop GIF (export frames)   ║",
             "║  i         Import RLE pattern file            ║",
             "║  r         Fill grid randomly                 ║",
