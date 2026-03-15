@@ -1704,6 +1704,9 @@ MODE_REGISTRY = [
     # ── Pendulum Wave ──
     {"name": "Pendulum Wave", "key": "Ctrl+Shift+P", "category": "Physics & Waves",
      "desc": "Row of uncoupled pendulums with incremental lengths producing mesmerizing wave patterns", "attr": "pwave_mode", "enter": "_enter_pwave_mode", "exit": "_exit_pwave_mode"},
+    # ── Tornado & Supercell Storm ──
+    {"name": "Tornado & Supercell Storm", "key": "Ctrl+Shift+T", "category": "Physics & Waves",
+     "desc": "Rotating supercell thunderstorm with tornado vortex, debris, rain curtains & lightning", "attr": "tornado_mode", "enter": "_enter_tornado_mode", "exit": "_exit_tornado_mode"},
 ]
 
 
@@ -3278,6 +3281,51 @@ class App:
         self.pwave_max_trail: int = 40
         self.pwave_speed: int = 3
 
+        # ── Tornado & Supercell Storm state ──
+        self.tornado_mode: bool = False
+        self.tornado_menu: bool = False
+        self.tornado_menu_sel: int = 0
+        self.tornado_running: bool = False
+        self.tornado_generation: int = 0
+        self.tornado_preset_name: str = ""
+        self.tornado_rows: int = 0
+        self.tornado_cols: int = 0
+        self.tornado_time: float = 0.0
+        self.tornado_dt: float = 0.03
+        self.tornado_show_info: bool = False
+        self.tornado_speed: int = 2
+        # Vortex parameters
+        self.tornado_vortex_x: float = 0.0
+        self.tornado_vortex_y: float = 0.0
+        self.tornado_vortex_radius: float = 3.0
+        self.tornado_vortex_max_radius: float = 8.0
+        self.tornado_vortex_height: float = 0.0
+        self.tornado_rotation_speed: float = 2.0
+        self.tornado_touch_ground: bool = False
+        self.tornado_wobble_phase: float = 0.0
+        self.tornado_wobble_amp: float = 1.5
+        # Storm parameters
+        self.tornado_storm_radius: float = 30.0
+        self.tornado_rain_particles: list[list[float]] = []
+        self.tornado_debris: list[list[float]] = []
+        self.tornado_max_debris: int = 60
+        self.tornado_max_rain: int = 200
+        # Lightning
+        self.tornado_lightning_active: bool = False
+        self.tornado_lightning_timer: float = 0.0
+        self.tornado_lightning_interval: float = 3.0
+        self.tornado_lightning_segments: list[tuple[int, int, int, int]] = []
+        self.tornado_lightning_flash: int = 0
+        # Destruction path
+        self.tornado_destruction: list[tuple[int, int]] = []
+        self.tornado_max_destruction: int = 500
+        # Mesocyclone cloud rotation
+        self.tornado_cloud_angle: float = 0.0
+        self.tornado_cloud_radius: float = 15.0
+        # Wind field
+        self.tornado_updraft_strength: float = 1.0
+        self.tornado_downdraft_strength: float = 0.5
+
         # ── Minimap overlay state ──
         self.show_minimap = False  # toggled with Tab key
 
@@ -4724,6 +4772,15 @@ class App:
                     if self.pwave_running:
                         for _ in range(self.pwave_speed):
                             self._pwave_step()
+                    continue
+            elif self.tornado_menu:
+                if self._handle_tornado_menu_key(key):
+                    continue
+            elif self.tornado_mode:
+                if self._handle_tornado_key(key):
+                    if self.tornado_running:
+                        for _ in range(self.tornado_speed):
+                            self._tornado_step()
                     continue
             elif self.gol3d_menu:
                 if self._handle_gol3d_menu_key(key):
@@ -9047,6 +9104,16 @@ class App:
 
         if self.pwave_mode:
             self._draw_pwave(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.tornado_menu:
+            self._draw_tornado_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.tornado_mode:
+            self._draw_tornado(max_y, max_x)
             self.stdscr.refresh()
             return
 
@@ -43597,6 +43664,667 @@ App._handle_pwave_menu_key = _handle_pwave_menu_key
 App._handle_pwave_key = _handle_pwave_key
 App._draw_pwave_menu = _draw_pwave_menu
 App._draw_pwave = _draw_pwave
+
+
+# ── Tornado & Supercell Storm ────────────────────────────────────────────────
+
+TORNADO_PRESETS = [
+    ("EF3 Wedge Tornado", "Wide, powerful wedge tornado with heavy debris field", "ef3"),
+    ("Rope Tornado", "Thin, sinuous rope funnel — graceful but dangerous", "rope"),
+    ("Supercell Outbreak", "Multiple vortices in a massive supercell complex", "outbreak"),
+    ("Rain-Wrapped", "Tornado hidden inside dense rain curtains — low visibility", "rainwrap"),
+    ("Nighttime Storm", "Lightning-illuminated tornado in darkness", "night"),
+    ("Dust Devil", "Small, fast-spinning vortex on dry ground — gentle but mesmerizing", "dustdevil"),
+]
+
+_TORNADO_CLOUD_CHARS = "░▒▓█"
+_TORNADO_RAIN_CHARS = "│┃╽╿"
+_TORNADO_DEBRIS_CHARS = "·∘°*×+#@%&"
+_TORNADO_FUNNEL_CHARS = "░▒▓█"
+
+
+def _enter_tornado_mode(self):
+    """Enter Tornado & Supercell Storm mode — show preset menu."""
+    self.tornado_menu = True
+    self.tornado_menu_sel = 0
+
+
+def _exit_tornado_mode(self):
+    """Exit Tornado & Supercell Storm mode."""
+    self.tornado_mode = False
+    self.tornado_menu = False
+    self.tornado_running = False
+    self.tornado_rain_particles = []
+    self.tornado_debris = []
+    self.tornado_lightning_segments = []
+    self.tornado_destruction = []
+
+
+def _tornado_init(self, preset: str):
+    """Initialize tornado simulation from preset."""
+    rows, cols = self.grid.rows, self.grid.cols
+    self.tornado_rows = rows
+    self.tornado_cols = cols
+    self.tornado_time = 0.0
+    self.tornado_generation = 0
+    self.tornado_cloud_angle = 0.0
+    self.tornado_lightning_active = False
+    self.tornado_lightning_timer = 0.0
+    self.tornado_lightning_flash = 0
+    self.tornado_lightning_segments = []
+    self.tornado_destruction = []
+    self.tornado_wobble_phase = 0.0
+
+    cx, cy = cols // 2, rows // 2
+    self.tornado_vortex_x = float(cx)
+    self.tornado_vortex_y = float(cy)
+
+    if preset == "ef3":
+        self.tornado_vortex_radius = 4.0
+        self.tornado_vortex_max_radius = 10.0
+        self.tornado_vortex_height = float(rows // 2 - 4)
+        self.tornado_rotation_speed = 2.5
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 2.0
+        self.tornado_storm_radius = min(30.0, cols * 0.4)
+        self.tornado_max_debris = 80
+        self.tornado_max_rain = 250
+        self.tornado_lightning_interval = 2.5
+        self.tornado_cloud_radius = min(18.0, cols * 0.35)
+        self.tornado_updraft_strength = 1.5
+        self.tornado_downdraft_strength = 0.7
+    elif preset == "rope":
+        self.tornado_vortex_radius = 1.5
+        self.tornado_vortex_max_radius = 3.0
+        self.tornado_vortex_height = float(rows // 2 - 3)
+        self.tornado_rotation_speed = 4.0
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 3.0
+        self.tornado_storm_radius = min(22.0, cols * 0.3)
+        self.tornado_max_debris = 30
+        self.tornado_max_rain = 150
+        self.tornado_lightning_interval = 4.0
+        self.tornado_cloud_radius = min(12.0, cols * 0.25)
+        self.tornado_updraft_strength = 1.0
+        self.tornado_downdraft_strength = 0.4
+    elif preset == "outbreak":
+        self.tornado_vortex_radius = 3.0
+        self.tornado_vortex_max_radius = 7.0
+        self.tornado_vortex_height = float(rows // 2 - 4)
+        self.tornado_rotation_speed = 3.0
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 2.5
+        self.tornado_storm_radius = min(35.0, cols * 0.45)
+        self.tornado_max_debris = 100
+        self.tornado_max_rain = 300
+        self.tornado_lightning_interval = 1.5
+        self.tornado_cloud_radius = min(22.0, cols * 0.4)
+        self.tornado_updraft_strength = 2.0
+        self.tornado_downdraft_strength = 1.0
+    elif preset == "rainwrap":
+        self.tornado_vortex_radius = 3.5
+        self.tornado_vortex_max_radius = 8.0
+        self.tornado_vortex_height = float(rows // 2 - 3)
+        self.tornado_rotation_speed = 2.0
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 1.5
+        self.tornado_storm_radius = min(28.0, cols * 0.4)
+        self.tornado_max_debris = 40
+        self.tornado_max_rain = 500
+        self.tornado_lightning_interval = 3.0
+        self.tornado_cloud_radius = min(16.0, cols * 0.3)
+        self.tornado_updraft_strength = 1.2
+        self.tornado_downdraft_strength = 0.8
+    elif preset == "night":
+        self.tornado_vortex_radius = 3.0
+        self.tornado_vortex_max_radius = 8.0
+        self.tornado_vortex_height = float(rows // 2 - 4)
+        self.tornado_rotation_speed = 2.5
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 2.0
+        self.tornado_storm_radius = min(28.0, cols * 0.35)
+        self.tornado_max_debris = 50
+        self.tornado_max_rain = 200
+        self.tornado_lightning_interval = 2.0
+        self.tornado_cloud_radius = min(16.0, cols * 0.3)
+        self.tornado_updraft_strength = 1.3
+        self.tornado_downdraft_strength = 0.6
+    elif preset == "dustdevil":
+        self.tornado_vortex_radius = 1.0
+        self.tornado_vortex_max_radius = 2.5
+        self.tornado_vortex_height = float(rows // 4)
+        self.tornado_rotation_speed = 6.0
+        self.tornado_touch_ground = True
+        self.tornado_wobble_amp = 4.0
+        self.tornado_storm_radius = min(10.0, cols * 0.15)
+        self.tornado_max_debris = 40
+        self.tornado_max_rain = 0
+        self.tornado_lightning_interval = 999.0
+        self.tornado_cloud_radius = min(6.0, cols * 0.1)
+        self.tornado_updraft_strength = 0.6
+        self.tornado_downdraft_strength = 0.2
+
+    # Initialize rain particles: [x, y, vx, vy]
+    self.tornado_rain_particles = []
+    for _ in range(self.tornado_max_rain):
+        rx = self.tornado_vortex_x + random.uniform(-self.tornado_storm_radius, self.tornado_storm_radius)
+        ry = random.uniform(0, rows * 0.3)
+        self.tornado_rain_particles.append([rx, ry, random.uniform(-0.3, 0.3), random.uniform(0.5, 1.5)])
+
+    # Initialize debris: [x, y, vx, vy, char_idx, life]
+    self.tornado_debris = []
+
+    self.tornado_running = True
+
+
+def _tornado_step(self):
+    """Advance tornado simulation by one timestep."""
+    self.tornado_generation += 1
+    self.tornado_time += self.tornado_dt
+    t = self.tornado_time
+    rows = self.tornado_rows
+    cols = self.tornado_cols
+
+    # ── Vortex motion: slow drift + wobble ──
+    self.tornado_wobble_phase += self.tornado_dt * 1.2
+    drift_x = math.sin(t * 0.15) * 0.08
+    drift_y = math.cos(t * 0.1) * 0.03
+    wobble_x = math.sin(self.tornado_wobble_phase) * self.tornado_wobble_amp * 0.05
+    self.tornado_vortex_x += drift_x + wobble_x
+    self.tornado_vortex_y += drift_y
+
+    # Keep vortex on screen
+    margin = 10
+    self.tornado_vortex_x = max(margin, min(cols - margin, self.tornado_vortex_x))
+    self.tornado_vortex_y = max(rows * 0.3, min(rows * 0.7, self.tornado_vortex_y))
+
+    # Pulsating vortex radius
+    base_r = self.tornado_vortex_radius
+    pulse = 0.3 * math.sin(t * 1.5)
+    eff_radius = max(1.0, base_r + pulse)
+
+    # ── Mesocyclone cloud rotation ──
+    self.tornado_cloud_angle += self.tornado_rotation_speed * self.tornado_dt
+
+    # ── Update rain particles ──
+    vx_center = self.tornado_vortex_x
+    vy_center = self.tornado_vortex_y
+    for p in self.tornado_rain_particles:
+        dx = p[0] - vx_center
+        dy = p[1] - (rows * 0.3)
+        dist = math.sqrt(dx * dx + dy * dy) + 0.1
+        # Inward spiral near vortex
+        if dist < self.tornado_storm_radius:
+            strength = (1.0 - dist / self.tornado_storm_radius) * 0.3
+            p[2] += (-dx / dist * strength + -dy / dist * 0.02)
+            p[3] += 0.05
+        p[0] += p[2]
+        p[1] += p[3]
+        # Reset rain that falls off screen
+        if p[1] > rows - 2 or p[0] < 0 or p[0] >= cols:
+            p[0] = vx_center + random.uniform(-self.tornado_storm_radius, self.tornado_storm_radius)
+            p[1] = random.uniform(0, 3)
+            p[2] = random.uniform(-0.3, 0.3)
+            p[3] = random.uniform(0.5, 1.5)
+
+    # ── Spawn and update debris ──
+    ground_y = rows - 3
+    if self.tornado_touch_ground and len(self.tornado_debris) < self.tornado_max_debris:
+        if random.random() < 0.3:
+            spawn_x = self.tornado_vortex_x + random.uniform(-eff_radius * 2, eff_radius * 2)
+            self.tornado_debris.append([
+                spawn_x, float(ground_y),
+                random.uniform(-1.0, 1.0), random.uniform(-1.5, -0.5),
+                random.randint(0, len(_TORNADO_DEBRIS_CHARS) - 1),
+                random.uniform(40, 120)
+            ])
+
+    new_debris = []
+    for d in self.tornado_debris:
+        dx = d[0] - self.tornado_vortex_x
+        dy = d[1] - (ground_y - self.tornado_vortex_height * 0.5)
+        dist = math.sqrt(dx * dx + dy * dy) + 0.1
+        # Rotational + inward force
+        if dist < eff_radius * 4:
+            f = min(1.0, eff_radius * 2 / dist)
+            # Tangential (rotation)
+            d[2] += (-dy / dist) * f * self.tornado_rotation_speed * 0.15
+            d[3] += (dx / dist) * f * self.tornado_rotation_speed * 0.15
+            # Inward pull
+            d[2] -= (dx / dist) * f * 0.2
+            d[3] -= (dy / dist) * f * 0.1
+            # Updraft
+            d[3] -= self.tornado_updraft_strength * f * 0.15
+        # Gravity
+        d[3] += 0.04
+        # Drag
+        d[2] *= 0.97
+        d[3] *= 0.97
+        d[0] += d[2]
+        d[1] += d[3]
+        d[5] -= 1.0
+        # Keep on screen and alive
+        if 0 <= d[0] < cols and 0 <= d[1] < rows and d[5] > 0:
+            new_debris.append(d)
+    self.tornado_debris = new_debris
+
+    # ── Destruction path ──
+    if self.tornado_touch_ground:
+        gx = int(self.tornado_vortex_x)
+        gy = ground_y
+        for ox in range(int(-eff_radius), int(eff_radius) + 1):
+            px = gx + ox
+            if 0 <= px < cols:
+                pt = (px, gy)
+                if pt not in self.tornado_destruction:
+                    self.tornado_destruction.append(pt)
+        if len(self.tornado_destruction) > self.tornado_max_destruction:
+            self.tornado_destruction = self.tornado_destruction[-self.tornado_max_destruction:]
+
+    # ── Lightning ──
+    self.tornado_lightning_timer += self.tornado_dt
+    if self.tornado_lightning_flash > 0:
+        self.tornado_lightning_flash -= 1
+    if self.tornado_lightning_timer >= self.tornado_lightning_interval:
+        self.tornado_lightning_timer = 0.0
+        if random.random() < 0.7:
+            self.tornado_lightning_active = True
+            self.tornado_lightning_flash = 3
+            self._tornado_generate_lightning()
+        else:
+            self.tornado_lightning_active = False
+            self.tornado_lightning_segments = []
+    elif self.tornado_lightning_timer > 0.2:
+        self.tornado_lightning_active = False
+
+
+def _tornado_generate_lightning(self):
+    """Generate a branching lightning bolt from cloud to ground."""
+    rows = self.tornado_rows
+    cols = self.tornado_cols
+    segments = []
+    # Start from a random point in the cloud layer
+    sx = int(self.tornado_vortex_x + random.uniform(-self.tornado_cloud_radius * 0.5, self.tornado_cloud_radius * 0.5))
+    sy = 3
+    cx, cy = sx, sy
+    ground = rows - 3
+    while cy < ground:
+        nx = cx + random.randint(-2, 2)
+        ny = cy + random.randint(1, 3)
+        nx = max(1, min(cols - 2, nx))
+        ny = min(ground, ny)
+        segments.append((cx, cy, nx, ny))
+        cx, cy = nx, ny
+        # Branch with small probability
+        if random.random() < 0.2 and len(segments) < 30:
+            bx = cx + random.randint(-3, 3)
+            by = cy + random.randint(2, 5)
+            bx = max(1, min(cols - 2, bx))
+            by = min(ground, by)
+            segments.append((cx, cy, bx, by))
+    self.tornado_lightning_segments = segments
+
+
+def _handle_tornado_menu_key(self, key: int) -> bool:
+    """Handle keys in the tornado preset menu."""
+    n = len(TORNADO_PRESETS)
+    if key in (curses.KEY_DOWN, ord('j')):
+        self.tornado_menu_sel = (self.tornado_menu_sel + 1) % n
+    elif key in (curses.KEY_UP, ord('k')):
+        self.tornado_menu_sel = (self.tornado_menu_sel - 1) % n
+    elif key in (27, ord('q')):
+        self.tornado_menu = False
+        self.tornado_mode = False
+        self._exit_tornado_mode()
+    elif key in (10, 13, curses.KEY_ENTER):
+        preset = TORNADO_PRESETS[self.tornado_menu_sel]
+        self.tornado_preset_name = preset[2]
+        self._tornado_init(preset[2])
+        self.tornado_menu = False
+        self.tornado_mode = True
+        self.tornado_running = True
+    else:
+        return True
+    return True
+
+
+def _handle_tornado_key(self, key: int) -> bool:
+    """Handle keys during tornado simulation."""
+    if key in (27, ord('q')):
+        self._exit_tornado_mode()
+        return True
+    elif key == ord(' '):
+        self.tornado_running = not self.tornado_running
+    elif key in (ord('n'), ord('.')):
+        self._tornado_step()
+    elif key == ord('r'):
+        self._tornado_init(self.tornado_preset_name)
+    elif key in (ord('R'), ord('m')):
+        self.tornado_menu = True
+        self.tornado_running = False
+    elif key == ord('+'):
+        self.tornado_speed = min(10, self.tornado_speed + 1)
+    elif key == ord('-'):
+        self.tornado_speed = max(1, self.tornado_speed - 1)
+    elif key == ord('i'):
+        self.tornado_show_info = not self.tornado_show_info
+    elif key == ord('l'):
+        # Force a lightning strike
+        self.tornado_lightning_active = True
+        self.tornado_lightning_flash = 3
+        self._tornado_generate_lightning()
+    else:
+        return True
+    return True
+
+
+def _draw_tornado_menu(self, max_y: int, max_x: int):
+    """Draw the tornado preset selection menu."""
+    self.stdscr.erase()
+    title = "── Tornado & Supercell Storm ──"
+    if max_x > len(title) + 2:
+        self.stdscr.addstr(1, (max_x - len(title)) // 2, title, curses.A_BOLD)
+
+    subtitle = "Rotating supercell thunderstorm with descending tornado vortex"
+    if max_y > 3 and max_x > len(subtitle) + 2:
+        self.stdscr.addstr(2, (max_x - len(subtitle)) // 2, subtitle, curses.A_DIM)
+
+    # ASCII art tornado
+    art = [
+        "        ░▒▓████████▓▒░",
+        "       ░▒▓██████████▓▒░",
+        "         ▒▓████████▓▒",
+        "          ▒▓██████▓▒",
+        "           ░▓████▓░",
+        "            ▒████▒",
+        "             ▓██▓",
+        "              ██",
+        "              ▓▒",
+        "              ░·",
+        "         ·∘°*×+#@%&·∘°",
+    ]
+    art_start = 4
+    for i, line in enumerate(art):
+        y = art_start + i
+        if y >= max_y - len(TORNADO_PRESETS) - 6:
+            break
+        x = (max_x - len(line)) // 2
+        if x > 0 and y < max_y:
+            try:
+                self.stdscr.addstr(y, x, line, curses.A_DIM)
+            except curses.error:
+                pass
+
+    menu_y = max(art_start + len(art) + 1, max_y // 2 - len(TORNADO_PRESETS) // 2)
+    header = "Select a storm scenario:"
+    if menu_y - 1 > 0 and max_x > len(header) + 4:
+        try:
+            self.stdscr.addstr(menu_y - 1, 3, header, curses.A_BOLD)
+        except curses.error:
+            pass
+
+    for i, (name, desc, _key) in enumerate(TORNADO_PRESETS):
+        y = menu_y + i
+        if y >= max_y - 2:
+            break
+        marker = "▸ " if i == self.tornado_menu_sel else "  "
+        attr = curses.A_REVERSE if i == self.tornado_menu_sel else 0
+        line = f"{marker}{name:<24s} {desc}"
+        try:
+            self.stdscr.addstr(y, 2, line[:max_x - 4], attr)
+        except curses.error:
+            pass
+
+    footer = " ↑↓=select  Enter=start  q=back "
+    try:
+        self.stdscr.addstr(max_y - 1, 0, footer[:max_x - 1], curses.A_DIM | curses.A_REVERSE)
+    except curses.error:
+        pass
+
+
+def _draw_tornado(self, max_y: int, max_x: int):
+    """Draw the Tornado & Supercell Storm simulation."""
+    self.stdscr.erase()
+    rows = min(max_y, self.tornado_rows)
+    cols = min(max_x, self.tornado_cols)
+    if rows < 10 or cols < 20:
+        try:
+            self.stdscr.addstr(0, 0, "Terminal too small")
+        except curses.error:
+            pass
+        return
+
+    t = self.tornado_time
+    vx = self.tornado_vortex_x
+    ground_y = rows - 3
+    is_night = (self.tornado_preset_name == "night")
+    is_dustdevil = (self.tornado_preset_name == "dustdevil")
+    flash = self.tornado_lightning_flash > 0
+
+    # ── Background: sky gradient ──
+    cloud_top = 4
+    for y in range(0, min(cloud_top, rows)):
+        for x in range(cols):
+            try:
+                if is_night and not flash:
+                    self.stdscr.addch(y, x, ' ')
+                else:
+                    # Cloud layer
+                    dx = x - vx
+                    dy = y - 1
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < self.tornado_cloud_radius:
+                        # Rotating cloud texture
+                        angle = math.atan2(dy, dx) + self.tornado_cloud_angle
+                        noise = math.sin(angle * 3 + dist * 0.5) * 0.5 + 0.5
+                        ci = min(3, int(noise * 4))
+                        ch = _TORNADO_CLOUD_CHARS[ci]
+                        color = curses.color_pair(5) if flash else curses.A_DIM
+                        self.stdscr.addch(y, x, ch, color)
+                    elif not is_night:
+                        self.stdscr.addch(y, x, '░', curses.A_DIM)
+            except curses.error:
+                pass
+
+    # ── Mesocyclone rotation indicator at cloud base ──
+    cloud_base_y = cloud_top
+    if cloud_base_y < rows:
+        for angle_offset in range(12):
+            a = self.tornado_cloud_angle + angle_offset * math.pi / 6
+            r = self.tornado_cloud_radius * 0.6
+            cx = int(vx + math.cos(a) * r)
+            cy = int(cloud_base_y + math.sin(a) * r * 0.3)
+            if 0 <= cx < cols and 0 <= cy < rows:
+                spiral_char = "~≈≋"[angle_offset % 3]
+                try:
+                    attr = curses.color_pair(5) if flash else curses.A_DIM
+                    self.stdscr.addch(cy, cx, spiral_char, attr)
+                except curses.error:
+                    pass
+
+    # ── Funnel cloud / tornado vortex ──
+    funnel_top = cloud_top + 1
+    funnel_bot = ground_y if self.tornado_touch_ground else int(ground_y - self.tornado_vortex_height * 0.3)
+    top_radius = self.tornado_vortex_max_radius
+    bot_radius = max(0.5, self.tornado_vortex_radius * 0.3) if self.tornado_touch_ground else self.tornado_vortex_radius
+
+    for y in range(funnel_top, min(funnel_bot + 1, rows)):
+        frac = (y - funnel_top) / max(1, funnel_bot - funnel_top)
+        # Radius narrows from top to bottom
+        r = top_radius * (1 - frac) + bot_radius * frac
+        # Wobble
+        wobble = math.sin(self.tornado_wobble_phase + frac * 3) * self.tornado_wobble_amp * frac
+        center_x = vx + wobble
+
+        for dx_i in range(int(-r - 1), int(r + 2)):
+            px = int(center_x + dx_i)
+            if 0 <= px < cols and 0 <= y < rows:
+                d = abs(dx_i) / max(0.5, r)
+                if d <= 1.0:
+                    # Density based on distance from edge
+                    rotation_phase = math.sin(self.tornado_cloud_angle * 2 + y * 0.5 + dx_i * 0.3)
+                    density = (1.0 - d * 0.7) * (0.7 + 0.3 * rotation_phase)
+                    ci = min(3, max(0, int(density * 4)))
+                    ch = _TORNADO_FUNNEL_CHARS[ci]
+                    if is_night and not flash:
+                        attr = curses.A_DIM
+                    else:
+                        attr = curses.color_pair(7) if d < 0.4 else curses.A_BOLD
+                    try:
+                        self.stdscr.addch(y, px, ch, attr)
+                    except curses.error:
+                        pass
+
+    # ── Rain curtains ──
+    if not is_dustdevil:
+        for p in self.tornado_rain_particles:
+            rx, ry = int(p[0]), int(p[1])
+            if 0 <= rx < cols and cloud_top <= ry < ground_y:
+                speed = abs(p[3])
+                ci = min(3, int(speed * 2))
+                ch = _TORNADO_RAIN_CHARS[ci]
+                try:
+                    if is_night and not flash:
+                        self.stdscr.addch(ry, rx, ch, curses.A_DIM)
+                    else:
+                        self.stdscr.addch(ry, rx, ch, curses.color_pair(4))
+                except curses.error:
+                    pass
+
+    # ── Debris ──
+    for d in self.tornado_debris:
+        dx, dy = int(d[0]), int(d[1])
+        if 0 <= dx < cols and 0 <= dy < rows - 1:
+            ci = int(d[4]) % len(_TORNADO_DEBRIS_CHARS)
+            ch = _TORNADO_DEBRIS_CHARS[ci]
+            age = d[5]
+            attr = curses.A_BOLD if age > 60 else curses.A_DIM
+            try:
+                color = curses.color_pair(3) if age > 40 else curses.color_pair(1)
+                self.stdscr.addch(dy, dx, ch, attr | color)
+            except curses.error:
+                pass
+
+    # ── Lightning bolts ──
+    if self.tornado_lightning_active and self.tornado_lightning_segments:
+        for (x1, y1, x2, y2) in self.tornado_lightning_segments:
+            # Draw line using Bresenham
+            ldx = abs(x2 - x1)
+            ldy = abs(y2 - y1)
+            sx = 1 if x1 < x2 else -1
+            sy = 1 if y1 < y2 else -1
+            err = ldx - ldy
+            cx, cy = x1, y1
+            steps = 0
+            while steps < 100:
+                steps += 1
+                if 0 <= cx < cols and 0 <= cy < rows:
+                    bolt_ch = '│' if abs(y2 - y1) > abs(x2 - x1) else '─'
+                    if random.random() < 0.3:
+                        bolt_ch = random.choice(['╲', '╱', '┘', '┐', '└', '┌'])
+                    try:
+                        self.stdscr.addch(cy, cx, bolt_ch,
+                                          curses.A_BOLD | curses.color_pair(5))
+                    except curses.error:
+                        pass
+                if cx == x2 and cy == y2:
+                    break
+                e2 = 2 * err
+                if e2 > -ldy:
+                    err -= ldy
+                    cx += sx
+                if e2 < ldx:
+                    err += ldx
+                    cy += sy
+
+    # ── Ground / destruction path ──
+    ground_chars = "▁▂▃" if not is_dustdevil else "·.,"
+    for x in range(cols):
+        if ground_y < rows:
+            is_destroyed = (x, ground_y) in self.tornado_destruction
+            if is_destroyed:
+                ch = random.choice("_.,") if random.random() < 0.1 else '▁'
+                try:
+                    self.stdscr.addch(ground_y, x, ch, curses.color_pair(1))
+                except curses.error:
+                    pass
+            else:
+                ci = int(math.sin(x * 0.3) + 1) % len(ground_chars)
+                try:
+                    self.stdscr.addch(ground_y, x, ground_chars[ci],
+                                      curses.color_pair(2) if not is_dustdevil else curses.A_DIM)
+                except curses.error:
+                    pass
+
+    # ── Ground-level dust/debris swirl ──
+    if self.tornado_touch_ground and ground_y + 1 < rows:
+        swirl_r = self.tornado_vortex_radius * 3
+        for i in range(int(swirl_r * 2)):
+            angle = t * self.tornado_rotation_speed + i * 0.5
+            r = random.uniform(1, swirl_r)
+            sx = int(vx + math.cos(angle) * r)
+            sy = ground_y + 1
+            if 0 <= sx < cols and sy < rows:
+                ch = random.choice("·∘°~")
+                try:
+                    self.stdscr.addch(sy, sx, ch, curses.A_DIM | curses.color_pair(3))
+                except curses.error:
+                    pass
+
+    # ── Info panel ──
+    if self.tornado_show_info:
+        info_lines = [
+            f"Preset: {self.tornado_preset_name}",
+            f"Time: {self.tornado_time:.1f}s",
+            f"Vortex pos: ({self.tornado_vortex_x:.1f}, {self.tornado_vortex_y:.1f})",
+            f"Radius: {self.tornado_vortex_radius:.1f}",
+            f"Rotation: {self.tornado_rotation_speed:.1f} rad/s",
+            f"Debris: {len(self.tornado_debris)}",
+            f"Rain: {len(self.tornado_rain_particles)}",
+            f"Speed: {self.tornado_speed}x",
+        ]
+        panel_w = max(len(l) for l in info_lines) + 4
+        panel_x = max(0, cols - panel_w - 1)
+        panel_y = 1
+        for i, line in enumerate(info_lines):
+            y = panel_y + i
+            if y < rows - 2:
+                try:
+                    self.stdscr.addstr(y, panel_x, f" {line:<{panel_w - 2}} ",
+                                       curses.A_REVERSE)
+                except curses.error:
+                    pass
+
+    # ── Status bar ──
+    status_y = rows - 1
+    gen_str = f" Gen {self.tornado_generation}"
+    state = "▶ RUNNING" if self.tornado_running else "⏸ PAUSED"
+    status = f"{gen_str}  {state}  t={self.tornado_time:.1f}s  spd={self.tornado_speed}x"
+    try:
+        self.stdscr.addstr(status_y, 0, status[:cols - 1], curses.A_REVERSE)
+        pad = cols - 1 - len(status)
+        if pad > 0:
+            self.stdscr.addstr(status_y, len(status), " " * pad, curses.A_REVERSE)
+    except curses.error:
+        pass
+
+    hint = " Space=play n=step +/-=speed l=lightning i=info r=reset R=menu q=exit"
+    if status_y + 1 < max_y:
+        try:
+            self.stdscr.addstr(status_y + 1, 0, hint[:cols - 1], curses.A_DIM)
+        except curses.error:
+            pass
+
+
+App._enter_tornado_mode = _enter_tornado_mode
+App._exit_tornado_mode = _exit_tornado_mode
+App._tornado_init = _tornado_init
+App._tornado_step = _tornado_step
+App._tornado_generate_lightning = _tornado_generate_lightning
+App._handle_tornado_menu_key = _handle_tornado_menu_key
+App._handle_tornado_key = _handle_tornado_key
+App._draw_tornado_menu = _draw_tornado_menu
+App._draw_tornado = _draw_tornado
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
