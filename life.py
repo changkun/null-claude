@@ -1974,12 +1974,14 @@ class App:
         self.fire_generation = 0
         self.fire_rows = 0
         self.fire_cols = 0
-        self.fire_grid: list[list[int]] = []  # 0=empty, 1=tree, 2=burning, 3=ash
+        self.fire_grid: list[list[int]] = []  # 0=empty, 1=tree, 2=burning, 3=ash, 4=ember
         self.fire_steps_per_frame = 1
         self.fire_preset_name = ""
         self.fire_p_grow = 0.05       # probability empty -> tree
         self.fire_p_lightning = 0.001  # probability tree spontaneously ignites
         self.fire_initial_density = 0.5  # initial tree density
+        self.fire_ash_decay = 0.08    # probability ash -> empty (regrowth-ready)
+        self.fire_counts: list[tuple[int, int, int, int]] = []  # history: (tree, fire, ash, empty)
 
         # ── Cyclic Cellular Automaton state ──
         self.cyclic_mode = False
@@ -12961,15 +12963,17 @@ class App:
     # ══════════════════════════════════════════════════════════════════════
 
     FIRE_PRESETS = [
-        # (name, description, density, p_grow, p_lightning)
-        ("Classic", "Balanced growth and lightning", 0.55, 0.03, 0.0005),
-        ("Dense Forest", "Thick canopy, rare lightning", 0.85, 0.05, 0.0002),
-        ("Dry Season", "Sparse trees, frequent lightning", 0.3, 0.01, 0.003),
-        ("Regrowth", "Fast regrowth after fire", 0.4, 0.08, 0.001),
-        ("Tinderbox", "High density, high lightning", 0.7, 0.02, 0.005),
-        ("Savanna", "Very sparse, steady fires", 0.15, 0.02, 0.002),
-        ("Rainforest", "Very dense, very rare fire", 0.95, 0.06, 0.0001),
-        ("Firestorm", "Maximum chaos", 0.5, 0.04, 0.01),
+        # (name, description, density, p_grow, p_lightning, ash_decay)
+        ("Classic", "Balanced growth and lightning", 0.55, 0.03, 0.0005, 0.08),
+        ("Dense Forest", "Thick canopy, rare lightning", 0.85, 0.05, 0.0002, 0.06),
+        ("Dry Season", "Sparse trees, frequent lightning", 0.3, 0.01, 0.003, 0.12),
+        ("Regrowth", "Fast regrowth after fire", 0.4, 0.08, 0.001, 0.15),
+        ("Tinderbox", "High density, high lightning", 0.7, 0.02, 0.005, 0.10),
+        ("Savanna", "Very sparse, steady fires", 0.15, 0.02, 0.002, 0.20),
+        ("Rainforest", "Very dense, very rare fire", 0.95, 0.06, 0.0001, 0.04),
+        ("Firestorm", "Maximum chaos", 0.5, 0.04, 0.01, 0.05),
+        ("Critical Density", "Self-organized criticality demo", 0.60, 0.02, 0.0003, 0.10),
+        ("Slow Burn", "Long-lived embers, slow spread", 0.65, 0.03, 0.0004, 0.03),
     ]
 
     def _enter_fire_mode(self):
@@ -12984,24 +12988,27 @@ class App:
         self.fire_menu = False
         self.fire_running = False
         self.fire_grid = []
+        self.fire_counts = []
         self._flash("Forest Fire mode OFF")
 
     def _fire_init(self, preset_idx: int):
         """Initialize forest fire simulation with the given preset."""
-        (name, _desc, density, p_grow, p_light) = self.FIRE_PRESETS[preset_idx]
+        (name, _desc, density, p_grow, p_light, ash_decay) = self.FIRE_PRESETS[preset_idx]
         self.fire_preset_name = name
         self.fire_generation = 0
         self.fire_running = False
         self.fire_p_grow = p_grow
         self.fire_p_lightning = p_light
         self.fire_initial_density = density
+        self.fire_ash_decay = ash_decay
+        self.fire_counts = []
 
         max_y, max_x = self.stdscr.getmaxyx()
         self.fire_rows = max(10, max_y - 4)
         self.fire_cols = max(10, (max_x - 1) // 2)
         rows, cols = self.fire_rows, self.fire_cols
 
-        # 0=empty, 1=tree
+        # 0=empty, 1=tree, 2=burning, 3=ash, 4=ember
         self.fire_grid = [
             [1 if random.random() < density else 0 for _ in range(cols)]
             for _ in range(rows)
@@ -13012,48 +13019,78 @@ class App:
         self._flash(f"Forest Fire: {name} — Space to start")
 
     def _fire_step(self):
-        """Advance the forest fire CA by one generation."""
+        """Advance the forest fire CA by one generation.
+
+        States: 0=empty, 1=tree, 2=burning(flame), 3=ash, 4=ember
+        Transitions: tree->burning (neighbor fire or lightning),
+                     burning->ember, ember->ash, ash->empty (decay),
+                     empty->tree (growth)
+        """
         rows, cols = self.fire_rows, self.fire_cols
         grid = self.fire_grid
         p_grow = self.fire_p_grow
         p_light = self.fire_p_lightning
+        ash_decay = self.fire_ash_decay
 
         new_grid = [[0] * cols for _ in range(rows)]
+        n_tree = n_fire = n_ash = n_empty = 0
 
         for r in range(rows):
             for c in range(cols):
                 cell = grid[r][c]
                 if cell == 2:
-                    # Burning -> ash (empty)
-                    new_grid[r][c] = 0
+                    # Burning -> ember
+                    new_grid[r][c] = 4
+                    n_fire += 1
+                elif cell == 4:
+                    # Ember -> ash
+                    new_grid[r][c] = 3
+                    n_ash += 1
+                elif cell == 3:
+                    # Ash -> empty (with probability)
+                    if random.random() < ash_decay:
+                        new_grid[r][c] = 0
+                        n_empty += 1
+                    else:
+                        new_grid[r][c] = 3
+                        n_ash += 1
                 elif cell == 1:
-                    # Tree: check if any neighbor is burning
+                    # Tree: check if any neighbor is burning or ember
                     burning_neighbor = False
                     for dr in (-1, 0, 1):
                         for dc in (-1, 0, 1):
                             if dr == 0 and dc == 0:
                                 continue
                             nr, nc = r + dr, c + dc
-                            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 2:
+                            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] in (2, 4):
                                 burning_neighbor = True
                                 break
                         if burning_neighbor:
                             break
                     if burning_neighbor:
                         new_grid[r][c] = 2  # catch fire
+                        n_fire += 1
                     elif random.random() < p_light:
                         new_grid[r][c] = 2  # lightning strike
+                        n_fire += 1
                     else:
                         new_grid[r][c] = 1  # stay tree
+                        n_tree += 1
                 else:
                     # Empty: grow tree with probability p
                     if random.random() < p_grow:
                         new_grid[r][c] = 1
+                        n_tree += 1
                     else:
                         new_grid[r][c] = 0
+                        n_empty += 1
 
         self.fire_grid = new_grid
         self.fire_generation += 1
+        self.fire_counts.append((n_tree, n_fire, n_ash, n_empty))
+        # Keep last 200 data points for the density sparkline
+        if len(self.fire_counts) > 200:
+            self.fire_counts = self.fire_counts[-200:]
 
     def _handle_fire_menu_key(self, key: int) -> bool:
         """Handle input in Forest Fire preset menu."""
@@ -13095,6 +13132,12 @@ class App:
         elif key == ord("L"):
             self.fire_p_lightning = max(0.0001, self.fire_p_lightning - 0.0005)
             self._flash(f"Lightning prob: {self.fire_p_lightning:.4f}")
+        elif key == ord("a"):
+            self.fire_ash_decay = min(1.0, self.fire_ash_decay + 0.01)
+            self._flash(f"Ash decay: {self.fire_ash_decay:.2f}")
+        elif key == ord("A"):
+            self.fire_ash_decay = max(0.01, self.fire_ash_decay - 0.01)
+            self._flash(f"Ash decay: {self.fire_ash_decay:.2f}")
         elif key == ord("+") or key == ord("="):
             self.fire_steps_per_frame = min(20, self.fire_steps_per_frame + 1)
         elif key == ord("-"):
@@ -13144,21 +13187,26 @@ class App:
         state = "▶ RUNNING" if self.fire_running else "⏸ PAUSED"
 
         # Count cells
-        n_tree = n_fire = n_empty = 0
+        n_tree = n_fire = n_ash = n_empty = 0
         for r in range(rows):
             for c in range(cols):
                 v = grid[r][c]
                 if v == 1:
                     n_tree += 1
-                elif v == 2:
+                elif v in (2, 4):
                     n_fire += 1
+                elif v == 3:
+                    n_ash += 1
                 else:
                     n_empty += 1
 
+        total = rows * cols
+        pct_tree = 100.0 * n_tree / total if total else 0
+
         # Title bar
         title = (f" Forest Fire: {self.fire_preset_name}  |  gen {self.fire_generation}"
-                 f"  |  trees={n_tree} fire={n_fire} empty={n_empty}"
-                 f"  |  {state}")
+                 f"  |  trees={n_tree} fire={n_fire} ash={n_ash} empty={n_empty}"
+                 f"  |  density={pct_tree:.1f}%  |  {state}")
         try:
             self.stdscr.addstr(0, 0, title[:max_x - 1], curses.color_pair(7) | curses.A_BOLD)
         except curses.error:
@@ -13181,9 +13229,17 @@ class App:
                     ch = "██"
                     attr = curses.color_pair(2)
                 elif val == 2:
-                    # Burning — red/yellow bold
+                    # Burning — bright yellow/red bold
                     ch = "▓▓"
                     attr = curses.color_pair(3) | curses.A_BOLD
+                elif val == 4:
+                    # Ember — dim red
+                    ch = "░░"
+                    attr = curses.color_pair(3)
+                elif val == 3:
+                    # Ash/char — dim gray
+                    ch = "░░"
+                    attr = curses.color_pair(8) if curses.COLORS >= 8 else curses.color_pair(6)
                 else:
                     continue
                 try:
@@ -13191,14 +13247,30 @@ class App:
                 except curses.error:
                     pass
 
+        # Density sparkline (tree density over time)
+        if self.fire_counts and max_x > 60:
+            spark_chars = "▁▂▃▄▅▆▇█"
+            spark_width = min(40, len(self.fire_counts))
+            recent = self.fire_counts[-spark_width:]
+            max_trees = max((c[0] for c in recent), default=1) or 1
+            spark = ""
+            for t, f, a, e in recent:
+                idx = min(len(spark_chars) - 1, int(t / max_trees * (len(spark_chars) - 1)))
+                spark += spark_chars[idx]
+            spark_y = max_y - 3
+            if spark_y > 1:
+                label = f" density: {spark}"
+                try:
+                    self.stdscr.addstr(spark_y, 0, label[:max_x - 1], curses.color_pair(2))
+                except curses.error:
+                    pass
+
         # Info bar
         info_y = max_y - 2
         if info_y > 1:
-            total = rows * cols
-            pct_tree = 100.0 * n_tree / total if total else 0
             info = (f" Gen {self.fire_generation}  |  grow={self.fire_p_grow:.3f}"
                     f"  |  lightning={self.fire_p_lightning:.4f}"
-                    f"  |  density={pct_tree:.1f}%"
+                    f"  |  ash_decay={self.fire_ash_decay:.2f}"
                     f"  |  steps/f={self.fire_steps_per_frame}")
             try:
                 self.stdscr.addstr(info_y, 0, info[:max_x - 1], curses.color_pair(6))
@@ -13212,7 +13284,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [p/P]=grow+/- [l/L]=lightning+/- [+/-]=speed [r]=reset [R]=menu [q]=exit"
+                hint = " [Space]=play [n]=step [p/P]=grow+/- [l/L]=lightning+/- [a/A]=ash+/- [+/-]=speed [r]=reset [R]=menu [q]=exit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
