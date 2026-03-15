@@ -1952,6 +1952,13 @@ class App:
         self.screensaver_overlay_alpha: float = 0.0
         self.screensaver_paused: bool = False
         self.screensaver_show_overlay: bool = True
+        # Parameter Space Explorer mode
+        self.pexplorer_mode: bool = False
+        self.pexplorer_menu: bool = False
+        self.pexplorer_menu_sel: int = 0
+        self.pexplorer_running: bool = False
+        self.pexplorer_generation: int = 0
+        self.pexplorer_sims: list = []
 
         # ── Minimap overlay state ──
         self.show_minimap = False  # toggled with Tab key
@@ -2025,6 +2032,7 @@ class App:
             'evo_menu', 'chladni_menu', 'cpm_menu', 'fdtd_menu',
             'magfield_menu', 'rbc_menu', 'sph_menu', 'tectonic_menu',
             'volcano_menu', 'ocean_menu', 'weather_menu', 'blackhole_menu',
+            'pexplorer_menu',
         ]
         for attr in _menu_attrs:
             if getattr(self, attr, False):
@@ -2782,6 +2790,17 @@ class App:
             elif self.screensaver_mode and self.screensaver_running:
                 if self._handle_screensaver_key(key):
                     self._screensaver_step()
+                    continue
+
+            if self.pexplorer_menu:
+                if self._handle_pexplorer_menu_key(key):
+                    continue
+            elif self.pexplorer_mode:
+                if self._handle_pexplorer_key(key):
+                    if self.pexplorer_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._pexplorer_step()
                     continue
 
             if self.dashboard:
@@ -4975,6 +4994,16 @@ class App:
 
         if self.screensaver_menu:
             self._draw_screensaver_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.pexplorer_menu:
+            self._draw_pexplorer_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.pexplorer_mode:
+            self._draw_pexplorer(max_y, max_x)
             self.stdscr.refresh()
             return
 

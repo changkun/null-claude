@@ -227,4 +227,7 @@ MODE_REGISTRY = [
     # ── Screensaver / Demo Reel ──
     {"name": "Screensaver / Demo Reel", "key": "Ctrl+Shift+C", "category": "Meta Modes",
      "desc": "Auto-cycling showcase that plays through all modes with smooth transitions", "attr": "screensaver_mode", "enter": "_enter_screensaver_mode", "exit": "_exit_screensaver_mode"},
+    # ── Parameter Space Explorer ──
+    {"name": "Parameter Space Explorer", "key": "Ctrl+Shift+E", "category": "Meta Modes",
+     "desc": "Grid of live simulations with varied parameters for visual parameter space exploration", "attr": "pexplorer_mode", "enter": "_enter_param_explorer_mode", "exit": "_exit_param_explorer_mode"},
 ]

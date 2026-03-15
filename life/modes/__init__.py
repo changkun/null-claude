@@ -118,6 +118,8 @@ def register_all_modes(App):
     reg_orrery(App)
     from life.modes.physarum import register as reg_physarum
     reg_physarum(App)
+    from life.modes.param_explorer import register as reg_pexplorer
+    reg_pexplorer(App)
     from life.modes.particle_life import register as reg_plife
     reg_plife(App)
     from life.modes.puzzle import register as reg_puzzle

@@ -4,6 +4,66 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Parameter Space Explorer — visual navigation of simulation parameter landscapes
+
+A new meta-mode that displays a grid of live simulation thumbnails, each running the same
+simulation with slightly varied parameters. Instead of blindly twiddling knobs, users can
+see an entire parameter neighborhood at once, click the most interesting tile, and zoom in
+to explore its vicinity — turning parameter tuning into visual exploration.
+
+**New file:** `life/modes/param_explorer.py` (~830 lines)
+
+**Features:**
+- Mode selection menu to choose which simulation to explore
+- Auto-sized grid (2×2 to 5×6) of independently running mini-simulations
+- X and Y axes each map to a tunable parameter, with values interpolated across the grid
+- Zoom in: press Enter on a tile to re-center the grid around its parameters (40% of range)
+- Zoom out: press `z` to widen the parameter range by 50%
+- Presets: press `p` to cycle through known interesting parameter combinations
+- Full reset with `r` to return to the complete parameter range
+- Mouse support for tile selection (double-click to zoom)
+- Speed control: `+`/`-` for steps per frame, `<`/`>` for global speed
+- Density-glyph rendering with 8-level color tiers
+
+**Explorable modes:**
+
+| Mode | X-axis | Y-axis | Presets |
+|------|--------|--------|---------|
+| Reaction-Diffusion (Gray-Scott) | feed rate [0.01–0.08] | kill rate [0.04–0.07] | Coral Growth, Mitosis, Fingerprints, Spots, Worms, Spirals, Maze, Chaos |
+| Smooth Life (continuous CA) | mu [0.05–0.45] | sigma [0.01–0.15] | Orbium, Geminium, Stable Blobs, Oscillators, Chaos |
+
+**Controls:**
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/pause all simulations |
+| `n`/`.` | Single step |
+| `←→↑↓` / `wasd` | Navigate tile selection |
+| `Enter` | Zoom into selected tile's parameter neighborhood |
+| `z` | Zoom out (widen parameter range) |
+| `p` | Jump to next preset |
+| `r` | Reset to full parameter range |
+| `R`/`m` | Return to mode selection menu |
+| `+`/`-` | Adjust steps per frame |
+| `<`/`>` | Adjust global speed |
+| Mouse click | Select tile; double-click to zoom |
+
+**Integration:**
+- Registry: category "Meta Modes", hotkey `Ctrl+Shift+E`
+- App: init vars, draw dispatch, key handling dispatch, menu tracking
+- Extensible: add new explorable modes by defining `init`/`step`/`sample` functions
+
+**Architecture:** Each explorable mode is defined by a simple interface — `init(rows, cols, px, py)`,
+`step(state, n)`, `sample(state, r, c)` — making it trivial to add more modes. The mini-simulations
+are fully independent pure-Python implementations (no dependency on the main mode code), keeping
+the explorer self-contained.
+
+**Why:** This is a multiplier feature, not an additive one. Rather than adding mode #95, it
+enhances all existing parameterized modes by making their parameter spaces visually explorable.
+Complex systems like Gray-Scott reaction-diffusion have rich parameter spaces where tiny changes
+produce wildly different patterns — this makes discovery intuitive rather than requiring blind
+parameter guessing.
+
 ### Enhanced: Reaction-Diffusion Textures — Gray-Scott model with 15 presets and color schemes
 
 Rewrites the existing reaction-diffusion mode into a full-featured Gray-Scott texture
