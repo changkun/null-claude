@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Particle Collider / Hadron Collider (Ctrl+Shift+Z)
+
+A CERN-inspired particle physics simulation — beams orbit an elliptical accelerator ring and collide at detector interaction points, producing showers of decay products.
+
+**What it does:**
+- Elliptical accelerator ring drawn with box-drawing characters and pulsing energy animation
+- Beam particles (clockwise and counter-clockwise) orbiting with trailing dots
+- 4 detector interaction points modeled after real LHC experiments (ATLAS, CMS, ALICE, LHCb) with collision flash effects
+- Collision showers: 4–25 decay product particles spray outward with physics-based deceleration and lifetime decay
+- 12 detectable particles: Higgs boson, W/Z bosons, top/charm quarks, muons, taus, photons, gluons, pions, kaons, B mesons — with measured mass and energy
+- 4 presets: LHC Standard (13.6 TeV p-p), Heavy Ion (dense showers), Electron-Positron (clean jets), Discovery Mode (high luminosity/rare particles)
+- CERN-aesthetic UI: beam status readout, scrolling detector event log, flash detection banner
+- Controls: `Space` (pause), `c` (force collision), `+`/`-` (speed), `r` (reset), `R` (menu), `i` (info overlay), `q` (quit)
+
+**Why:** The project had physics modes (gravity, fluids, electromagnetism) but nothing at the subatomic scale. This adds high-energy particle physics with a fun, educational CERN aesthetic.
+
+**Category:** Physics & Math (~550 lines added to life.py)
+
 ### Added: ASCII Aquarium / Fish Tank (Ctrl+Shift+Y)
 
 A relaxing, screensaver-style "zen mode" — the project's first purely ambient simulation.
@@ -22,6 +40,7 @@ A relaxing, screensaver-style "zen mode" — the project's first purely ambient 
 
 | Date | Mode | Key |
 |------|------|-----|
+| — | ASCII Aquarium / Fish Tank | Ctrl+Shift+Y |
 | — | Kaleidoscope / Symmetry Patterns | Ctrl+Shift+V |
 | — | Ant Farm Simulation | — |
 | — | Matrix Digital Rain | — |
