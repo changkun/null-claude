@@ -2091,6 +2091,8 @@ class App:
         self.snowflake_alpha = 0.4       # vapor deposition rate onto receptive cells
         self.snowflake_beta = 0.4        # initial background vapor density
         self.snowflake_gamma = 0.0001    # noise amplitude
+        self.snowflake_mu = 0.8          # diffusion rate (0-1, higher = faster diffusion)
+        self.snowflake_symmetric = True  # enforce six-fold symmetry
         self.snowflake_frozen_count = 0  # number of frozen cells
 
         # ── Predator-Prey (Lotka-Volterra) state ──
@@ -13640,16 +13642,21 @@ class App:
     # ══════════════════════════════════════════════════════════════════════
 
     SNOWFLAKE_PRESETS = [
-        # (name, description, alpha, beta, gamma)
-        # alpha = deposition rate, beta = initial vapor, gamma = noise
-        ("Classic Dendrite", "Balanced growth — six-fold branching arms", 0.40, 0.40, 0.0001),
-        ("Thin Needles", "Low vapor — long thin branches", 0.30, 0.30, 0.0001),
-        ("Broad Plates", "High vapor — wide faceted plates", 0.50, 0.55, 0.0001),
-        ("Fernlike", "Fast deposition — highly branched fern shapes", 0.65, 0.35, 0.0001),
-        ("Stellar Dendrite", "Moderate vapor — classic star snowflake", 0.45, 0.45, 0.0001),
-        ("Sectored Plate", "High vapor, low deposition — sector plates", 0.20, 0.60, 0.0001),
-        ("Sparse Growth", "Very low vapor — slow sparse crystal", 0.25, 0.25, 0.0001),
-        ("Noisy Crystal", "High noise — irregular natural look", 0.40, 0.40, 0.005),
+        # (name, description, alpha, beta, gamma, mu, symmetric)
+        # alpha = deposition rate, beta = initial vapor (supersaturation),
+        # gamma = noise amplitude, mu = diffusion rate (0-1), symmetric = enforce 6-fold
+        ("Classic Dendrite", "Balanced growth — six-fold branching arms", 0.40, 0.40, 0.0001, 0.8, True),
+        ("Thin Needles", "Low vapor — long thin branches", 0.30, 0.30, 0.0001, 0.9, True),
+        ("Broad Plates", "High vapor — wide faceted plates", 0.50, 0.55, 0.0001, 0.5, True),
+        ("Fernlike", "Fast deposition — highly branched fern shapes", 0.65, 0.35, 0.0001, 0.7, True),
+        ("Stellar Dendrite", "Moderate vapor — classic star snowflake", 0.45, 0.45, 0.0001, 0.85, True),
+        ("Sectored Plate", "High vapor, low deposition — sector plates", 0.20, 0.60, 0.0001, 0.6, True),
+        ("Simple Hexagon", "Very high vapor — compact hexagonal prism", 0.15, 0.70, 0.0, 0.4, True),
+        ("Hollow Columns", "Medium vapor — hollow column morphology", 0.35, 0.50, 0.0, 0.75, True),
+        ("Noisy Crystal", "High noise — irregular natural look", 0.40, 0.40, 0.005, 0.8, False),
+        ("Asymmetric Growth", "No symmetry — naturalistic random crystal", 0.40, 0.40, 0.001, 0.8, False),
+        ("Fast Dendrite", "Rapid low-diffusion — dense fractal arms", 0.55, 0.35, 0.0001, 0.5, True),
+        ("Sparse Frost", "Very low vapor — slow sparse crystal", 0.25, 0.25, 0.0001, 0.9, True),
     ]
 
     def _enter_snowflake_mode(self):
@@ -13684,7 +13691,7 @@ class App:
 
     def _snowflake_init(self, preset_idx: int):
         """Initialize Snowflake Growth with the given preset."""
-        name, _desc, alpha, beta, gamma = self.SNOWFLAKE_PRESETS[preset_idx]
+        name, _desc, alpha, beta, gamma, mu, symmetric = self.SNOWFLAKE_PRESETS[preset_idx]
         max_y, max_x = self.stdscr.getmaxyx()
         rows = max(20, max_y - 4)
         cols = max(20, (max_x - 1) // 2)
@@ -13693,6 +13700,8 @@ class App:
         self.snowflake_alpha = alpha
         self.snowflake_beta = beta
         self.snowflake_gamma = gamma
+        self.snowflake_mu = mu
+        self.snowflake_symmetric = symmetric
         self.snowflake_preset_name = name
         self.snowflake_generation = 0
         self.snowflake_steps_per_frame = 1
@@ -13710,22 +13719,76 @@ class App:
         self.snowflake_mode = True
         self.snowflake_menu = False
         self.snowflake_running = False
-        self._flash(f"Snowflake: {name} — Space to start")
+        sym_label = "6-fold symmetric" if symmetric else "asymmetric"
+        self._flash(f"Snowflake: {name} ({sym_label}) — Space to start")
+
+    def _snowflake_hex_to_axial(self, r: int, c: int) -> tuple[int, int]:
+        """Convert offset (even-r) coordinates to axial (q, s) for symmetry ops."""
+        q = c - (r - (r & 1)) // 2
+        s = r
+        return q, s
+
+    def _snowflake_axial_to_offset(self, q: int, s: int) -> tuple[int, int]:
+        """Convert axial (q, s) coordinates back to offset (even-r)."""
+        r = s
+        c = q + (s - (s & 1)) // 2
+        return r, c
+
+    def _snowflake_symmetric_points(self, r: int, c: int) -> list[tuple[int, int]]:
+        """Return all 12 symmetric images of (r, c) under 6-fold symmetry + mirror.
+
+        Uses hex axial coordinates centered on the grid center for rotation,
+        then converts back to offset coords.
+        """
+        rows, cols = self.snowflake_rows, self.snowflake_cols
+        cr, cc = rows // 2, cols // 2
+
+        # Get axial coords relative to center
+        q0, s0 = self._snowflake_hex_to_axial(r, c)
+        qc, sc = self._snowflake_hex_to_axial(cr, cc)
+        dq = q0 - qc
+        ds = s0 - sc
+
+        # In cube coordinates: x=dq, z=ds, y=-dq-ds
+        x, z = dq, ds
+        y = -x - z
+
+        # All 6 rotations × 2 reflections = 12 symmetric points
+        transforms = [
+            (x, y, z), (-y, -z, -x), (z, x, y),
+            (-x, -y, -z), (y, z, x), (-z, -x, -y),
+            # Mirror (reflect across one axis)
+            (x, z, y), (-y, -x, -z), (z, y, x),
+            (-x, -z, -y), (y, x, z), (-z, -y, -x),
+        ]
+
+        points = []
+        seen = set()
+        for tx, ty, tz in transforms:
+            aq = tx + qc
+            asval = tz + sc
+            or_, oc = self._snowflake_axial_to_offset(aq, asval)
+            if 0 <= or_ < rows and 0 <= oc < cols and (or_, oc) not in seen:
+                seen.add((or_, oc))
+                points.append((or_, oc))
+        return points
 
     def _snowflake_step(self):
         """Advance the Reiter snowflake model by one step.
 
-        Algorithm:
+        Algorithm (Reiter 2005):
         1. Identify receptive cells (non-frozen neighbors of frozen cells).
         2. Add alpha to receptive cells (vapor deposition).
         3. Diffuse vapor among non-frozen cells on the hex lattice.
         4. Freeze any receptive cell with vapor >= 1.0.
+        5. If symmetric mode: enforce 6-fold symmetry on newly frozen cells.
         """
         frozen = self.snowflake_frozen
         vapor = self.snowflake_vapor
         rows, cols = self.snowflake_rows, self.snowflake_cols
         alpha = self.snowflake_alpha
         gamma = self.snowflake_gamma
+        mu = self.snowflake_mu
 
         # Step 1: identify receptive cells
         receptive = [[False] * cols for _ in range(rows)]
@@ -13747,29 +13810,51 @@ class App:
                         vapor[r][c] += random.uniform(-gamma, gamma)
 
         # Step 3: diffuse vapor among non-receptive, non-frozen cells
+        # mu controls how much of the cell's vapor is exchanged with neighbors
         new_vapor = [[0.0] * cols for _ in range(rows)]
         for r in range(rows):
             for c in range(cols):
                 if frozen[r][c] or receptive[r][c]:
                     new_vapor[r][c] = vapor[r][c]
                     continue
-                # Average with hex neighbors (those that are also non-frozen, non-receptive)
-                total = vapor[r][c]
-                count = 1
+                # Weighted average: (1-mu)*self + mu*(avg of diffusible neighbors)
+                neighbor_total = 0.0
+                neighbor_count = 0
                 for nr, nc in self._snowflake_hex_neighbors(r, c):
                     if 0 <= nr < rows and 0 <= nc < cols:
                         if not frozen[nr][nc] and not receptive[nr][nc]:
-                            total += vapor[nr][nc]
-                            count += 1
-                new_vapor[r][c] = total / count
+                            neighbor_total += vapor[nr][nc]
+                            neighbor_count += 1
+                if neighbor_count > 0:
+                    avg_neighbor = neighbor_total / neighbor_count
+                    new_vapor[r][c] = (1.0 - mu) * vapor[r][c] + mu * avg_neighbor
+                else:
+                    new_vapor[r][c] = vapor[r][c]
 
         # Step 4: freeze receptive cells that reached threshold
+        newly_frozen = []
         for r in range(rows):
             for c in range(cols):
                 if receptive[r][c] and new_vapor[r][c] >= 1.0:
-                    frozen[r][c] = True
-                    new_vapor[r][c] = 0.0
+                    newly_frozen.append((r, c))
+
+        # Step 5: apply freezing — with optional 6-fold symmetry enforcement
+        if self.snowflake_symmetric and newly_frozen:
+            # For each newly frozen cell, also freeze all its symmetric images
+            all_to_freeze = set()
+            for r, c in newly_frozen:
+                for sr, sc in self._snowflake_symmetric_points(r, c):
+                    all_to_freeze.add((sr, sc))
+            for fr, fc in all_to_freeze:
+                if not frozen[fr][fc]:
+                    frozen[fr][fc] = True
+                    new_vapor[fr][fc] = 0.0
                     self.snowflake_frozen_count += 1
+        else:
+            for r, c in newly_frozen:
+                frozen[r][c] = True
+                new_vapor[r][c] = 0.0
+                self.snowflake_frozen_count += 1
 
         self.snowflake_vapor = new_vapor
         self.snowflake_generation += 1
@@ -13833,6 +13918,21 @@ class App:
             self.snowflake_alpha = min(1.0, self.snowflake_alpha + 0.05)
             self._flash(f"Alpha (deposition): {self.snowflake_alpha:.2f}")
             return True
+        # Diffusion rate controls: d/D
+        if key == ord("d"):
+            self.snowflake_mu = max(0.05, self.snowflake_mu - 0.05)
+            self._flash(f"Diffusion rate (μ): {self.snowflake_mu:.2f}")
+            return True
+        if key == ord("D"):
+            self.snowflake_mu = min(1.0, self.snowflake_mu + 0.05)
+            self._flash(f"Diffusion rate (μ): {self.snowflake_mu:.2f}")
+            return True
+        # Toggle 6-fold symmetry: s
+        if key == ord("s"):
+            self.snowflake_symmetric = not self.snowflake_symmetric
+            label = "ON" if self.snowflake_symmetric else "OFF"
+            self._flash(f"6-fold symmetry: {label}")
+            return True
         return True
 
     def _draw_snowflake_menu(self, max_y: int, max_x: int):
@@ -13845,13 +13945,14 @@ class App:
         except curses.error:
             pass
 
-        for i, (name, desc, alpha, beta, gamma) in enumerate(self.SNOWFLAKE_PRESETS):
+        for i, (name, desc, alpha, beta, gamma, mu, sym) in enumerate(self.SNOWFLAKE_PRESETS):
             y = 3 + i
             if y >= max_y - 2:
                 break
             marker = "▸ " if i == self.snowflake_menu_sel else "  "
             attr = curses.color_pair(3) | curses.A_BOLD if i == self.snowflake_menu_sel else curses.color_pair(7)
-            line = f"{marker}{name:22s} α={alpha:<5.2f} β={beta:<5.2f} γ={gamma:<6.4f}  {desc}"
+            sym_tag = "❄" if sym else "~"
+            line = f"{marker}{name:22s} α={alpha:<5.2f} β={beta:<5.2f} μ={mu:<4.2f} {sym_tag}  {desc}"
             try:
                 self.stdscr.addstr(y, 2, line[:max_x - 3], attr)
             except curses.error:
@@ -13872,11 +13973,11 @@ class App:
         vapor = self.snowflake_vapor
         rows, cols = self.snowflake_rows, self.snowflake_cols
         state = "▶ RUNNING" if self.snowflake_running else "⏸ PAUSED"
+        sym_label = "❄ 6-fold" if self.snowflake_symmetric else "~ free"
 
         # Title bar
-        title = (f" Snowflake: {self.snowflake_preset_name}  |  step {self.snowflake_generation}"
-                 f"  |  α={self.snowflake_alpha:.2f}  β={self.snowflake_beta:.2f}"
-                 f"  |  frozen={self.snowflake_frozen_count}"
+        title = (f" ❄ Snowflake: {self.snowflake_preset_name}  |  step {self.snowflake_generation}"
+                 f"  |  {sym_label}  |  frozen={self.snowflake_frozen_count}"
                  f"  |  {state}")
         try:
             self.stdscr.addstr(0, 0, title[:max_x - 1], curses.color_pair(7) | curses.A_BOLD)
@@ -13886,40 +13987,58 @@ class App:
         view_rows = max_y - 4
         view_cols = (max_x - 1) // 2
 
-        # Rendering characters for crystal visualization
-        # Frozen cells: bright white/cyan crystal chars based on neighbor count
-        # Vapor cells: dimmer based on vapor density
+        # Precompute frozen-neighbor counts for crystal edge rendering
         for r in range(min(rows, view_rows)):
             for c in range(min(cols, view_cols)):
                 sx = c * 2
                 sy = 1 + r
                 if frozen[r][c]:
-                    # Ice crystal — bright white/cyan
+                    # Count frozen neighbors to determine crystal interior vs edge
+                    fn = 0
+                    for nr, nc in self._snowflake_hex_neighbors(r, c):
+                        if 0 <= nr < rows and 0 <= nc < cols and frozen[nr][nc]:
+                            fn += 1
+                    if fn >= 5:
+                        # Deep interior — solid bright white
+                        ch = "██"
+                        attr = curses.color_pair(7) | curses.A_BOLD
+                    elif fn >= 3:
+                        # Interior — bright cyan
+                        ch = "██"
+                        attr = curses.color_pair(6) | curses.A_BOLD
+                    else:
+                        # Crystal edge / tip — highlighted
+                        ch = "▓▓"
+                        attr = curses.color_pair(4) | curses.A_BOLD
                     try:
-                        self.stdscr.addstr(sy, sx, "██", curses.color_pair(6) | curses.A_BOLD)
+                        self.stdscr.addstr(sy, sx, ch, attr)
                     except curses.error:
                         pass
                 else:
                     v = vapor[r][c]
-                    if v >= 0.7:
-                        # High vapor — visible
+                    if v >= 0.8:
                         try:
                             self.stdscr.addstr(sy, sx, "░░", curses.color_pair(4))
                         except curses.error:
                             pass
-                    elif v >= 0.4:
-                        # Medium vapor — faint
+                    elif v >= 0.5:
                         try:
                             self.stdscr.addstr(sy, sx, "··", curses.color_pair(4) | curses.A_DIM)
                         except curses.error:
                             pass
-                    # Low vapor: leave blank (dark background)
+                    elif v >= 0.3:
+                        try:
+                            self.stdscr.addstr(sy, sx, "  ", curses.color_pair(4) | curses.A_DIM)
+                        except curses.error:
+                            pass
+                    # Very low vapor: leave blank (dark background)
 
         # Info bar
         info_y = max_y - 2
         if info_y > 1:
             info = (f" Step {self.snowflake_generation}  |  α={self.snowflake_alpha:.2f}"
-                    f"  β={self.snowflake_beta:.2f}  γ={self.snowflake_gamma:.4f}"
+                    f"  β={self.snowflake_beta:.2f}  μ={self.snowflake_mu:.2f}"
+                    f"  γ={self.snowflake_gamma:.4f}"
                     f"  |  frozen={self.snowflake_frozen_count}"
                     f"  |  steps/f={self.snowflake_steps_per_frame}")
             try:
@@ -13934,7 +14053,7 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [a/A]=deposition-/+ [+/-]=speed [r]=reset [R]=menu [q]=exit"
+                hint = " [Space]=play [n]=step [a/A]=α-/+ [d/D]=μ-/+ [s]=symmetry [+/-]=speed [r]=reset [R]=menu [q]=exit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
