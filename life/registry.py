@@ -307,4 +307,7 @@ MODE_REGISTRY = [
     # ── Ecosystem Evolution & Speciation ──
     {"name": "Ecosystem Evolution & Speciation", "key": "Ctrl+Shift+E", "category": "Chemical & Biological",
      "desc": "Landscape-scale macro-evolution with speciation, phylogenetic trees, food webs & mass extinctions", "attr": "evoeco_mode", "enter": "_enter_evoeco_mode", "exit": "_exit_evoeco_mode"},
+    # ── Mycelium Network / Wood Wide Web ──
+    {"name": "Mycelium Network / Wood Wide Web", "key": "Ctrl+Shift+W", "category": "Chemical & Biological",
+     "desc": "Underground fungal networks connect trees — hyphae branch, shuttle nutrients, fruit mushrooms & respond to seasons", "attr": "mycelium_mode", "enter": "_enter_mycelium_mode", "exit": "_exit_mycelium_mode"},
 ]

@@ -4,6 +4,54 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Mycelium Network / Wood Wide Web — Underground Fungal Network Simulation
+
+A side-view underground simulation of fungal mycorrhizal networks — the hidden
+infrastructure of terrestrial ecosystems. Hyphae branch and spread through soil,
+connect to tree roots via mycorrhizal junctions, and shuttle nutrients (carbon,
+phosphorus, nitrogen) between trees. Older "mother trees" become network hubs
+that send emergency nutrient transfers to stressed neighbors. Decomposers break
+down fallen organic matter, releasing nutrients back into the soil. Seasonal
+cycles drive growth, dormancy, and fruiting. This fills the gap between the
+molecular scale (Artificial Chemistry) and the ecosystem scale (Coral Reef,
+Ecosystem Evolution) — modeling the mutualistic underground network that
+sustains forest ecosystems.
+
+**New file:** `life/modes/mycelium.py` (~1060 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Soil layers | Surface, topsoil, subsoil, clay, and rock with depth-varying moisture profiles |
+| Hyphal growth | Branching/spreading hyphae weighted by moisture, nutrients, and season — form thick hubs at junctions |
+| Mycorrhizal connections | Form where hyphae meet root tips — bidirectional nutrient exchange interfaces |
+| Root tip growth | Active root tips grow toward moisture and nutrients through soil |
+| Nutrient packets | Mobile carbon (tree→fungus), phosphorus & nitrogen (fungus→tree), distress signals, and water drops flow along the network |
+| Mother tree behavior | Mature trees with many connections become hubs — detect neighbor distress and send emergency nutrient transfers |
+| Decomposition | Organic matter (fallen leaves, wood) breaks down over time, releasing nutrients into surrounding soil |
+| Nutrient diffusion | Nutrients spread through soil layers via diffusion |
+| Seasonal cycles | Spring growth surge, summer steady-state, autumn leaf fall and mushroom fruiting, winter dormancy and die-back |
+| Fruiting bodies | Mushrooms emerge on the surface in autumn or high-moisture conditions, release spores that drift and colonize |
+| Hyphal die-back | Drought and winter conditions cause peripheral hyphae to retract |
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Old-Growth Forest | Mature forest with deep mycelial networks and established mother trees |
+| Young Plantation | Recently planted trees — watch mycorrhizal networks develop from scratch |
+| Drought Stress | Dry conditions stress trees — watch the network shuttle emergency water |
+| Fallen Giant | A large tree has fallen — decomposers feast and nutrients redistribute |
+| Nutrient Hotspot | Mineral-rich soil patch drives intense fungal competition and growth |
+| Four Seasons | Watch the network through seasonal cycles — growth, fruiting, dormancy |
+
+**3 view modes:** network (default — cell types with color), moisture heatmap, nutrient heatmap.
+
+**Controls:** `Space` play/pause, `n` step, `v` cycle views, `w` rain, `d` drought, `o` drop organic matter, `s` advance season, `+`/`-` speed, `r` reset, `R` preset menu, `q` quit. Accessible via `Ctrl+Shift+W` from the main menu under "Chemical & Biological."
+
+---
+
 ### Added: Ecosystem Evolution & Speciation — Landscape-Scale Macro-Evolution Simulation
 
 Simulates landscape-scale macro-evolution where populations evolve across varied biomes,

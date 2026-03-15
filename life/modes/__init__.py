@@ -246,6 +246,8 @@ def register_all_modes(App):
     reg_civ(App)
     from life.modes.ecosystem_evolution import register as reg_evoeco
     reg_evoeco(App)
+    from life.modes.mycelium import register as reg_mycelium
+    reg_mycelium(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
