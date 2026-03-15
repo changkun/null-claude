@@ -4,6 +4,55 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Artificial Chemistry — Spontaneous Emergence of Self-Replicating Molecules
+
+Simulates a primordial soup of abstract molecules that drift, collide, and react via
+pattern-matching rules. Cells represent string-based molecules (sequences from an 8-letter
+alphabet A–H) that undergo concatenation, cleavage, template-directed replication, and
+catalysis. Over time, autocatalytic cycles form — sets of molecules that catalyze each
+other's production — and occasionally genuine self-replicators emerge from the noise. This
+is the natural next frontier for a project exploring emergent complexity: watching the
+origin of life itself, one reaction at a time.
+
+**New file:** `life/modes/artificial_chemistry.py` (~800 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Molecules | String-based (alphabet A–H, max length 16) — monomers, short polymers, long polymers, catalysts, replicators |
+| Drift/diffusion | Molecules move randomly across the grid, simulating Brownian motion in the soup |
+| Concatenation | Two adjacent molecules join end-to-end if combined length ≤ 16 and sufficient energy |
+| Cleavage | Long molecules spontaneously split at random points, producing fragments |
+| Template replication | Molecules ≥ 3 chars act as templates — produce complement copies (A↔E, B↔F, C↔G, D↔H) with mutation |
+| Catalysis | Molecules with complement-matching subsequences catalyze transformation of neighbors |
+| Autocatalytic cycles | Periodic scan of the catalytic network detects cycles of length 2–4 where molecules catalyze each other's production |
+| Self-replicator detection | Template replication that produces true complements marks molecules as replicators |
+| Energy system | Per-cell energy that decays over time — molecules with no energy degrade, food injected at edges |
+| Clustering | Optional hydrophobic attraction — long molecules pull nearby monomers toward them (Lipid World preset) |
+
+**8 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Primordial Soup | Random monomers in warm broth — watch for spontaneous polymerization |
+| Rich Broth | Dense soup with high reactivity — fast polymer formation |
+| Sparse Tidepools | Low density pools — rare but significant encounters |
+| RNA World | Template-directed replication dominates — origin of information |
+| Metabolism First | Catalytic cycles before replication — energy-driven self-organization |
+| Lipid World | Hydrophobic clustering — molecules aggregate into proto-cells |
+| Volcanic Vent | Energy-rich environment with rapid turnover and high mutation |
+| Minimal Abiogenesis | Fewest assumptions, maximum emergence |
+
+**3 view modes:** soup (color-coded by molecule type/length), energy (heatmap), diversity (colored by first character).
+
+**Controls:** `Space` play/pause, `n` step, `v` cycle views, `e`/`E` reactivity,
+`f`/`F` food rate, `u`/`U` mutation rate, `+`/`-` speed, `r` reset, `R` preset menu,
+mouse-click to drop molecules, `q` quit. Accessible via `Ctrl+Shift+C` from the main
+menu under "Chemical & Biological."
+
+---
+
 ### Added: Morphogenesis — Embryonic Development from a Single Cell
 
 Simulates biological embryonic development: a single fertilized "egg" cell divides,

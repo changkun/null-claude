@@ -330,6 +330,18 @@ class App:
         self.smr_pop_history = []
         self.smr_speed_mult = 1
         self.smr_preset_name = ""
+        # ── Artificial Chemistry mode state ──
+        self.achem_mode = False
+        self.achem_menu = False
+        self.achem_menu_sel = 0
+        self.achem_running = False
+        self.achem_generation = 0
+        self.achem_rows = 0
+        self.achem_cols = 0
+        self.achem_steps_per_frame = 1
+        self.achem_grid = []
+        self.achem_energy = []
+        self.achem_mol_history = []
         # ── Morphogenesis mode state ──
         self.morpho_mode = False
         self.morpho_menu = False
@@ -3532,6 +3544,18 @@ class App:
                             self._morpho_step()
                     continue
 
+            if self.achem_menu:
+                if self._handle_achem_menu_key(key):
+                    continue
+            elif self.achem_mode:
+                if self._handle_achem_key(key):
+                    if self.achem_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        for _ in range(self.achem_steps_per_frame):
+                            self._achem_step()
+                    continue
+
             if self.hyp_menu:
                 if self._handle_hyp_menu_key(key):
                     continue
@@ -5920,6 +5944,16 @@ class App:
 
         if self.morpho_mode:
             self._draw_morpho(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.achem_menu:
+            self._draw_achem_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.achem_mode:
+            self._draw_achem(max_y, max_x)
             self.stdscr.refresh()
             return
 

@@ -290,4 +290,7 @@ MODE_REGISTRY = [
     # ── Morphogenesis ──
     {"name": "Morphogenesis", "key": "Ctrl+Shift+M", "category": "Chemical & Biological",
      "desc": "Embryonic development from a single cell — division, differentiation, morphogen gradients & body plans", "attr": "morpho_mode", "enter": "_enter_morpho_mode", "exit": "_exit_morpho_mode"},
+    # ── Artificial Chemistry ──
+    {"name": "Artificial Chemistry", "key": "Ctrl+Shift+C", "category": "Chemical & Biological",
+     "desc": "Primordial soup of abstract molecules — spontaneous polymerization, autocatalytic cycles & self-replicator emergence", "attr": "achem_mode", "enter": "_enter_achem_mode", "exit": "_exit_achem_mode"},
 ]
