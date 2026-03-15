@@ -83,8 +83,8 @@ MODE_REGISTRY = [
     {"name": "MHD Plasma", "key": "}", "category": "Fluid Dynamics",
      "desc": "Magnetohydrodynamic plasma turbulence", "attr": "mhd_mode", "enter": "_enter_mhd_mode", "exit": "_exit_mhd_mode"},
     # ── Chemical & Biological ──
-    {"name": "Reaction-Diffusion", "key": "6", "category": "Chemical & Biological",
-     "desc": "Gray-Scott model: spots, stripes, and waves", "attr": "rd_mode", "enter": "_enter_rd_mode", "exit": "_exit_rd_mode"},
+    {"name": "Reaction-Diffusion Textures", "key": "6", "category": "Chemical & Biological",
+     "desc": "Gray-Scott texture generator: coral, mitosis, fingerprints, worms & more", "attr": "rd_mode", "enter": "_enter_rd_mode", "exit": "_exit_rd_mode"},
     {"name": "BZ Reaction", "key": "`", "category": "Chemical & Biological",
      "desc": "Belousov-Zhabotinsky chemical spirals", "attr": "bz_mode", "enter": "_enter_bz_mode", "exit": "_exit_bz_mode"},
     {"name": "Chemotaxis", "key": "{", "category": "Chemical & Biological",

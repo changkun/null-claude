@@ -4,6 +4,56 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Enhanced: Reaction-Diffusion Textures — Gray-Scott model with 15 presets and color schemes
+
+Rewrites the existing reaction-diffusion mode into a full-featured Gray-Scott texture
+generator. Users pick from 15 named parameter presets across 3 categories and watch
+organic patterns (coral, mitosis, fingerprints, worms) self-organize in real-time with
+colored ASCII shading.
+
+**Modified files:**
+- `life/modes/reaction_diffusion.py` — major rewrite (~490 lines)
+- `life/app.py` — added `RD_PRESETS` (15 entries) and `RD_DENSITY` class attributes
+- `life/registry.py` — updated mode name and description
+
+**15 Gray-Scott presets in 3 categories:**
+
+| Category | Presets |
+|----------|---------|
+| Classic Patterns | Coral Growth, Mitosis, Fingerprints, Spots, Worms |
+| Exotic Patterns | Spirals, Maze, Chaos, Pulsing Spots, Negatons |
+| Biological Analogues | Cell Division, Bacteria, Lichen, Bubbles, Ripples |
+
+Each preset has tuned `(f, k)` feed/kill parameters that produce distinct self-organizing textures.
+
+**Features:**
+- 5 color schemes (ocean, thermal, organic, purple, monochrome) cycleable with `c`
+- Circular seed patches with smooth falloff for natural initial conditions
+- Interactive perturbation: `p` adds random V patches; mouse clicks inject chemical
+- Category-grouped preset menu with dividers
+- Adjustable feed/kill rates (`f`/`F`/`k`/`K`), steps per frame (`+`/`-`)
+- Status bar with generation count, V concentration stats, diffusion constants
+
+**Controls:**
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/pause simulation |
+| `n`/`.` | Single step |
+| `f`/`F` | Increase/decrease feed rate |
+| `k`/`K` | Increase/decrease kill rate |
+| `c` | Cycle color scheme |
+| `p` | Add random perturbation |
+| `+`/`-` | Adjust steps per frame |
+| `r` | Re-seed grid |
+| `R`/`m` | Return to preset menu |
+| Mouse click | Inject chemical at cursor |
+
+**Why:** The project had 94 modes covering fractals, fluids, particles, and cellular
+automata but lacked a classic reaction-diffusion system — one of the most visually
+striking simulations in computational science. The Gray-Scott model fills this gap with
+minimal code by producing an enormous variety of organic patterns from just two parameters.
+
 ### Added: Screensaver / Demo Reel mode — auto-cycling showcase of all simulation modes
 
 Turns 91 simulation modes into a single cinematic experience you can launch and walk

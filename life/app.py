@@ -6401,6 +6401,37 @@ class App:
     # ══════════════════════════════════════════════════════════════════════
 
     # Tile characters for rendering collapsed cells
+    # ── Reaction-Diffusion (Gray-Scott) Texture Generator ──────────────────
+    # Two chemicals U, V on a continuous grid.
+    # dU/dt = Du*∇²U - U*V² + f*(1-U)
+    # dV/dt = Dv*∇²V + U*V² - (f+k)*V
+    # Small parameter changes produce dramatically different self-organizing patterns.
+
+    RD_PRESETS = [
+        # (name, description, feed_rate, kill_rate)
+        # ── Classic patterns ──
+        ("Coral Growth",    "Branching coral-like tendrils that fill space",    0.0545, 0.062),
+        ("Mitosis",         "Self-replicating spots that divide like cells",    0.0367, 0.0649),
+        ("Fingerprints",    "Labyrinthine stripes like fingerprint whorls",     0.025,  0.060),
+        ("Spots (α)",       "Circular spots that tile the plane",              0.035,  0.065),
+        ("Worms",           "Moving worm-like solitons",                       0.078,  0.061),
+        # ── Exotic patterns ──
+        ("Spirals",         "Rotating spiral waves and vortices",              0.014,  0.054),
+        ("Maze",            "Dense maze-like labyrinth pattern",               0.029,  0.057),
+        ("Chaos",           "Turbulent chaotic mixing regime",                 0.026,  0.051),
+        ("Pulsing Spots",   "Spots that breathe and oscillate in place",       0.025,  0.062),
+        ("Negatons",        "Moving dark spots in a bright field",             0.046,  0.063),
+        # ── Biological analogues ──
+        ("Cell Division",   "Blobs that grow, pinch, and divide",             0.0378, 0.0649),
+        ("Bacteria",        "Dense colony growth with fractal edges",          0.035,  0.057),
+        ("Lichen",          "Slow-growing crusty lichen-like patches",         0.039,  0.065),
+        ("Bubbles",         "Hollow ring-shaped bubble structures",            0.012,  0.052),
+        ("Ripples",         "Expanding concentric wave rings",                 0.018,  0.051),
+    ]
+
+    # Unicode density glyphs for V concentration rendering
+    RD_DENSITY = ["  ", "░░", "▒▒", "▓▓", "██"]
+
     WFC_TILE_CHARS = [
         ("░░", 2),   # 0: grass/ground  (green)
         ("██", 4),   # 1: water          (blue)
