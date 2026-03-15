@@ -166,6 +166,8 @@ def register_all_modes(App):
     reg_sortvis(App)
     from life.modes.prisoners_dilemma import register as reg_spd
     reg_spd(App)
+    from life.modes.stock_market import register as reg_mkt
+    reg_mkt(App)
     from life.modes.sph_fluid import register as reg_sph
     reg_sph(App)
     from life.modes.tectonic import register as reg_tectonic

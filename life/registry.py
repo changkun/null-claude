@@ -106,6 +106,8 @@ MODE_REGISTRY = [
      "desc": "Neighborhood preference-driven segregation", "attr": "schelling_mode", "enter": "_enter_schelling_mode", "exit": "_exit_schelling_mode"},
     {"name": "Rock-Paper-Scissors", "key": "&", "category": "Game Theory & Social",
      "desc": "Cyclic dominance spatial competition", "attr": "rps_mode", "enter": "_enter_rps_mode", "exit": "_exit_rps_mode"},
+    {"name": "Stock Market", "key": "S", "category": "Game Theory & Social",
+     "desc": "Agent-based market with emergent bubbles & crashes", "attr": "mkt_mode", "enter": "_enter_mkt_mode", "exit": "_exit_mkt_mode"},
     # ── Fractals & Chaos ──
     {"name": "Abelian Sandpile", "key": "P", "category": "Fractals & Chaos",
      "desc": "Self-organized criticality with toppling", "attr": "sandpile_mode", "enter": "_enter_sandpile_mode", "exit": "_exit_sandpile_mode"},

@@ -4,6 +4,49 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Agent-Based Stock Market — Emergent Bubbles, Crashes & Price Discovery
+
+Simulates a financial market populated by heterogeneous trader agents competing on a
+limit order book. Fundamentalists trade toward fair value, chartists chase momentum,
+noise traders act on herd sentiment, and market makers provide two-sided liquidity.
+Price dynamics — bubbles, crashes, flash crashes, and mean-reversion — emerge naturally
+from agent interactions rather than being scripted. This fills out the Game Theory & Social
+category (previously the thinnest with only 3 modes) with something visually rich and
+dynamically fascinating: complex market phenomena arising from simple agent rules.
+
+**New file:** `life/modes/stock_market.py` (~950 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Agent types | 4 types: fundamentalists (value investors), chartists (trend followers), noise traders (herd-driven random), market makers (two-sided liquidity) |
+| Limit order book | Bid/ask order matching each tick — agents submit limit orders based on their strategy |
+| Price discovery | Last trade price from order book matching; random walk on fundamental value provides a moving anchor |
+| Sentiment dynamics | Per-agent sentiment updated by strategy logic; global sentiment averaged across all agents influences herd behavior |
+| Momentum tracking | Chartists compute recent returns over a lookback window to detect trends |
+| OHLCV candles | Ticks aggregated into open/high/low/close/volume candles for charting |
+| Wealth tracking | Per-agent cash + shares × price; wealth history recorded for visualization |
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Bull Run | Strong fundamentalist demand drives steady uptrend |
+| Flash Crash | Chartist feedback loop triggers sudden collapse |
+| Bubble & Pop | Herd mania inflates a bubble that eventually bursts |
+| Efficient Market | Fundamentalists dominate — price tracks fair value |
+| Herd Mania | Noise traders amplify sentiment waves |
+| Market Maker Dominance | Market makers provide liquidity and stabilize spreads |
+
+**4 view modes:** price chart (ASCII candlesticks with wicks, bodies, fundamental value line, and sparkline), order book depth (side-by-side bid/ask bar chart with spread display), agent wealth heatmap (grid of agents colored by type with intensity by wealth), sentiment map (agent sentiment visualization with bullish/bearish histogram).
+
+**Controls:** `Space` play/pause, `n` step, `v` cycle views, `+`/`-` steps per frame,
+`<`/`>` speed, `r` reset, `R` preset menu, `q` quit. Accessible via `S` from the main
+menu under "Game Theory & Social."
+
+---
+
 ### Added: Immune System Simulation — Adaptive Immune Response with Pathogen Arms Race
 
 Simulates a 2D spatial immune response: pathogens (bacteria/viruses) invade and replicate

@@ -887,6 +887,34 @@ class App:
         self.spd_scores: list[list[float]] = []
         self.spd_steps_per_frame = 1
         self.spd_preset_name = ""
+
+        # ── Agent-Based Stock Market state ──
+        self.mkt_mode = False
+        self.mkt_menu = False
+        self.mkt_menu_sel = 0
+        self.mkt_running = False
+        self.mkt_generation = 0
+        self.mkt_agents = []
+        self.mkt_price = 100.0
+        self.mkt_price_history = []
+        self.mkt_open_prices = []
+        self.mkt_high_prices = []
+        self.mkt_low_prices = []
+        self.mkt_close_prices = []
+        self.mkt_volumes = []
+        self.mkt_bids = []
+        self.mkt_asks = []
+        self.mkt_fundamental_value = 100.0
+        self.mkt_volatility = 0.02
+        self.mkt_trend_strength = 0.5
+        self.mkt_herd_factor = 0.3
+        self.mkt_tick_volume = 0
+        self.mkt_candle_ticks = 5
+        self.mkt_global_sentiment = 0.0
+        self.mkt_view_idx = 0
+        self.mkt_view = "price"
+        self.mkt_steps_per_frame = 1
+        self.mkt_preset_name = ""
         self.spd_temptation = 1.5        # T: temptation to defect
         self.spd_reward = 1.0            # R: reward for mutual cooperation
         self.spd_punishment = 0.0        # P: punishment for mutual defection
@@ -2612,7 +2640,7 @@ class App:
             'nbody_menu', 'fluid_menu', 'wfc_menu', 'aco_menu', 'maze_menu',
             'dla_menu', 'sandpile_menu', 'fire_menu', 'sir_menu',
             'cyclic_menu', 'ising_menu', 'hodge_menu', 'lv_menu',
-            'schelling_menu', 'spd_menu', 'lightning_menu', 'erosion_menu',
+            'schelling_menu', 'spd_menu', 'mkt_menu', 'lightning_menu', 'erosion_menu',
             'voronoi_menu', 'rps_menu', 'wave_menu', 'kuramoto_menu',
             'bz_menu', 'chemo_menu', 'mhd_menu', 'attractor_menu',
             'qwalk_menu', 'terrain_menu', 'smokefire_menu', 'cloth_menu',
@@ -3958,6 +3986,17 @@ class App:
                         for _ in range(self.spd_steps_per_frame):
                             self._spd_step()
                     continue
+            elif self.mkt_menu:
+                if self._handle_mkt_menu_key(key):
+                    continue
+            elif self.mkt_mode:
+                if self._handle_mkt_key(key):
+                    if self.mkt_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        for _ in range(self.mkt_steps_per_frame):
+                            self._mkt_step()
+                    continue
             elif self.turmite_menu:
                 if self._handle_turmite_menu_key(key):
                     continue
@@ -4942,6 +4981,12 @@ class App:
                 self._exit_spd_mode()
             else:
                 self._enter_spd_mode()
+            return True
+        if key == ord("S"):
+            if self.mkt_mode:
+                self._exit_mkt_mode()
+            else:
+                self._enter_mkt_mode()
             return True
         if key == ord("Q"):
             if self.turmite_mode:
@@ -6361,6 +6406,16 @@ class App:
 
         if self.spd_mode:
             self._draw_spd(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.mkt_menu:
+            self._draw_mkt_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.mkt_mode:
+            self._draw_mkt(max_y, max_x)
             self.stdscr.refresh()
             return
 
