@@ -6,7 +6,9 @@ All notable changes to this project are documented in this file.
 
 ### Infrastructure: Ralph Task Logs (All Remaining Rounds)
 
-Added all remaining .ralph/round* orchestration logs capturing the complete AI build session history.
+Added the four remaining `.ralph/round-364/365` thinker/worker JSON files to complete the session record. These logs capture the final two thinker proposals of the run — the Procedural Music / Generative Soundscape sonification rewrite (round 364) and the Electric Circuit Simulator (round 365) — along with their corresponding worker execution summaries. No simulation code was modified; this commit is purely a housekeeping flush of leftover orchestration artifacts.
+
+**Files added:** `.ralph/round-364-thinker.json`, `.ralph/round-364-worker.json`, `.ralph/round-365-thinker.json`, `.ralph/round-365-worker.json`
 
 ---
 
@@ -2374,467 +2376,2602 @@ A CERN-inspired particle physics simulation — beams orbit an elliptical accele
 
 **Category:** Physics & Math (~550 lines added to life.py)
 
-### Added: ASCII Aquarium / Fish Tank (Ctrl+Shift+Y)
+### Added: ASCII Aquarium / Fish Tank — Zen-mode fish tank with 8 species, seaweed, bubbles, and caustic lighting
 
-A relaxing, screensaver-style "zen mode" — the project's first purely ambient simulation.
+Continuous ambient simulation: 8 species-typed fish (Minnow `><>`, Guppy `><°>`, Tetra `><((·>`, Angelfish `></\>`, Clownfish `><(((°>`, Pufferfish `><(°O°)>`, Swordfish `><=====<`, Whale `><((((((((°>`) with left/right sprites, sinusoidal bobbing, and periodic depth changes. Fish redirect toward food when within 15 columns. Tap-glass event doubles speed and reverses direction briefly. Seaweed sways with per-column `sin(t×speed + phase + seg×0.5)`. Bubbles rise with sinusoidal wobble through `[. o O ° ⊙]` ramp. Caustic light overlay from `sin×cos` product threshold. Surface ripples via `sin` threshold switching `~`/`≈`.
 
-**What it does:**
-- 8 fish species with unique ASCII sprites (Minnow, Guppy, Tetra, Angelfish, Clownfish, Pufferfish, Swordfish, Whale), each with distinct size, speed, and directional art
-- 4 presets: Tropical Reef, Deep Ocean, Koi Pond, Goldfish Bowl
-- Procedural environment: swaying seaweed, rising bubble streams, surface light ripples, caustic light patterns, sandy bottom with height variation
-- Interactive: feed fish (`f`), tap glass to startle (`t`), add/remove fish (`a`/`d`), add bubble streams (`b`), adjust speed (`+`/`-`), toggle info (`i`), pause (`Space`)
+**Changed file:** `life.py` (+~560 lines)
 
-**Why:** The project had 60+ modes covering physics, biology, fractals, and chaos — but nothing purely ambient or meditative. This fills the "zen mode" gap.
+**8 fish species:**
 
-**Category:** Audio & Visual (~560 lines added to life.py)
+| Species | Sprite | Speed | Size |
+|---------|--------|-------|------|
+| Minnow | `><>` | 0.8–1.5 | tiny |
+| Guppy | `><°>` | 0.6–1.2 | small |
+| Tetra | `><((·>` | 0.7–1.3 | small |
+| Angelfish | `></\>` | 0.3–0.7 | medium |
+| Clownfish | `><(((°>` | 0.5–1.0 | medium |
+| Pufferfish | `><(°O°)>` | 0.2–0.5 | medium |
+| Swordfish | `><=====<` | 1.0–2.0 | large |
+| Whale | `><((((((((°>` | 0.1–0.3 | large |
 
-### Added: Kaleidoscope / Symmetry Pattern Generator
+**4 presets:** Tropical Reef (species 0–5, 10–16 fish), Deep Ocean (species 5–7, 5–8 fish), Koi Pond (species 3–4, 6–10 fish), Goldfish Bowl (species 1–2, 4–7 fish)
 
-Mesmerizing kaleidoscopic patterns with configurable N-fold symmetry (4, 6, 8, 12). Features 8 presets (Snowflake, Mandala, Diamond, Star Burst, Flower, Vortex, Hypnotic, Paint Mode), 7 seed animation styles, 6 color palettes with continuous cycling, and an interactive paint mode with cursor-based drawing mirrored across all symmetry axes.
+**Interactive controls:** `Space` (pause), `f`/`F` (feed fish 3–7 pellets), `t`/`T` (tap glass to startle), `a`/`A` (add fish), `d`/`D` (remove fish), `b`/`B` (add bubble stream), `+`/`-` (speed), `i`/`I` (info overlay), `R` (preset menu), `q`/`Esc` (exit)
 
-### Added: Ant Farm Simulation
+### Added: Kaleidoscope / Symmetry Pattern Generator — N-fold rotation+reflection symmetry with 7 animated seed styles
 
-Side-view ant colony simulation with underground cross-section rendering. Ants exhibit 4 behavioral states (explore, forage, return_food, dig) with dual pheromone trail systems for emergent navigation. Features colony growth mechanics (queen produces new ants per food delivered), soil layers (dirt/clay/rock), 5 presets, and interactive food/rain/rock placement.
+Generates animated symmetry patterns by computing seed geometry in a canonical half-sector and reflecting across all N axes. `_kaleido_plot_symmetric` converts Cartesian to polar, adds N rotational increments + mirror reflections for true kaleidoscopic symmetry. 7 seed styles: crystal (oscillating radial lines), wave (sinusoidal scan), line (rotating spoke), burst (pulsing ring), petal (rose curve), spiral (Archimedean arm), ring (concentric pulsing circles). Canvas cells store (intensity, color_index); fade pass −0.04/step creates temporal trails. Paint Mode: manual cursor-based drawing mirrored across all axes.
 
-### Added: Matrix Digital Rain
+**Changed file:** `life.py` (+~450 lines)
 
-The iconic falling-character rain effect from The Matrix. Features per-column independent streams with variable speed, length, and character mutation for the flickering effect. Includes 6 presets (Classic Green, Dense Downpour, Sparse Drizzle, Katakana Only, Binary Rain, Rainbow), 4-level brightness gradient, and 3 color modes.
+**8 presets:**
 
-### Added: Maze Solving Algorithm Visualizer
+| Preset | Symmetry | Seed | Palette |
+|--------|----------|------|---------|
+| Snowflake | 6-fold | crystal | Ice |
+| Mandala | 8-fold | wave | Jewel Tones |
+| Diamond | 4-fold | line | Jewel Tones |
+| Star Burst | 12-fold | burst | Neon |
+| Flower | 6-fold | petal | Forest |
+| Vortex | 8-fold | spiral | Fire |
+| Hypnotic | 4-fold | ring | Monochrome |
+| Paint Mode | 6-fold | manual | Jewel Tones |
 
-Interactive maze solver with real-time pathfinding visualization. Implements 4 algorithms (BFS, DFS, A*, Wall Follower) across 3 maze sizes with color-coded exploration states. Uses recursive backtracker for maze generation with 10 presets and step-by-step playback controls.
+**Interactive controls:** `Space` (pause), `s` (cycle symmetry: 4→6→8→12), `c` (cycle palette), `f` (toggle fade), `p` (toggle paint mode), `b` (cycle brush size), arrows (paint cursor), `r` (reset), `+`/`-` (speed), `i` (info), `Esc` (preset menu)
 
-### Added: Lissajous Curve / Harmonograph
+### Added: Ant Farm Simulation — Side-view colony with 4-state FSM, dual pheromone trails, and colony growth
 
-Parametric curve drawing with intensity-accumulating ASCII canvas. Includes 8 presets (Classic 3:2, Figure Eight, Star, Harmonograph, Rose Curve, Decay Spiral, Knot), full harmonograph physics with optional 3rd/4th oscillators, damping, and interpolated line rendering.
+Side-view underground cross-section with sky, surface, and stratified soil (dirt/clay/rock). Queen chamber near surface with direct access tunnel. Each ant: 4-state finite machine (explore → forage → return_food → dig). Explore: weighted random walk boosted by food-pheromone (×5); digs dirt (8%) or clay (2% × dig_strength). Forage: surface walk + food pickup. Return: follows home-pheromone gradient + inverse Manhattan distance to queen. Colony growth: 1 new ant per 5 food deliveries (cap 60). Both pheromone grids decay 0.995/tick.
 
-### Added: Fluid Rope / Honey Coiling
+**Changed file:** `life.py` (+~500 lines)
 
-Viscous fluid rope dynamics with realistic coiling physics. Gravity-accelerated falling rope segments form rotating coils at the surface with viscous pool accumulation and spreading/diffusion. Includes 4 presets (Honey, Chocolate, Shampoo, Lava) with age-based visual fading.
+**5 presets:**
 
-### Added: Snowfall & Blizzard
+| Preset | Soil profile | Starting ants | Special |
+|--------|-------------|---------------|---------|
+| Classic Colony | Standard stratified | 15 | Baseline |
+| Deep Burrow | Rock below 60% depth | 20 | Deep tunnel routing |
+| Sandy Soil | Normal, dig_strength=2 | 12 | Fast digging |
+| Rocky Terrain | 12% + depth-scaled rock | 12 | Obstacle avoidance |
+| Rainy Day | Standard | 15 | Rain active at start |
 
-Realistic snow particle physics with size-dependent fall speed and sinusoidal wind gusts. Features per-column snow accumulation using Unicode block characters, wind-driven drifting, temperature effects on flake size, and visibility/fog effects. 6 presets from Gentle Snowfall to Arctic Whiteout.
+**Interactive controls:** `Space` (pause), `n` (step), `f` (drop food at cursor), `w` (toggle rain), `o` (place rock), `+`/`-` (speed), `r` (reset), `R`/`m` (preset menu), `i` (info), `Esc` (exit)
 
-### Added: Fourier Epicycle Drawing
+### Added: Matrix Digital Rain — Independent column streams with character mutation and 4-level brightness
 
-Discrete Fourier Transform engine computes coefficients from path points, then plays back the approximation as a chain of spinning epicycles tracing the original shape. Features 7 presets (Free Draw, Circle, Square, Star, Figure Eight, Heart, Spiral Square) with a free-draw mode for arbitrary shapes.
+Iconic falling-character rain: each column hosts multiple independent streams with own fall speed (0.3–1.5), length (4–rows/2), character array, and mutation rate (random char replacement per tick). 4 brightness tiers: head (white/bold), near-head (bright), mid (normal), tail (dim). New streams spawned at `density × 0.02` per column per step. 3 color modes: green, blue/cyan, rainbow (column-offset cycling). Character pools: katakana, digits, ASCII, symbols, or `01` for Binary Rain.
 
-### Added: DNA Helix & Genetic Algorithm
+**Changed file:** `life.py` (+~350 lines)
 
-Combines a rotating 3D ASCII double helix visualization with a live genetic algorithm engine. 6 presets (Classic Binary GA, OneMax Challenge, Long Strand, etc.) with tournament selection, crossover, mutation, and elitism. The helix renders depth-based strands with color-coded base pair connections.
+**6 presets:**
 
-### Added: Sorting Algorithm Visualizer
+| Preset | Density | Char pool | Color | Character |
+|--------|---------|-----------|-------|-----------|
+| Classic Green | 0.40 | Katakana+digits+latin+symbols | green | Standard rain |
+| Dense Downpour | 0.75 | Full pool | green | Heavy rainfall |
+| Sparse Drizzle | 0.15 | Katakana+digits+latin | green | Light drops |
+| Katakana Only | 0.40 | Katakana | green | Japanese chars |
+| Binary Rain | 0.50 | `01` | green | Binary code |
+| Rainbow | 0.40 | Full pool | rainbow | Color-cycling |
 
-Interactive sorting algorithm visualizer with animated bar charts and step-by-step replay. Implements 6 algorithms (Bubble Sort, Quick Sort, Merge Sort, Heap Sort, Radix Sort, Shell Sort) with color-coded highlights showing sorted elements, swaps, and comparisons in real time.
+**Interactive controls:** `Space` (pause), `n` (step), `d`/`D` (density ±0.05), `c` (cycle color mode), `+`/`-` or `s`/`S` (speed), `r` (reset), `R`/`m` (preset menu), `i` (info), `q`/`Esc` (exit)
 
-### Added: Tornado & Supercell Storm
+### Added: Maze Solving Algorithm Visualizer — 4 pathfinding algorithms with step-by-step exploration animation
 
-Full tornado and supercell storm simulation with vortex physics, funnel cloud rendering, rain curtains, debris system, branching lightning, mesocyclone rotation, and destruction path tracking. 6 presets from EF3 Wedge to Dust Devil.
+Generates perfect mazes via recursive backtracker DFS, then runs one of 4 pathfinding algorithms step by step. BFS (FIFO wavefront, shortest path), DFS (LIFO deep dive), A* (min-heap with Manhattan heuristic), Wall Follower (right-hand rule). Odd-dimensioned grid (wall/passage encoding). Path reconstruction via parent-map traceback. 3 sizes (small ≤21, medium ≤41, large = full terminal). 10 presets spanning all algorithm/size combinations.
 
-### Added: Pendulum Wave
+**Changed file:** `life.py` (+~400 lines)
 
-Physically accurate pendulum wave simulation with exact simple harmonic motion. Pendulum lengths are calculated so each completes a different number of oscillations in a realignment period, creating mesmerizing wave patterns. 6 presets from Classic Wave (15 pendulums) to Grand Ensemble (32).
+**10 presets:** BFS Small/Medium/Large, DFS Small/Large, A* Small/Medium/Large, Wall Follower Small/Medium
 
-### Added: Aurora Borealis (Northern Lights)
+**Interactive controls:** `Space` (pause), `n` (step × speed), `s`/`S` (steps/frame 1–30), `r` (regenerate same preset), `R` (preset menu), `q`/`Esc` (exit)
 
-Physics-based aurora rendering with multiple altitude bands showing correct gas emissions (O→green/red, N₂→purple/blue). Features curtain wave dynamics, solar wind particles curving along magnetic field lines, pulsation cycles, and intensity fluctuations. 4 presets from Quiet Arc to Coronal Mass Ejection.
+### Added: Lissajous Curve / Harmonograph — Parametric oscillator curves with intensity-accumulating canvas
 
-### Added: Solar System Orrery
+Traces parametric curves from coupled oscillators: `x = A·exp(−d·t)·sin(fa·t + φ)`, `y = A·exp(−d·t)·sin(fb·t)`. Lateral Harmonograph mode adds 3rd/4th oscillators with independent frequencies for compound figures. Persistent canvas dictionary accretes intensity per hit (+0.15, cap 1.0) with interpolation points (+0.10), producing natural brightness buildup at intersections. 9-level character ramp (`` `.·:;+*#@` ``). Damping causes spiral collapse.
 
-Accurate Keplerian orbital mechanics for all 8 planets with real semi-major axes, eccentricities, and periods. Features Kepler's equation solver (Newton-Raphson), elliptical orbit paths, asteroid belt (~120 bodies), comets with tails, 6 presets, and interactive zoom/label/info controls.
+**Changed file:** `life.py` (+~380 lines)
 
-### Added: Black Hole Accretion Disk
+**8 presets:**
 
-Relativistic black hole dynamics with Keplerian accretion disk, Lense-Thirring frame dragging, relativistic precession, viscous angular momentum transport, gravitational lensing with Einstein ring deflection, relativistic jets, and Hawking radiation. 6 presets from Stellar to Binary Merger.
+| Preset | fa | fb | Phase | Damping | Character |
+|--------|----|----|-------|---------|-----------|
+| Classic 3:2 | 3.0 | 2.0 | π/4 | 0 | Clean closed Lissajous |
+| Figure Eight | 2.0 | 1.0 | π/2 | 0 | Classic ∞ shape |
+| Star | 5.0 | 4.0 | π/4 | 0 | Five-pointed star |
+| Harmonograph | 2.01 | 3.0 | π/6 | 0.003 | Slow spiral decay |
+| Lateral Harmonograph | 2.0 | 3.0 | π/4 | 0.002 | Four-oscillator compound |
+| Rose Curve | 7.0 | 4.0 | 0 | 0 | Petal geometry |
+| Decay Spiral | 10.0 | 9.0 | π/3 | 0.008 | Rapid high-freq collapse |
+| Knot | 5.0 | 3.0 | π/7 | 0.001 | Dense overlapping knot |
 
-### Added: Volcanic Eruption & Lava Flow
+**Interactive controls:** `Space` (pause), `n` (step), `a`/`A` (freq A ±0.1), `b`/`B` (freq B ±0.1), `p`/`P` (phase ±0.1), `d`/`D` (damping ±0.001), `c` (clear + restart), `+`/`-` (speed), `r` (reset), `R`/`m` (preset menu), `i` (info), `q` (exit)
 
-Full volcanic simulation with magma chamber pressure dynamics, gravity-driven lava flow with temperature-dependent viscosity, cooling/solidification, pyroclastic density currents, wind-advected ash dispersion, volcanic gas diffusion, and ballistic ejecta. 6 presets from Strombolian to Fissure Eruption.
+### Added: Fluid Rope / Honey Coiling — Liquid rope coiling instability with viscous pool accumulation
 
-### Added: Ocean Currents & Thermohaline Circulation
+Models the spiral buckling when a viscous stream falls onto a surface. Segmented falling stream interpolated between pour axis and coil landing point. Coil angle advances at fluid-specific angular speed; landing traces a circle of `coil_radius`. Pool accumulates at landing with Gaussian spread; viscous diffusion (`spread_rate = 0.02 / viscosity`) flattens it. Trail of 80 recent landing positions draws the coil pattern. Sinusoidal wobble along stream suggests weight-induced flex.
 
-Ocean simulation with temperature/salinity fields, simplified UNESCO equation of state, gyre circulation with Coriolis deflection, deep water formation, upwelling, semi-Lagrangian advection, density-driven baroclinic currents, and plankton bloom dynamics with nutrient cycling. 6 presets including Gulf Stream, El Niño, and Thermohaline Conveyor.
+**Changed file:** `life.py` (+~350 lines)
 
-### Added: Atmospheric Weather System
+**4 presets:**
 
-Full weather system with pressure-driven wind, Coriolis deflection, semi-Lagrangian advection, frontal dynamics, cloud formation, and precipitation (rain vs snow by temperature). Features drifting pressure centers, frontal boundaries, and 5 visualization layers. 6 presets from Tropical Cyclone to Arctic Outbreak.
+| Preset | Viscosity | Flow rate | Coil speed | Character |
+|--------|-----------|-----------|-----------|-----------|
+| Honey | 1.0 | 1.0 | 2.5 rad/s | Slow, thick coils |
+| Chocolate | 0.7 | 1.3 | 3.5 rad/s | Moderate viscosity |
+| Shampoo | 0.5 | 1.5 | 5.0 rad/s | Fast thin coils |
+| Lava | 2.0 | 0.6 | 1.2 rad/s | Very slow, wide coils |
 
-### Added: Tectonic Plate Simulation
+**Interactive controls:** `Space` (pause), `n` (step), `h`/`H` (pour height ±0.05), `f`/`F` (flow rate ±0.1), `v`/`V` (viscosity ±0.1), `s`/`S` (surface drift ±0.5), `+`/`-` (speed), `r` (reset), `R`/`m` (preset menu), `i` (info), `q` (exit)
 
-Voronoi-based plate generation with fractional sub-cell velocity movement and realistic boundary physics: convergent (mountain building, subduction), divergent (rifting, mid-ocean ridges), and transform interactions. Includes volcanic hotspots, erosion, isostatic rebound, and 17-level topographic rendering.
+### Added: Snowfall & Blizzard — Size-dependent particles with dual-frequency wind gusts and accumulation physics
 
-### Added: Doom-style First-Person Raycaster
+Each snowflake carries size class (small/medium/large), wobble phase, and velocity responding to a composite wind field from two superimposed sine waves. Larger flakes fall faster. Per-column accumulation tracked as continuous height → Unicode block characters (`▁▂▃▄▅▆▇█`). Wind above threshold shear-transfers snow between columns and launches surface drift particles. Visibility degrades progressively for blizzard/whiteout presets. Three character sets by size class: small (`·.,:;'`), medium (`°∘○◦*+~`), large (`❄❅❆✻✼◎`).
 
-Column-by-column ASCII raycaster with fisheye correction, distance-based wall shading, floor gradient, and minimap overlay. Includes 6 map presets (Dungeon, Office, Outdoor Ruins, Arena, Maze, Fortress) with WASD movement, collision detection, and wall sliding.
+**Changed file:** `life.py` (+~400 lines)
 
-### Added: Artificial Life Ecosystem
+**6 presets:**
 
-Digital terrarium of autonomous creatures with simple neural-network brains (6→4→2 architecture) driving emergent foraging, fleeing, and hunting behaviors. Three creature types (herbivores, predators, omnivores) with evolvable traits (speed, size, sense radius, diet, brain weights) that mutate on reproduction.
+| Preset | Density | Wind | Temp | Visibility |
+|--------|---------|------|------|-----------|
+| Gentle Snowfall | 80 | 0.3 | −3°C | 1.00 |
+| Steady Winter Storm | 180 | 1.2 | −8°C | 0.75 |
+| Heavy Blizzard | 400 | 3.5 | −15°C | 0.35 |
+| Arctic Whiteout | 600 | 5.0 | −25°C | 0.15 |
+| Wet Spring Snow | 120 | 0.5 | +1°C | 0.85 |
+| Mountain Squall | 350 | 2.5 | −10°C | 0.45 |
 
-### Added: Music Visualizer
+**Interactive controls:** `Space` (pause), `n` (step), `w`/`W` (wind ±0.3), `d` (flip wind direction), `f`/`F` (density ±40), `t`/`T` (temperature ±1°C), `+`/`-` (speed), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-Audio visualization mode with spectrum bars, waveform scope, beat particles, combined view, bass tunnel, and frequency rain. Features synthetic audio engine with pentatonic tone generation, simulated FFT spectrum analysis, beat detection, and a reactive particle system.
+### Added: Fourier Epicycle Drawing — DFT decomposition of closed paths into spinning circular harmonics
 
-### Added: Shader Toy
+Complete DFT pipeline converting closed 2D paths into rotating epicycles. Coefficients (amplitude, phase per frequency k) sorted by amplitude descending so largest circles drawn first. Playback: `dt = 2π/N` per step, tip = Σ `amp_k × exp(i(k×t + phase_k))`. Active circle count adjustable live — reducing shows how higher harmonics add sharp features. Free-draw mode: cursor-based path input, DFT on Enter. 6 built-in shapes at 128 sample points. Heart uses cardioid formula `x = 16sin³(t)`.
 
-Real-time shader engine evaluating per-pixel math functions rendered as ASCII characters with color. Includes 10 shader presets (Plasma Waves, Tunnel Zoom, Metaballs, Moiré Rings, Fractal Flame, Warp Grid, Lava Lamp, Matrix Rain, Kaleidoscope, Spiral Galaxy), 4 color palettes, and live parameter tweaking.
+**Changed file:** `life.py` (+~400 lines)
 
-### Added: 3D Game of Life
+**7 presets:** Free Draw (cursor input → DFT), Circle (1 coefficient), Square (many harmonics for corners), Star (alternating radii), Figure Eight (lemniscate), Heart (classical cardioid), Spiral Square (polar curve)
 
-Full 3D cellular automaton on a 20³ voxel grid with 26-neighbor Moore neighborhood rules. Features volumetric ASCII ray casting with orbital camera, diffuse lighting, depth fog, ambient occlusion, and position-based coloring. 8 presets with different birth/survival rules.
+**Interactive controls:** `Space` (play/pause), `n` (step), `+`/`-` (speed), `[`/`]` (remove/add epicycle frequency), `c` (toggle circle display), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit); free-draw: arrows (move cursor), `d` (toggle pen), `x` (clear), `Enter` (compute DFT + play)
 
-### Added: SDF Ray Marching 3D Renderer
+### Added: DNA Helix & Genetic Algorithm — Rotating 3D ASCII helix synchronized with live GA convergence
 
-Signed distance field ray marching renderer with 6 scene presets (sphere, torus, multi-shape, Mandelbulb fractal, infinite repeating spheres, smooth-blended spheres). Features orbital camera, Blinn-Phong lighting with soft shadows, and ASCII shading using an 11-character density ramp.
+Pairs a continuously animated 3D ASCII double-helix (sinusoidal strands, depth-based `●`/`○`, A/T/C/G base-pair bridges) with a live genetic algorithm. Helix rotation advances 0.15 rad per GA generation. GA: tournament selection (k=3), single-point crossover, bit-flip mutation, deterministic elitism. Two fitness modes: Hamming-distance matching and Royal Road (complete 8-bit schema blocks). Stats panel with sparkline fitness history + genome comparison.
 
-### Added: 3D Terrain Flythrough
+**Changed file:** `life.py` (+~450 lines)
 
-True 3D perspective projection with raycasting-based terrain rendering. Includes 6 procedural terrain presets (Rolling Hills, Mountain Range, Desert Canyon, Volcanic Islands, Glacial Valley, Alien World), full day/night cycle with sky rendering, altitude-based coloring, and distance fog.
+**6 presets:**
 
-### Added: Real-Time Minimap Overlay
+| Preset | Genome | Pop | Mutation | Fitness |
+|--------|--------|-----|---------|---------|
+| Classic Binary GA | 32 | 40 | 2% | Hamming vs random target |
+| OneMax Challenge | 64 | 50 | 1.5% | Maximize 1-bits |
+| Long Strand | 128 | 60 | 0.5% | Slow convergence |
+| Hyper-Mutation | 32 | 40 | 10% | Chaotic exploration |
+| Minimal Pop | 48 | 10 | 3% | Strong genetic drift |
+| Royal Road | 64 | 50 | 2% | Schema-block staircase |
 
-Toggleable minimap (Tab key) rendering a downscaled overview of the entire simulation grid in the top-right corner. Uses density-based glyphs with color coding, highlights the current viewport position when zoomed in, and works across all 65+ simulation modes via a universal data accessor.
+**Interactive controls:** `Space` (play/pause), `n` (step), `+`/`-` (steps/frame), `i` (toggle stats), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-### Added: Interactive Mode Browser
+### Added: Sorting Algorithm Visualizer — 6 algorithms with pre-computed step audit trails and animated bar charts
 
-Searchable, categorized mode browser UI for browsing and launching all 65 simulation modes. Features 10 categories, scrollable list with key bindings and descriptions, real-time search filtering, and clean mode transitions.
+Pre-computes a complete step-by-step audit trail for the chosen algorithm, then replays against a live animated bar chart. Step tuples carry full array snapshots and type tags (`cmp`, `swap`, `write`, `sorted`, `pivot`). Color coding: green (confirmed sorted), red (active swap), yellow (comparison), white (default). Array auto-scales to terminal width (up to 200 elements). Running comparison + swap/write counters.
 
-### Added: Smoothed Particle Hydrodynamics (SPH)
+**Changed file:** `life.py` (+~500 lines)
 
-Full SPH fluid simulation using Poly6 density kernel, Spiky pressure gradient, and viscosity Laplacian kernel with symplectic Euler integration. 6 presets (Dam Break, Double Dam, Dropping Block, Rain, Wave Tank, Fountain) with 3 visualization modes (density, velocity, pressure).
+**6 algorithms:**
 
-### Added: FDTD Electromagnetic Wave Propagation
+| Algorithm | Complexity | Strategy |
+|-----------|-----------|----------|
+| Bubble Sort | O(n²) | Adjacent compare-and-swap |
+| Quicksort | O(n log n) avg | Lomuto partition with pivot marking |
+| Merge Sort | O(n log n) | Recursive top-down element-by-element merge |
+| Heap Sort | O(n log n) | Max-heap build then extract |
+| Radix Sort (LSD) | O(nk) | Counting sort per decimal digit |
+| Shell Sort | sub-O(n²) | Halving gap sequence insertion |
 
-2D TM-mode Finite-Difference Time-Domain electromagnetic wave simulator with Yee algorithm updates, PML absorbing boundaries, lossy media support, and dielectric materials. 10 presets from Point Source to Resonant Cavity.
+**Interactive controls:** `Space` (play/pause), `n` (step), `+`/`-` (step speed), `i` (info: comparisons, swaps, step index), `r` (re-shuffle same algorithm), `R`/`m` (algorithm menu), `q`/`Esc` (exit)
 
-### Added: Magnetic Field Lines
+### Added: Tornado & Supercell Storm — Layered vortex physics with rain, debris, lightning, and mesocyclone
 
-Charged particle dynamics simulation using the Boris push integrator for symplectic integration in electromagnetic fields. Features 4 field configurations (uniform, dipole, magnetic bottle, quadrupole), 3 visualization modes, and field line overlay showing B-field and E-field vectors.
+Six interconnected subsystems: tornado funnel (sinusoidal drift + wobble, pulsating radius), rain particles (200–500, inward spiral toward storm center), debris (tangential + radial + updraft forces, ∝ min(1, 2r/dist)), branching lightning (random-walk + 30% branch probability), mesocyclone cloud rotation, and destruction path (last 500 overrun cells). Funnel radius pulses via `base_r + 0.3×sin(t×1.5)`. Debris drag 0.97/step. Dust Devil preset: no rain, rotation speed 6.0.
 
-### Added: Cellular Potts Model (CPM)
+**Changed file:** `life.py` (+~640 lines)
 
-Full Cellular Potts Model with Metropolis-based energy minimization, adhesion and area constraints, and chemical diffusion for chemotaxis. 6 presets (Cell Sorting, Wound Healing, Tumor Growth, Checkerboard, Foam/Bubbles, Chemotaxis) with 3 visualization modes and incremental area caching.
+**6 presets:** EF3 Wedge (wide, heavy debris), Rope Tornado (thin, high wobble), Supercell Outbreak (largest storm radius), Rain-Wrapped (funnel hidden by 500 rain particles), Nighttime Storm (lightning-illuminated), Dust Devil (no rain, rapid rotation)
 
-### Added: Chaos Game / IFS Fractal
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (speed), `L` (force lightning), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-Interactive Chaos Game / Iterated Function System fractal renderer with 8 preset fractals (Sierpinski Triangle, Barnsley Fern, Vicsek Snowflake, Dragon Curve, Maple Leaf, Koch Snowflake, Crystal). Features weighted random affine transforms, adaptive auto-scaling, log-scale density rendering, and color-by-transform mode.
+### Added: Pendulum Wave — Analytically computed lengths for exact realignment with SHM integration
 
-### Added: Chladni Plate Vibration Patterns
+Pendulum lengths computed analytically: pendulum `i` completes `N_base + i` oscillations in realignment period `T`, requiring `L_i = g × (T / (2π × (N_base + i)))²`. Exact SHM solution `θ(t) = A·cos(ω·t)` — zero drift, no numerical integration. Renders horizontal support bar, Bresenham strings, colored bobs, fading motion trails, and bottom wave-curve indicator plotting instantaneous bob positions. Speed multiplier 1–10 steps per frame.
 
-Models 2D plate vibrations and Chladni figure formation — the patterns sand makes on a vibrating plate. Solves the biharmonic plate equation (∇⁴) using a 13-point stencil with damping and sinusoidal driving. 8 presets from simple (1,2) modes to complex (5,7) cathedral patterns with a Harmonic Sweep auto-cycle mode.
+**Changed file:** `life.py` (+~350 lines)
 
-### Added: Rayleigh-Bénard Convection
+**6 presets:**
 
-Simplified 2D Boussinesq approximation with temperature advection-diffusion, buoyancy-driven velocity, upwind advection, and Gauss-Seidel pressure projection. 8 presets from Classic Rolls to Solar Granulation with 3 visualization modes (temperature, velocity, vorticity).
+| Preset | Pendulums | Realign period | Character |
+|--------|-----------|---------------|-----------|
+| Classic Wave | 15 | 60 s | Elegant snake + convergence |
+| Dense Array | 24 | 60 s | Rich fine wave structure |
+| Wide Spread | 12 | 40 s | Dramatic phase shifts |
+| Quick Cycle | 15 | 20 s | Full pattern in seconds |
+| Slow Meditation | 18 | 120 s | Contemplative pace |
+| Grand Ensemble | 32 | 60 s | Maximum complexity |
 
-### Added: Double Pendulum Chaos
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (speed multiplier), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-Full double pendulum physics simulation with 4th-order Runge-Kutta integration. Features 8 presets covering different chaotic regimes, Bresenham line rendering with fading trajectory trails, and a dual pendulum comparison mode showing divergence from nearly identical initial conditions.
+### Added: Aurora Borealis (Northern Lights) — Altitude-stratified emission bands with curtain dynamics and solar wind
 
-### Added: Navier-Stokes Fluid Dynamics
+Physics-inspired rendering of Northern Lights with 4 altitude-stratified emission bands: high O (red), mid O (green), high N₂ (purple/magenta), low N₂ (blue/violet). Curtains as vertical shimmering bands with sinusoidal fold control points creating rippled-drape appearance. Solar wind particles (~60) fall with field-line curvature toward magnetic axis. Substorm breakup events trigger stochastic brightness spikes. Pulsating Aurora preset modulates brightness with per-curtain sine frequency. Magnetic field-line overlay toggle.
 
-Full incompressible fluid simulator with Gauss-Seidel diffusion solver, semi-Lagrangian advection, and pressure-Poisson projection for divergence-free velocity fields. 6 presets (Dye Playground, Vortex Pair, Jet Stream, Karman Vortices), 4 visualization modes, interactive dye/velocity injection, and obstacle placement.
+**Changed file:** `life.py` (+~450 lines)
 
-### Added: Mandelbrot/Julia Set Fractal Explorer
+**4 presets:** Quiet Arc (3 curtains, calm), Substorm Breakup (6 curtains, explosive + frequent spikes), Pulsating Aurora (5 curtains with pulse frequencies), Coronal Mass Ejection (8 curtains, maximum intensity)
 
-Interactive fractal visualization with real-time exploration of Mandelbrot and Julia sets. 10 presets covering Seahorse Valley, Elephant Valley, Mini-brot, and 5 Julia constants. Features pan/zoom navigation, iteration depth control (20-5000), 5 color schemes, and Julia constant tweaking.
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (intensity), `w`/`s` (wind strength), `f` (toggle field lines), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-### Added: Fireworks
+### Added: Solar System Orrery — Analytical Keplerian mechanics with asteroid belt and comets
 
-Interactive fireworks display with 4 burst patterns (spherical, ring, willow, crossette). Features gravity, wind drift, velocity drag, rocket fuse timing, 7-color particles with brightness fading, and trailing sparks. 6 presets from Grand Finale to Random Mix.
+Faithful overhead-view orrery using analytical Kepler equation solver: Newton-Raphson `M = E − e·sin(E)` (50 steps, tol 10⁻⁶), true anomaly via half-angle atan2, heliocentric distance from `r = a(1 − e·cos E)`. Real orbital parameters for all 8 planets. Asteroid belt: 120 bodies at 2.1–3.3 AU with Kepler third-law periods. Comets: high-eccentricity orbits (e = 0.85–0.97) with trailing tails. Three zoom levels (inner 2 AU, outer 35 AU, full). Aspect-ratio-corrected projection.
 
-### Added: L-System Plant Growth
+**Changed file:** `life.py` (+~500 lines)
 
-Procedural plant growth using L-system grammar rules with turtle-graphics interpretation into visual plant structures rendered with Unicode box-drawing characters. 7 presets (Binary Tree, Fern, Bush, Seaweed, Willow, Pine, Garden) with generation-by-generation growth and depth-based coloring.
+**6 presets:** Full Solar System (all 8 + asteroids + comets), Inner Planets (Mercury–Mars), Outer Planets (Jupiter–Neptune), Earth & Neighbors, Comet Flyby (long-period e=0.967), Grand Alignment (near conjunction start)
 
-### Infrastructure: Ralph Task Logs
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (time speed), `z` (cycle zoom), `o` (toggle orbits), `l` (toggle labels), `i` (info panel), `Tab` (cycle selected planet), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-Added ralph task logs for rounds 154-155, 156-162, 163-186 across multiple commits tracking the AI orchestration session that produced these simulation modes.
+### Added: Black Hole Accretion Disk — Relativistic dynamics with frame-dragging, gravitational lensing, and jets
 
-### Added: Galaxy Formation
+Particle-based relativistic astrophysics: Keplerian disk orbiting from ISCO outward, gravitational acceleration with relativistic correction `(1 + 3M/r²)`, Lense-Thirring frame-dragging ∝ `spin × M/r³`, viscous angular momentum transport. Accreted particles spawn bipolar jet particles. Hawking radiation particles near horizon (count ∝ 1/mass). Gravitational lensing of background star field with Einstein ring. Temperature-mapped ASCII coloring (blue→white→yellow→red). 5 visualization layers.
 
-Galaxy formation and dynamics simulation with NFW dark matter halo gravity, grid-based particle gravity, gas pressure/cooling forces, and leapfrog integration. 8 presets (Milky Way, Grand Design, Whirlpool, Elliptical, Dwarf Irregular, Galaxy Merger, Ring Galaxy, Barred Spiral) with 4 view modes.
+**Changed file:** `life.py` (+~550 lines)
 
-### Enhanced: Forest Fire — Ember/Ash Lifecycle
+**6 presets:** Stellar (mass 30, spin 0.3), Supermassive (mass 100, spin 0.6), Kerr Spinning (spin 0.95, maximum dragging), Quasar (mass 200, highest accretion), Micro Black Hole (mass 5, Hawking-dominant), Binary Merger (dual-center spiral)
 
-Added ember and ash states to create a richer fire lifecycle (tree → burning → ember → ash → empty → tree). Embers spread fire for more realistic cascading dynamics. Added density sparkline showing tree population history and 2 new presets (Critical Density, Slow Burn).
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (speed), `v` (cycle view layer), `h` (toggle event horizon), `p` (toggle photon ring), `i` (info), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
 
-### Added: Cloth Simulation
+### Added: Volcanic Eruption & Lava Flow — Multi-physics with magma chamber, pyroclastic currents, and ballistic ejecta
 
-Verlet integration physics engine with position-based dynamics, spring constraints, gravity, wind, damping, and tearable fabric. 6 presets (Hanging Cloth, Curtain, Flag, Hammock, Net, Silk Sheet) with interactive pinning/tearing and tension-based coloring.
+Full multi-physics volcanic simulator: magma chamber tracks pressure/recharge/volume/viscosity; eruption typed (Strombolian/Plinian/Hawaiian/Vulcanian) with different lava/ejecta ratios. Lava flows under gravity with temperature-dependent viscosity, cools and solidifies into permanent rock. Pyroclastic density currents hug terrain surface. Wind-advected ash + SO₂ gas diffuse across grid. Ballistic ejecta follow parabolic trajectories. Procedural terrain: radial cones, calderas, fissures. 6 visualization layers.
 
-### Added: Smoke & Fire Fluid Simulation
+**Changed file:** `life.py` (+~600 lines)
 
-Buoyancy-driven fire and smoke physics with combustion, fuel consumption, advection via bilinear velocity sampling, diffusion, altitude-based cooling, wind/turbulence, and temperature-mapped rendering. 6 presets from Campfire to Smoke Stack.
+**6 presets:** Strombolian (rhythmic mild eruptions), Plinian (catastrophic explosive), Hawaiian (fluid effusion), Vulcanian (viscous burst cycles), Caldera Collapse (4 ring vents), Fissure Eruption (6-vent linear rift)
+
+**Interactive controls:** `Space` (pause), `n` (step), `+`/`-` (speed), `l` (cycle visualization layer), `i` (info overlay), `r` (reset), `R`/`m` (preset menu), `q`/`Esc` (exit)
+
+### Added: Ocean Currents & Thermohaline Circulation — UNESCO equation of state with gyre circulation and plankton blooms
+
+Coupled temperature, salinity, density, current, upwelling, nutrient, and plankton fields. Density from simplified UNESCO EOS (`ρ = 1000 + 0.8S − 0.003(T−4)² + 0.01S(35−S)`). Gyre circulation as Gaussian-weighted tangential flow with Coriolis correction. Deep-water formation zones cool/salinify, driving downwelling; divergent zones upwell nutrients. Semi-Lagrangian advection for all tracer fields. Plankton blooms where nutrients >0.4 and upwelling positive. 6 visualization layers.
+
+**Changed file:** `life.py` (+~550 lines)
+
+**6 presets:** Gulf Stream (western boundary current), Pacific Gyre (Kuroshio), Antarctic Circumpolar (eastward belt), El Niño (weakened trades, warm tongue), Thermohaline Conveyor (deep cold return), Random Ocean (2–5 random gyres)
+
+**Interactive controls:** `L`/`V` (cycle visualization layer), `+`/`-` (speed), `Space` (pause), `?` (help), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Atmospheric Weather System — Pressure-driven wind with Coriolis, fronts, clouds, and precipitation
+
+Full 2D grid of pressure, temperature, humidity, wind, cloud density, and precipitation. Pressure from drifting Gaussian kernels. Wind from pressure gradient with latitude-dependent Coriolis deflection. Temperature/humidity advected semi-Lagrangianly, relaxed toward latitude equilibrium. Clouds diagnosed from humidity + lift + convergence. Precipitation (rain at T>0°C, snow at T≤0°C) when cloud >0.7. Frontal boundaries advect and enhance local temperature gradients + precipitation. 5 visualization layers.
+
+**Changed file:** `life.py` (+~550 lines)
+
+**6 presets:** Tropical Cyclone (960 hPa low, warm moist), Mid-Latitude Front (cold/warm fronts), High Pressure Dome (1040 hPa dry), Monsoon Season (thermal low + oceanic high), Arctic Outbreak (1045 hPa polar), Random Atmosphere (3–6 random centers)
+
+**Interactive controls:** `L`/`V` (cycle visualization layer), `+`/`-` (speed), `Space` (pause), `?` (help), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Tectonic Plate Simulation — Voronoi plates with convergent/divergent/transform boundary physics
+
+Voronoi-partitioned plates with velocity vectors and fractional movement accumulators. Boundary classification by relative velocity: convergent (mountain building ∝ convergence × speed, subduction arcs with 2% volcanism), divergent (rifting, mid-ocean ridge creation), transform (stochastic earthquake noise). Volcanic hotspots accumulate + spread material. Laplacian erosion every 3 steps + isostatic rebound. 17-level elevation-character table from −11,000m trench to +9,000m peak. Optional plate-color overlay.
+
+**Changed file:** `life.py` (+~550 lines)
+
+**6 presets:** Pangaea Breakup (clustered continental), Island Arcs (mixed continental/oceanic), Continental Collision (two groups converging), Mid-Ocean Ridges (radially diverging), Ring of Fire (all converge toward ocean), Random Drift (fully random)
+
+**Interactive controls:** `Space` (pause), `+`/`-` (speed ×0.25–5.0), `P` (toggle plate-color overlay), `?` (help), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Doom-style First-Person Raycaster — DDA ray casting with fisheye correction, wall shading, and minimap
+
+Column-based first-person raycasting on 16×16 tile maps using DDA (digital differential analysis). Perpendicular distance corrected for fisheye via `cos(ray_angle − player_angle)`. Wall height inversely proportional to distance, shaded through 5-char ramp (`█▓▒░·`). Floor gradient below walls. Full AABB collision with 0.2-unit margin and wall sliding. Top-left minimap shows full grid + player position. FOV 60° (π/3), max depth 16 units.
+
+**Changed file:** `life.py` (+~400 lines)
+
+**6 presets:** Dungeon (nested rooms + dead ends), Office (cubicle rows + atriums), Outdoor Ruins (sparse broken walls), Arena (open + pillar clusters), Maze (dense labyrinth), Fortress (thick castle walls)
+
+**Interactive controls:** `W`/`S` (forward/back), `A`/`D` (strafe), `Q`/`E` or arrows (rotate), `M` (toggle minimap), `?` (help), `Space` (pause), `Esc` (exit)
+
+### Added: Artificial Life Ecosystem — Neural-network-brained creatures with evolvable traits and reproduction
+
+Digital terrarium where each creature is driven by a 6→4→2 feed-forward neural network with `tanh` activations. Six inputs: direction to nearest food/threat, energy fraction, bias. Two outputs produce `(dr, dc)` movement. Movement costs energy ∝ speed × size; reproduction at 85% max energy with brain-weight and trait mutation. Three types: herbivores, predators, omnivores. Food grid regenerates + spreads. 4-cell bucket grid for O(1) neighbor lookup. Population sparkline HUD tracks all three types.
+
+**Changed file:** `life.py` (+~500 lines)
+
+**6 presets:** Grassland (40 herbs), Predator-Prey (35 herb + 8 pred), Harsh Desert (low food, high mutation), Coral Reef (all 3 types), Evolution Lab (35% mutation), Primordial Soup (minimal seed)
+
+**Interactive controls:** `Space` (pause), `N` (step), `S` (toggle stats HUD), `+`/`-` (food regrowth), `<`/`>` (speed), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Music Visualizer — Self-contained audio-reactive display with synthetic signal generation
+
+Fully self-contained audio-reactive visualization — no microphone needed. Synthesises pentatonic tones with harmonics + LFO envelope + Gaussian noise, maps to simulated 32-bin FFT spectrum. Beat detection via energy/average ratio threshold (1.5×) spawns particle bursts from center. Six view modes: Spectrum Bars (vertical chart + peak hold), Waveform Scope (oscilloscope trace), Beat Particles (center burst), Combined View (all three), Bass Tunnel (radial zoom from bass energy), Frequency Rain (per-bin falling columns). 4 color palettes.
+
+**Changed file:** `life.py` (+~450 lines)
+
+**Interactive controls:** `N`/`Shift+N` (next/prev view), `V` (cycle view within preset), `C` (cycle palette), `+`/`-` (sensitivity), `Space` (pause), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Shader Toy — Real-time per-pixel math functions rendered as ASCII with 4 color palettes
+
+Each terminal cell treated as a pixel: normalised coordinates `(nx, ny) ∈ [-1,1]²` and global time `t` fed into the active shader function (pure `math` ops), returning intensity → 12-char ASCII density ramp + 4 palettes (Rainbow, Fire, Ocean, Mono). Two live parameters `a`, `b` warp geometry without reloading. 10 shaders: Plasma Waves (4 summed sins), Tunnel Zoom (polar 1/r), Metaballs (5 potential blobs), Moiré Rings, Fractal Flame (8-iteration IFS), Warp Grid, Lava Lamp, Matrix Rain, Kaleidoscope (polar folding), Spiral Galaxy.
+
+**Changed file:** `life.py` (+~400 lines)
+
+**Interactive controls:** `N`/`Shift+N` (next/prev shader), `C` (cycle palette), `[`/`]` (param a ±0.1), `{`/`}` (param b ±0.1), `<`/`>` (speed 0.1–5.0), `Space` (pause), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: 3D Game of Life — 20³ voxel grid with 26-neighbor Moore rules and volumetric ASCII ray casting
+
+Conway's Game of Life extended to a 20×20×20 voxel cube with 26-neighbour Moore rules. Volumetric ASCII ray caster: rays stepped through grid, hit voxels shaded with position-based hue, diffuse directional light, ambient occlusion (from 6-face neighbor count), and distance fog. Auto-orbiting camera. 8 presets with different birth/survival rule sets and initial densities (6–20%).
+
+**Changed file:** `life.py` (+~450 lines)
+
+**8 presets:**
+
+| Preset | Birth | Survive | Density | Character |
+|--------|-------|---------|---------|-----------|
+| Classic 3D | {5} | {4,5} | 12% | Standard |
+| Clouds | {5,6,7} | {4,5,6} | 10% | Diffuse |
+| Crystal | {6} | {5,6,7} | 8% | Angular |
+| Amoeba | {5} | {3,4,5} | 15% | Organic |
+| Diamoeba 3D | {5,6,7} | {5,6,7,8} | 12% | Expanding |
+| Sparse | {6,7,8} | {5,6,7} | 6% | Minimal |
+| Pulse | {4} | {3,4} | 20% | Oscillating |
+| Builder | {6} | {4,5,6} | 10% | Constructive |
+
+**Interactive controls:** Arrows (orbit camera), `+`/`-` (zoom), `A` (toggle auto-rotation), `N` (single step), `Space` (pause), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: SDF Ray Marching 3D Renderer — Sphere-tracing with Blinn-Phong shading, soft shadows, and Mandelbulb fractal
+
+Full sphere-tracing renderer: rays step through scene SDF (up to 128 iterations, hit threshold 0.001). Normals via central-differenced finite differences. Blinn-Phong shading (ambient 0.15, diffuse N·L, specular (N·H)^32). Optional 32-step soft-shadow ray march. Output mapped to 11-character density ramp (` .:-=+*#%@█`). Auto-orbiting camera. Mandelbulb scene exposes fractal power as live parameter (2–16).
+
+**Changed file:** `life.py` (+~450 lines)
+
+**6 presets:** Sphere (`|p|−1`), Torus (R=1.0, r=0.4), Multi-Shape (sphere+torus+box union), Mandelbulb (power-8 DE), Infinite Spheres (mod-3 domain repetition), Smooth Blend (smooth-min union k=0.5)
+
+**Interactive controls:** Arrows (orbit camera ±0.1 rad), `+`/`-` (zoom 1.5–12.0), `A` (toggle auto-rotation), `S` (toggle shadows), `L`/`Shift+L` (light azimuth/elevation), `P`/`Shift+P` (Mandelbulb power ±1), `Space` (pause), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: 3D Terrain Flythrough — First-person perspective flight over procedural heightmaps with day/night cycle
+
+Column-by-column raycaster projects a 256×256 tiled elevation field into screen space. Terrain generated from 4-layer cosine-interpolated noise with type-specific shaping (peak exponent, canyon carve, island peaks, U-valley, sine-fold alien). Altitude-based color bands (ocean → sand → grass → highland → snow). Continuous day/night cycle advances sun/moon arc, fades stars, tints sky. Camera auto-drifts with WASD flight controls, pitch/yaw, altitude, speed, and FOV adjustments.
+
+**Changed file:** `life.py` (+~550 lines)
+
+**6 presets:** Rolling Hills (gentle), Mountain Range (peak-sharpened), Desert Canyon (canyon carve), Volcanic Islands (radial peaks), Glacial Valley (U-shaped), Alien World (sine-fold)
+
+**Interactive controls:** `W`/`A`/`S`/`D` (fly), arrows (pitch/yaw), `E`/`C` (altitude), `+`/`-` (speed), `F`/`Shift+F` (FOV), `T` (toggle day/night), `Shift+T` (advance time), `Space` (pause), `R` (reset), `M` (preset menu), `Q`/`Esc` (exit)
+
+### Added: Real-Time Minimap Overlay — Universal downscaled grid overview for all 65+ modes
+
+Toggleable overlay (Tab key, global) rendering a proportionally downscaled picture of the entire simulation grid in the top-right corner inside a Unicode box-drawing border. Universal `_get_minimap_data()` accessor detects active mode and returns `(rows, cols, sample_fn, viewport_rect)`, handling every storage format: sparse dicts, float/int/bool 2D arrays, particle lists, fractal buffers, WFC superposition grids. Capped at 40×20 characters, aspect-ratio-preserved. 5-glyph density ramp (` ░▒▓█`) with dim→cyan→bold green color. Yellow viewport rectangle when zoomed in. Suppressed when menus are open.
+
+**Changed file:** `life.py` (+~250 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Universal accessor | Handles dict sparse, float/int/bool 2D, particle lists, fractal buffer, WFC, Wolfram rows, GoL cells |
+| Dimensions | Max 40×20 characters, aspect-ratio-preserved |
+| Density glyphs | ` ░▒▓█` at thresholds 0/0.2/0.45/0.7/1.0 |
+| Viewport indicator | Yellow border when view covers subset of grid |
+| Menu suppression | `_any_menu_open()` checks ~60 `*_menu` booleans |
+
+**Interactive controls:** `Tab` (toggle minimap on/off, global across all modes)
+
+### Added: Interactive Mode Browser — Searchable categorized launcher for all 65 simulation modes
+
+Full-screen overlay (press `m`) presenting all 65 simulation modes in a scrollable, categorised, searchable list. `MODE_REGISTRY` (65 entries) stores each mode's name, key binding, category, description, and enter/exit methods. 10 categories with canonical ordering. Real-time substring search filters across name, description, and category as you type. Navigation: arrows/j/k, PgUp/PgDn (±10), Home/End. Enter cleanly exits current mode and launches selected one. Scrollbar glyph (█) on right edge.
+
+**Changed file:** `life.py` (+~300 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Registry | 65 entries across 10 categories with enter/exit method references |
+| Search | Real-time substring match against name+description+category |
+| Mode transition | `_exit_current_modes()` iterates registry calling exit methods, then calls new mode's enter method |
+| Categories | Classic CA, Particle & Swarm, Physics & Waves, Fluid Dynamics, Chemical & Biological, Game Theory & Social, Fractals & Chaos, Procedural & Computational, Complex Simulations, Meta Modes |
+
+**Interactive controls:** `m` (open browser), `↑`/`↓` or `j`/`k` (navigate), PgUp/PgDn (±10), Home/End (first/last), typing (search filter), Backspace (delete search char), `Enter` (launch selected mode), `Esc` (close)
+
+### Added: Smoothed Particle Hydrodynamics (SPH) — Particle-based Navier-Stokes with Poly6/Spiky/viscosity kernels
+
+Full SPH fluid solver: density summation via Poly6 kernel W(r,h) = (315/64πh⁹)(h²−r²)³, pressure from isothermal EOS p = k(ρ−ρ₀), pressure gradient via Spiky kernel, viscosity diffusion via Laplacian kernel, symplectic Euler integration. Smoothing radius h=1.5, brute-force O(n²) interactions. Reflective wall boundaries with restitution damping. 3 visualization modes: density, velocity, pressure. Fountain preset adds continuous vy kick to bottom-center particles.
+
+**Changed file:** `life.py` (+~420 lines)
+
+**6 presets:**
+
+| Preset | Configuration | Character |
+|--------|--------------|-----------|
+| Dam Break | Fluid column, left 25% | Gravitational collapse + spreading |
+| Double Dam | Two columns, left + right | Head-on collision + splash |
+| Dropping Block | Pool + block above | Impact splash + cavity |
+| Rain | Random upper-half seeding | Scattered droplets accumulating |
+| Wave Tank | Tilted initial water line | Sloshing between walls |
+| Fountain | Small pool + upward velocity kick | Continuous jet with parabolic arcs |
+
+**Interactive controls:** `Ctrl+A` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `+`/`-` (gravity ×/÷1.2), `<`/`>` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: FDTD Electromagnetic Wave Propagation — 2D TM Yee algorithm with PML, lossy media, and dielectrics
+
+2D TM-mode FDTD on a Yee staggered grid updating Ez, Hx, Hy per timestep. E-field update incorporates per-cell permittivity ε and conductivity σ for unified free-space and lossy media. Quadratically graded PML (6–10 cells, σ ramps 0→0.8) absorbs outgoing waves. Soft-injected sources with Gaussian ramp-up over 30 steps avoid transient artifacts. Phase offsets between sources produce beam steering and dipole patterns. 10 presets spanning point sources, diffraction, waveguides, lenses, and resonant cavities.
+
+**Changed file:** `life.py` (+~500 lines)
+
+**10 presets:**
+
+| Preset | Geometry | Key effect |
+|--------|----------|------------|
+| Point Source | Single center source | Circular wavefronts, PML absorption |
+| Double Slit | Wall + two slits + plane wave | Young-type interference |
+| Single Slit | Wall + one slit + plane wave | Diffraction envelope |
+| Waveguide | Conducting walls + point source | Guided mode propagation |
+| Lens Focusing | Convex dielectric ε=4.0 | Refractive focusing |
+| Antenna Dipole | Two in-phase+π sources | Dipole radiation pattern |
+| Phased Array | 8 sources, progressive phase | Steered beam |
+| Corner Reflector | Conducting L-reflector | Retroreflected beam |
+| Resonant Cavity | Conducting box + interior source | Standing-wave resonance |
+| Dielectric Scatter | Three high-ε cylinders | Forward scattering + shadow |
+
+**Interactive controls:** `Ctrl+E` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view: Ez/|E|/|H|), `f`/`F` (frequency ±0.01), `p` (add point source), `c` (clear fields), `+`/`-` (speed steps), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Magnetic Field Lines — Boris push integrator for charged particles in 4 field geometries
+
+Full 2D charged-particle tracker using the Boris push — a symplectic integrator splitting the timestep into two half-electric kicks bracketing a magnetic rotation, guaranteeing exact energy conservation in pure B-fields. Four field geometries: uniform, dipole (∝ 1/r³), magnetic bottle (parabolic Bz profile with mirror force), quadrupole (focusing gradient). Reflective wall boundaries. Rolling trail deques (50–2000 points). Field-line overlay at 4×3 intervals. 3 trail visualizations: age-fade, velocity-color, energy-color.
+
+**Changed file:** `life.py` (+~500 lines)
+
+**8 presets:**
+
+| Preset | Field | Particles | Character |
+|--------|-------|-----------|-----------|
+| Cyclotron Orbits | Uniform Bz=1.5 | 10 | Circular orbits at varying radii |
+| E×B Drift | Uniform Bz=2.0, Ey=−1.5 | 8 | Horizontal drift ⊥ both fields |
+| Magnetic Bottle | Bottle Bz=2.0 | 12 | Mirror trapping |
+| Dipole Field | Dipole Bz=3.0 | 10 | Radiation-belt trajectories |
+| Quadrupole Trap | Quadrupole Bz=2.0 | 14 | Complex orbital topology |
+| Mixed Charges | Uniform Bz=2.0 | 12 | Alternating +/− spiral opposite |
+| Magnetic Shear | Sheared uniform | 10 | Chaotic non-closing orbits |
+| Hall Effect | Uniform Bz=2.5, Ex=1.0 | 10 | Hall drift direction |
+
+**Interactive controls:** `Ctrl+N` (toggle mode), `Space` (play/pause), `n` (step), `b`/`B` (Bz ±0.2), `e` (toggle E-field), `f` (toggle field overlay), `v` (cycle trail view), `p` (spawn particle), `c` (clear trails), `+`/`-` (dt ×/÷1.5), `<`/`>` (steps/frame), `[`/`]` (trail ±50), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Cellular Potts Model (CPM) — Metropolis energy minimization with adhesion, area constraints, and chemotaxis
+
+Each terminal cell is a lattice pixel belonging to a numbered biological cell. Metropolis step: propose neighbor copy, evaluate Hamiltonian change (contact adhesion J[type][type] + area elastic penalty λ(a−A)² + chemotaxis bias), accept/reject with Boltzmann exp(−ΔH/T). Hundreds of attempts per frame produce tissue morphologies: differential adhesion sorting, wound healing migration, tumor invasion, and chemotactic gradient climbing. Incremental per-cell area cache keeps the inner loop O(1). 3 visualization modes: cell type, cell ID, boundaries.
+
+**Changed file:** `life.py` (+~450 lines)
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Cell Sorting | Two intermixed types sort by differential adhesion (Steinberg mechanism) |
+| Wound Healing | Dense sheet migrates to fill empty gap |
+| Tumor Growth | Weaker-adhesion tumor cells invade normal tissue |
+| Checkerboard | Alternating types slowly round corners |
+| Foam / Bubbles | Large-target-area cells with low surface tension coarsen |
+| Chemotaxis | Cells climb diffusing chemical gradient |
+
+**Interactive controls:** `Ctrl+T` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `t`/`T` (temperature ±1.0), `a`/`A` (area constraint ±0.5), `<`/`>` (steps/frame ×2/÷2), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Chaos Game / IFS Fractal — Iterated function system with log-scaled density heatmap and color-by-transform
+
+A single point randomly picks from a set of weighted affine contractions (`x'=ax+by+e`, `y'=cx+dy+f`) each step, tracing the IFS attractor over thousands of iterations. 2D density field accumulated with log-scale rendering (`·∙:;+*#%@`) for simultaneous visibility of sparse and dense regions. Adaptive bounding-box auto-scaler fits the fractal to the terminal. Color-by-transform mode assigns distinct colors per affine map, exposing self-similarity structure.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**8 presets:**
+
+| Preset | Transforms | Character |
+|--------|-----------|-----------|
+| Sierpinski Triangle | 3 | 3 contractions toward triangle vertices |
+| Barnsley Fern | 4 | Stem + main leaf + two leaflets |
+| Vicsek Snowflake | 5 | 4 corners + center at ratio 1/3 |
+| Sierpinski Carpet | 8 | 8 edge/corner positions at ratio 1/3 |
+| Dragon Curve | 2 | Heighway dragon rotations |
+| Maple Leaf | 4 | Asymmetric leaf contractions |
+| Koch Snowflake | IFS | Triangular snowflake as affine IFS |
+| Crystal | 6+ | 6-fold symmetric contractions |
+
+**Interactive controls:** `Ctrl+G` (toggle mode), `Space` (play/pause), `n` (accumulate batch), `c` (toggle color-by-transform), `>`/`<` (points/frame ×2/÷2), `x` (clear canvas), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Chladni Plate Vibration Patterns — Biharmonic plate equation with 13-point stencil and sand migration
+
+Replicates Chladni figures — patterns sand makes on vibrating metal plates. Integrates `d²z/dt² = −c²∇⁴z − γ(dz/dt) + A·sin(ωt)·δ(center)` using velocity-Verlet. Biharmonic ∇⁴ approximated by 13-point stencil: `20z − 8(NSEW) + 2(diags) + (next-NSEW)`. Clamped 2-cell border boundary. Sand density flows from high-displacement cells toward low-displacement, accumulating on nodal lines. Harmonic Sweep auto-increments frequency through mode shapes.
+
+**Changed file:** `life.py` (+~380 lines)
+
+**8 presets:**
+
+| Preset | Mode (m,n) | Character |
+|--------|-----------|-----------|
+| Classic (2,3) | 2, 3 | Elegant star-like figure |
+| Simple (1,2) | 1, 2 | Basic cross pattern |
+| Complex (3,5) | 3, 5 | Intricate high-mode |
+| Symmetric (4,4) | 4, 4 | Square-symmetric |
+| Cathedral (5,7) | 5, 7 | Dense cathedral-window |
+| Butterfly (2,5) | 2, 5 | Butterfly-wing |
+| Diamond (3,4) | 3, 4 | Diamond lattice |
+| Harmonic Sweep | auto | Auto-cycles through frequencies |
+
+**Interactive controls:** `Ctrl+L` (toggle mode), `Space` (play/pause), `n` (step), `m`/`N` (cycle mode numbers), `f`/`F` (frequency ±), `d`/`D` (damping ±), `+`/`-` (amplitude), `v` (cycle view: sand/displacement/energy), `s` (redistribute sand), `>`/`<` (speed), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Rayleigh-Bénard Convection — 2D Boussinesq approximation with Rayleigh-number-controlled convection rolls
+
+Heated from below, cooled from above: buoyancy drives hot fluid up and cold down, self-organizing into rolls and cells. Simplified 2D Boussinesq: temperature advected/diffused, buoyancy ∝ `Ra × (T − T_ref)` drives vertical velocity. Velocity diffused with Prandtl-scaled viscosity, Gauss-Seidel pressure projection for incompressibility. Upwind advection for stability at high Ra. 3 visualization modes: temperature, velocity magnitude, vorticity.
+
+**Changed file:** `life.py` (+~400 lines)
+
+**8 presets:**
+
+| Preset | Ra | Pr | Character |
+|--------|----|----|-----------|
+| Classic Rolls | 2000 | 0.71 | Steady convection rolls |
+| Gentle Convection | 500 | 0.71 | Slow, wide cells |
+| Turbulent Cells | 8000 | 0.71 | Vigorous convection |
+| Bénard Hexagons | 3000 | 0.71 | Hexagonal cell formation |
+| Mantle Convection | 1200 | 10.0 | Earth-like slow overturning |
+| Solar Granulation | 10000 | 0.025 | Sun-surface rapid convection |
+| Asymmetric Heating | 3000 | 0.71 | Hot spot on one side |
+| Random Perturbation | 4000 | 0.71 | Random initial noise |
+
+**Interactive controls:** `Ctrl+R` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `+`/`-` (Ra ×/÷1.2), `>`/`<` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Double Pendulum Chaos — RK4 integration with trajectory trails and dual-pendulum divergence comparison
+
+Full nonlinear double-pendulum Lagrangian ODEs for `[θ₁, θ₂, ω₁, ω₂]` integrated with 4th-order Runge-Kutta at dt=0.005s. Trajectory trails record lower bob position via Bresenham line drawing, decaying through `█▓▒░·` (up to 500–2000 points). Dual-pendulum mode runs a second integrator with tiny angle perturbation, showing exponential separation of trajectories with live divergence readout.
+
+**Changed file:** `life.py` (+~450 lines)
+
+**8 presets:**
+
+| Preset | θ₁ | θ₂ | Masses | Perturbation | Character |
+|--------|----|----|--------|-------------|-----------|
+| Classic Chaos | 3π/4 | 3π/4 | 1:1 | 0.001 rad | Standard chaotic regime |
+| Gentle Swing | 3π/20 | 3π/20 | 1:1 | 0.01 rad | Near-integrable |
+| Heavy Lower | 3π/5 | 4π/5 | 1:3 | 0.001 rad | Bottom-heavy |
+| Heavy Upper | 3π/5 | 4π/5 | 3:1 | 0.001 rad | Top-heavy |
+| Maximum Chaos | ~π | ~π | 1.5:1 | 0.0001 rad | Near-vertical start |
+| Near Identical | π/2 | 3π/4 | 1:1 | tiny | Divergence demo |
+| Butterfly Effect | 17π/20 | π/2 | 1:1 | 1e-6 rad | Ultra-sensitive |
+| Long Arms | 7π/10 | 3π/5 | 1:1 | 0.001 rad | Asymmetric arm lengths |
+
+**Interactive controls:** `Ctrl+P` (toggle mode), `Space` (play/pause), `n` (step), `d` (toggle dual comparison), `c` (clear trails), `g`/`G` (gravity ±1), `+`/`-` (timestep ×/÷1.5), `[`/`]` (trail length ±100), `>`/`<` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Navier-Stokes Fluid Dynamics — Jos Stam stable fluids with semi-Lagrangian advection and obstacle placement
+
+Full 2D incompressible Navier-Stokes solver following the Stam "Stable Fluids" architecture. Pipeline per timestep: diffuse velocity (Gauss-Seidel, 20 iterations) → project → advect velocity (semi-Lagrangian back-trace with bilinear interpolation) → project again → diffuse dye → advect dye. Obstacle-aware neighbor counting. Projection solves pressure-Poisson for divergence-free fields. 4 visualization modes: dye, velocity, vorticity, pressure. Interactive cursor-driven dye/velocity injection and obstacle placement.
+
+**Changed file:** `life.py` (+~550 lines)
+
+**6 presets:**
+
+| Preset | Description | Initial conditions |
+|--------|-------------|-------------------|
+| Dye Playground | Empty canvas | Freehand painting |
+| Vortex Pair | Counter-rotating vortices | Biot-Savart velocity from two point vortices |
+| Jet Stream | Continuous jet from left | Horizontal velocity band + dye |
+| Karman Vortices | Vortex shedding past obstacle | Circular obstacle + uniform inflow |
+| Four Corners | Opposing corner sources | Diagonal velocity in each quadrant |
+| Shear Layer | Kelvin-Helmholtz instability | Top/bottom opposing flow + perturbation |
+
+**Interactive controls:** `Ctrl+D` (toggle mode), arrow keys/`hjkl` (move cursor), `Enter`/`f` (inject dye+velocity), `o` (place/remove obstacle), `v` (cycle view), `b`/`V` (viscosity ×2/÷2), `+`/`-` (injection strength ±10), `c`/`C` (clear dye/velocity), `>`/`<` (speed), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Mandelbrot/Julia Set Fractal Explorer — Infinite zoom with real-time Julia morphing and 5 color schemes
+
+Interactive fractal visualization rendering Mandelbrot and Julia sets using Unicode density characters (` .:-=+*#%@█`) with per-character coloring. Each cell maps to the complex plane and iterates `z = z² + c` up to configurable max iterations. Pan/zoom with adaptive step sizes. Mandelbrot fixes z₀=0 varying c per pixel; Julia fixes c varying z₀. Julia constant nudgeable in real-time for live morphing between families. 5 color schemes: Classic, Ocean, Fire, Neon, Monochrome.
+
+**Changed file:** `life.py` (+~400 lines)
+
+**10 presets:**
+
+| Preset | Type | Center/Constant | Zoom | Max iter |
+|--------|------|-----------------|------|----------|
+| Classic Mandelbrot | Mandelbrot | −0.5+0i | 1× | 80 |
+| Seahorse Valley | Mandelbrot | −0.745+0.113i | 50× | 200 |
+| Elephant Valley | Mandelbrot | 0.282+0.01i | 20× | 200 |
+| Mini-brot | Mandelbrot | −1.749+0i | 500× | 500 |
+| Spiral | Mandelbrot | −0.7463+0.1102i | 200× | 300 |
+| Julia Dendrite | Julia | c = i | 1× | 100 |
+| Julia Douady Rabbit | Julia | c = −0.123+0.745i | 1× | 100 |
+| Julia San Marco | Julia | c = −0.75 | 1× | 100 |
+| Julia Siegel Disk | Julia | c = −0.391−0.587i | 1× | 120 |
+| Julia Dragon | Julia | c = −0.8+0.156i | 1× | 100 |
+
+**Interactive controls:** `Ctrl+B` (toggle mode), arrow keys/`hjkl` (pan), `z`/`x` or `+`/`-` (zoom 1.5×), `i`/`I` (iterations ±20), `t` (toggle Mandelbrot/Julia), `c` (cycle color scheme), `a`/`A` (Julia Re ±0.01), `s`/`S` (Julia Im ±0.01), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Fireworks — Rocket physics with 4 burst patterns, trailing sparks, and crossette splits
+
+Rockets carry position, velocity, fuse count, colour, and burst pattern. Gravity and wind applied per tick; at apogee or fuse expiry, `_fireworks_explode` spawns 24–70 spark particles per pattern. Sparks undergo gravity (1.5× for willow), wind, drag (0.97 willow / 0.985 others), and jitter. 6-frame position trail rendered with fading characters. Crossette particles explode again for two-stage aerial splits. Auto-launch samples against `launch_rate` per tick.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**4 burst patterns:** spherical (radial), ring (annular), willow (high-drag drooping), crossette (secondary explosions)
+
+**6 presets:**
+
+| Preset | Gravity | Launch rate | Wind | Pattern |
+|--------|---------|------------|------|---------|
+| Grand Finale | 0.05 | 0.18 | 0.000 | All random |
+| Gentle Evening | 0.04 | 0.04 | 0.005 | Spherical/willow |
+| Crossette Show | 0.05 | 0.07 | 0.000 | Crossette only |
+| Willow Garden | 0.06 | 0.06 | 0.003 | Willow only |
+| Ring Parade | 0.05 | 0.07 | 0.000 | Ring only |
+| Random Mix | 0.05 | 0.08 | 0.000 | All 4 equal |
+
+**Interactive controls:** `Ctrl+F` (toggle mode), `Space` (play/pause), `n` (step), `f`/`Enter` (manual launch), `a` (toggle auto-launch), `g`/`G` (gravity ±0.01), `w`/`W` (wind ±0.005), `l`/`L` (launch rate ±0.02), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: L-System Plant Growth — Lindenmayer grammar rewriting with turtle-graphics rendering
+
+Plants defined as (axiom, rewriting rules, branching angle) and grown generation-by-generation via string substitution. Turtle-graphics interpretation: `F` draws a segment, `+`/`-` rotate by angle, `[` pushes state (scaling length by 0.5), `]` pops and records leaf. Segments Bresenham-rasterised using angle-dependent box-drawing characters (`║│┃╎╏┊┆`, `─╌`, `╲\`, `╱/`). Color encodes depth: brown trunk → yellow wood → green canopy. Light-direction bias offsets turtle heading ±0.15 rad for phototropic lean.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**7 presets:**
+
+| Preset | Axiom | Angle | Max depth | Character |
+|--------|-------|-------|-----------|-----------|
+| Binary Tree | F | 30° | 8 | Symmetric branching |
+| Fern | X | 22° | 7 | Curving fronds |
+| Bush | F | 25.7° | 6 | Dense shrub |
+| Seaweed | F | 18° | 7 | Kelp-like swaying |
+| Willow | F | 20° | 7 | Drooping branches |
+| Pine | F | 35° | 8 | Compact coniferous |
+| Garden | mixed | 25–28° | 6 | Multi-plant scene |
+
+**Interactive controls:** `/` (toggle mode), `Space` (play/pause), `n` (step), `a`/`A` (angle ±2°), `←`/`→` (light direction ±10°), `g`/`G` (growth rate ±0.1), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Infrastructure: Ralph Task Logs (Rounds 154–186)
+
+Added orchestration logs (`.ralph/round-*-thinker.json` and `.ralph/round-*-worker.json`) for rounds 154–155, 156–162, and 163–186 across multiple commits. These JSON files capture the complete AI thinker-proposal / worker-execution dialogue that produced all simulation modes added in this session — from the early CA modes through the final complex simulations. No simulation code modified; purely session-history archival.
+
+### Added: Galaxy Formation — N-body particles with NFW dark matter halo, gas pressure, and leapfrog integration
+
+N-body particle simulation with three types (stars, gas, dark matter). Leapfrog integration with: NFW dark-matter halo acceleration centered on grid midpoint, short-range particle gravity from 5×5 bin neighborhoods (softening ε=1.0), gas pressure force above density threshold 3.0, and gas cooling damping (0.998/tick). Display uses Unicode density characters (`· ∘ ○ ◎ ● ◉ █`) colored by type. Four view modes: combined, stars-only, gas-only, velocity field.
+
+**Changed file:** `life.py` (+~500 lines)
+
+**8 presets:**
+
+| Preset | Particles | Structure |
+|--------|-----------|-----------|
+| Milky Way | ~350 | 2-arm log spiral |
+| Grand Design | ~490 | Tight 2-arm, dense gas disk |
+| Whirlpool | ~340 | 2-arm + dwarf companion |
+| Elliptical | 300 | Isotropic dispersion, 1.3× elongated |
+| Dwarf Irregular | 80 | Chaotic low-density |
+| Galaxy Merger | 240 | Two counter-rotating spirals |
+| Ring Galaxy | 240 | Expanding ring + central cluster |
+| Barred Spiral | 260 | Bar tilted 0.4 rad + trailing arms |
+
+**Interactive controls:** `"` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `g`/`G` (G ±0.1), `d`/`D` (dt ±0.002), `h` (toggle halo overlay), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Enhanced: Forest Fire — Ember/Ash Lifecycle & Population Sparkline
+
+Extended from 3 states to 5: **empty → tree → burning → ember → ash → empty**. Embers carry residual heat, spreading fire to adjacent trees before collapsing to ash; ash decays stochastically at `ash_decay` rate. Two-stage decay creates more realistic cascading fire fronts with visible scorched patches. Added Unicode sparkline (`▁▂▃▄▅▆▇█`, 40 samples) tracking tree density history, making self-organised criticality visible. Two new presets: Critical Density (SOC demo) and Slow Burn (long-lived embers). Ember cells render as dim red `░░`; ash as dim gray `░░`.
+
+**Changed file:** `life.py` (+~80 lines)
+
+**New state machine:** empty (0) → tree (1) → burning (2) → ember (4) → ash (3) → empty (0)
+
+**New control:** `a`/`A` — ash decay rate ±0.01 (range 0.01–1.0)
+
+**2 new presets:** Critical Density (density 0.60, p_grow 0.020, p_lightning 0.00030, ash_decay 0.10), Slow Burn (density 0.65, p_grow 0.030, p_lightning 0.00040, ash_decay 0.03)
+
+### Added: Cloth Simulation — Verlet integration with spring constraints, tearing, and tension-based rendering
+
+Position-based dynamics on Verlet integration: each point mass stores current and previous position; velocity is implicit as their difference × damping. Each tick adds gravity and randomised wind, then runs 5–8 iterative constraint relaxation passes. Springs stretched beyond `rest_length × tear_threshold` are permanently removed. Constraints rendered via Bresenham with angle-based characters (`──`, `│`, `╲`, `╱`); color encodes tension: white (≤1.2×), yellow (1.2–1.5×), red (≥1.5×). Pinned points as `◆` (red); free as `●` (cyan).
+
+**Changed file:** `life.py` (+~400 lines)
+
+**6 presets:**
+
+| Preset | Gravity | Wind | Damping | Pin config | Tear threshold |
+|--------|---------|------|---------|------------|---------------|
+| Hanging Cloth | 0.50 | 0.00 | 0.990 | Full top row | 3.0 |
+| Curtain | 0.40 | 0.05 | 0.980 | Two top corners | 3.0 |
+| Flag | 0.15 | 0.30 | 0.970 | Entire left edge | 3.0 |
+| Hammock | 0.60 | 0.00 | 0.990 | Four corners | 3.0 |
+| Net | 0.40 | 0.00 | 0.990 | Top row, 2× spacing | 5.0 |
+| Silk Sheet | 0.30 | 0.02 | 0.960 | Full top row | 2.5 |
+
+**Interactive controls:** `'` (toggle mode), `Space` (play/pause), `n` (step), `p` (toggle pin), `x` (tear at cursor), `g`/`G` (gravity ±0.05), `w`/`W` (wind ±0.05), `d`/`D` (damping ±0.005), `t`/`T` (tear threshold ±0.5), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Smoke & Fire Fluid Simulation — Buoyancy-driven combustion with advection, turbulence, and temperature rendering
+
+Grid-based combustion and fluid simulation: heat sources ignite fuel cells, driving a buoyancy-advection-diffusion loop. Each tick computes buoyancy (heat rises), wind drift, stochastic turbulence, and velocity damping, then combustion: cells above 0.2 threshold burn fuel at `0.05 * temp`, releasing `burn * 3.0` heat. Temperature/smoke advected via bilinear velocity sampling (60% blend), then 4-neighbor diffusion (20% weight). Altitude-based cooling increases toward grid top. Five rendering tiers: white-hot (`█`), yellow (`▓`), orange (`▒`), red (`░`), dim gray smoke.
+
+**Changed file:** `life.py` (+~380 lines)
+
+**6 presets:**
+
+| Preset | Buoyancy | Turbulence | Character |
+|--------|----------|-----------|-----------|
+| Campfire | 0.15 | 0.04 | Centered fuel log cluster |
+| Wildfire Spread | 0.12 | 0.06 | Scattered ground fuel, left-edge ignition |
+| Explosion Burst | 0.25 | 0.12 | Radial velocity shockwave |
+| Candle Row | 0.10 | 0.02 | Six evenly spaced candles |
+| Inferno | 0.20 | 0.08 | Full-width fuel bed |
+| Smoke Stack | 0.18 | 0.05 | Chimney outline with stack source |
+
+**Interactive controls:** `\` (toggle mode), `Space` (play/pause), `n` (step), `f`/`Enter` (add/remove fire source), `F` (deposit fuel), `b`/`B` (buoyancy ±0.02), `t`/`T` (turbulence ±0.01), `w`/`W` (wind ±0.01), `c`/`C` (cooling ±0.002), `>`/`<` (steps/frame), `R` (preset menu), `q`/`Esc` (exit)
 
 ### Enhanced: Abelian Sandpile — Identity Element & Random Fill
 
-Two new presets: Identity Element (computes the sandpile group identity using the formula identity = topple(2·max_stable − topple(2·max_stable)), producing a striking fractal pattern) and Random Fill (fills every cell randomly then perturbs the center to trigger cascading avalanches).
+Two new presets bringing total from 7 to 9. **Identity Element**: computes the algebraic identity of the sandpile group via `e = topple(6 − topple(6·ones))` — a BFS-based toppling algorithm processes the formula, producing a striking four-fold-symmetric fractal pattern. Auto-drop disabled since the identity is a complete static display. **Random Fill**: initializes every cell with uniform random [0–3] grains, then sets center to 4, triggering cascading avalanches through the near-maximum substrate. Both presets share a pure-Python queue-based BFS toppling loop (avoiding recursion depth limits).
 
-### Added: Terrain Generation & Erosion Landscape
+**Changed file:** `life.py` (+~80 lines)
 
-Geological terrain formation through four combined processes: tectonic uplift, thermal erosion (rockslides), hydraulic erosion (rain-driven flow), and vegetation dynamics that stabilize soil. 6 presets with 4 visualization views (topographic, elevation, vegetation, erosion).
+**New presets:**
+
+| Preset | Initial config | Auto-drop | Character |
+|--------|---------------|-----------|-----------|
+| Identity Element | Group identity fractal via topple formula | Disabled | Four-fold symmetric fractal |
+| Random Fill | Random [0–3] per cell; center perturbed to 4 | Enabled | Cascading avalanches |
+
+### Added: Terrain Generation & Erosion Landscape — Four coupled geological processes with procedural terrain
+
+Geological timescale landscape simulator: procedural heightmap evolved through tectonic uplift (center-weighted + jitter), thermal erosion (rockslides above talus threshold, attenuated by vegetation), hydraulic erosion (steepest-downhill flow with 60% redeposition), and vegetation dynamics (elevation-band dependent growth feeding back to reduce erosion). Terrain generated with multi-octave smooth noise and type-specific shaping. 4 visualization views: topographic, elevation, vegetation, erosion.
+
+**Changed file:** `life.py` (+~500 lines)
+
+**Core mechanics:**
+
+| Process | Key behavior |
+|---------|-------------|
+| Tectonic uplift | Center-weighted ±20% jitter; configurable rate |
+| Thermal erosion | Material transfer on slopes > 0.06; reduced 80% by vegetation |
+| Hydraulic erosion | Steepest-downhill neighbor; capped at 10% local height; 60% redeposited |
+| Vegetation | Band-dependent growth; slope penalty; reduces both erosion types |
+
+**6 presets:**
+
+| Preset | Terrain type | Character |
+|--------|-------------|-----------|
+| Continental Drift | gentle + edge masking | Continental shelf |
+| Island Archipelago | noise + Gaussian peaks | Island chains |
+| Alpine Peaks | power-law exaggeration | Glacial carving |
+| Rolling Plains | compressed midrange | Shallow streams |
+| Rift Valley | V-trench + escarpments | Central rift |
+| Coastal Cliffs | land/sea gradient | Cliff erosion |
+
+**Interactive controls:** `;` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `u`/`U` (uplift ±0.001), `t`/`T` (thermal ±0.005), `w`/`W` (rain ±0.002), `g`/`G` (vegetation ±0.002), `s`/`S` (sea level ±0.02), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
 ### Enhanced: Falling Sand — Oil and Steam Materials
 
-Two new materials: Oil (flammable liquid that floats above water) and Steam (gas that rises and condenses back to water). Three new presets: Forest Fire, Oil Refinery, Waterfall. Updated brush system to support all 7 materials.
+Two new particle materials bringing total to 7. **Oil** (key `6`): liquid with explicit density ordering — water displaces oil upward via per-step swap; sand sinks through oil; fire ignites oil at 50% probability (higher than plant's 40%). **Steam** (key `7`): gas produced from fire death (20%) or fire touching water (8%); rises with lateral drift; survives 15–25 ticks; condenses to water (40%) or vanishes. Three new presets: Forest Fire (plant combustion), Oil Refinery (density layering + combustion), Waterfall (multi-stage cascading flow).
 
-### Added: Quantum Cellular Automaton (Quantum Walk)
+**Changed file:** `life.py` (+~120 lines)
 
-Discrete-time quantum walk with interference patterns. Features 3 coin operators (Hadamard, Grover diffusion, DFT), 8 presets with various source configurations and boundary conditions, and 4 visualization views (probability magnitude, phase, real part, imaginary part).
+**New materials:**
 
-### Added: Strange Attractor Visualization
+| Material | Behavior | Key interactions |
+|----------|----------|-----------------|
+| Oil | Liquid; falls/flows like water | Floats above water (swap); sand sinks through; fire ignites at 50% |
+| Steam | Gas; rises with lateral drift (−1/0/0/+1) | From fire death (20%) or fire+water (8%); condenses to water (40%); lifetime 15–25 ticks |
 
-Six chaotic dynamical systems (Lorenz, Rössler, Thomas, Aizawa, Halvorsen, Chen) with interactive 3D-to-2D projection and density heatmap rendering. 200 particles integrated via RK2 with log-scaled density coloring and interactive rotation/zoom/parameter controls.
+**3 new presets:** Forest Fire (plant combustion propagation), Oil Refinery (oil/water density layering + combustion), Waterfall (cascading flow over stone ledges)
 
-### Added: Magnetohydrodynamics (MHD) Plasma
+**Interactive controls:** `1`–`7` (select material: sand/water/fire/stone/plant/oil/steam), `0` (eraser)
 
-Resistive MHD equations (continuity, momentum with Lorentz force, induction with resistive diffusion) solved using finite differences with periodic boundaries. 8 presets (Harris Current Sheet, Orszag-Tang Vortex, Magnetic Island, etc.) with 4 visualization modes.
+### Added: Quantum Cellular Automaton (Quantum Walk) — Discrete-time quantum walk with coin operators and interference
 
-### Added: Chemotaxis & Bacterial Colony Growth
+Each cell carries a 4-component complex amplitude vector (one per cardinal direction). Each step applies a Coin operator mixing direction amplitudes, then a Shift moving each component one cell in its direction. Three coins: Hadamard H⊗H (balanced symmetric spread), Grover diffusion (strong constructive interference), DFT (asymmetric via complex 4th roots of unity). Optional decoherence randomly phases amplitudes. 4 views: probability |ψ|², phase (color wheel), real, imaginary.
 
-3-field PDE system modeling bacteria (logistic growth + motility + chemotaxis), nutrients (diffusion − consumption), and chemoattractant signal (production + diffusion − decay). Chemotactic flux via upwind scheme. 8 presets from Eden Cluster to Quorum Sensing.
+**Changed file:** `life.py` (+~380 lines)
 
-### Added: Belousov-Zhabotinsky (BZ) Reaction
+**Core mechanics:**
 
-3-variable Oregonator-inspired chemical reaction model producing characteristic spiral wavefronts and target patterns. Features activator, inhibitor, and recovery species. 8 presets with 5 initialization types and interactive parameter controls.
+| Concept | Implementation |
+|---------|----------------|
+| State | 4 complex amplitudes per cell (up, right, down, left) |
+| Coin operators | Hadamard H⊗H, Grover diffusion, DFT (4×4) |
+| Shift | Each direction component moves one cell in its direction |
+| Boundaries | Periodic (wrapping) or Absorbing (amplitude lost at edge) |
+| Decoherence | Per-element phase randomisation at configurable rate |
 
-### Added: Spiking Neural Network (Izhikevich)
+**8 presets:**
 
-2D grid of Izhikevich spiking neurons with full neuron dynamics (v' = 0.04v² + 5v + 140 − u + I), synaptic coupling, and excitatory/inhibitory types. 10 presets from sparse firing to cortical column with visual glow trails and firing rate display.
+| Preset | Coin | Source | Boundary | Character |
+|--------|------|--------|----------|-----------|
+| Hadamard Single | Hadamard | center | Periodic | Symmetric spreading |
+| Hadamard Absorbing | Hadamard | center | Absorbing | Edge-damped |
+| Grover Diffusion | Grover | center | Periodic | Strong interference |
+| DFT Fourier | DFT | center | Periodic | Asymmetric |
+| Gaussian Packet | Hadamard | gaussian | Periodic | Wave packet |
+| Dual Source | Grover | two points | Periodic | Interference pattern |
+| Decoherent | Hadamard | center | Periodic | Gradual classical |
+| DFT Gaussian Absorb | DFT | gaussian | Absorbing | Combined |
 
-### Added: Kuramoto Coupled Oscillators
+**Interactive controls:** `^` (toggle mode), `Space` (play/pause), `n` (step), `v` (cycle view), `d`/`D` (decoherence ±0.005), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Phase synchronization model where each cell's phase evolves via dθ/dt = ωᵢ + (K/4)Σsin(θⱼ − θᵢ) + noise with 4-neighbor coupling. 12 presets covering different dynamical regimes. Order parameter visualization shows global synchronization level.
+### Added: Strange Attractor Visualization — 6 chaotic 3D systems with accumulating density heatmap
 
-### Added: 2D Wave Equation
+200 particles evolve through six chaotic 3D ODE systems, projected onto a 2D density heatmap via configurable rotation angles. RK2 (midpoint) integration with 300-step warm-up. Density rendered with logarithmic scaling (`log1p`) through hot colormap (blue→magenta→red→yellow). Auto-scaled bounding box with user zoom. Slow max-density decay (0.999/step) prevents normalization locking.
 
-Full 2D wave equation simulator with finite-difference physics, per-step damping, and three boundary conditions (reflect, absorb, wrap). 12 presets including Double Slit diffraction and Rain Drops with interactive wave speed, damping, and manual plucking controls.
+**Changed file:** `life.py` (+~450 lines)
 
-### Enhanced: Snowflake Crystal Growth — Six-Fold Symmetry
+**Core mechanics:**
 
-Added six-fold symmetry enforcement using hex coordinate transforms (6 rotations × 2 reflections) for realistic snowflake patterns. Added diffusion rate parameter controlling branching vs plate morphology. Expanded presets from 8 to 12 with improved 3-tier crystal coloring.
+| Concept | Implementation |
+|---------|----------------|
+| Integration | RK2 (midpoint method) |
+| Projection | Sequential z-axis then x-axis rotation onto 2D plane |
+| Rendering | Log-scaled density heatmap; auto-fit to 85% terminal area |
 
-### Added: Spatial Rock-Paper-Scissors
+**8 presets (6 systems):**
 
-Cyclic dominance simulation where random cells attack von Neumann neighbors using cyclic dominance (species i beats species (i−1) % N). 6 presets including classic spiral waves, five-species (RPS-Lizard-Spock), and seeded spirals with population percentage tracking.
+| Preset | System | Key parameters | Character |
+|--------|--------|---------------|-----------|
+| Lorenz Classic | lorenz | σ=10, ρ=28, β=8/3 | Two-lobe butterfly |
+| Lorenz High Rho | lorenz | σ=10, ρ=99.96 | More chaotic, elongated lobes |
+| Rössler Spiral | rossler | a=0.2, b=0.2, c=5.7 | Band-spiral with folds |
+| Rössler Funnel | rossler | a=0.5, b=1.0, c=3.0 | Wide funnel morphology |
+| Thomas | thomas | b=0.208186 | 3-fold cyclic symmetry |
+| Aizawa | aizawa | a=0.95, d=3.5 | Toroidal knot |
+| Halvorsen | halvorsen | a=1.89 | 3-fold rotational symmetry |
+| Chen | chen | a=35, c=28 | Double scroll |
 
-### Added: Voronoi Crystal Growth
+**Interactive controls:** `|` (toggle mode), `Space` (play/pause), `n` (step), arrow keys/`hjkl` (rotate projection ±0.1 rad), `z`/`Z` (zoom in/out), `1`/`2` (primary param ±), `3`/`4` (secondary param ±), `d`/`D` (timestep ×0.8/×1.25), `c` (clear density), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Polycrystalline growth simulation where seeds expand via frontier-based growth with anisotropic probability — each grain has a preferred crystallographic angle, and growth is faster along that direction. 8 presets with 15 distinct grain colors and adjustable anisotropy.
+### Added: Magnetohydrodynamics (MHD) Plasma — 2D resistive incompressible MHD with reconnection dynamics
 
-### Added: Hydraulic Erosion
+2D resistive MHD equations: density ρ, velocity (vx,vy), magnetic field (Bx,By). Momentum includes advection, isothermal pressure gradient, Lorentz force (Jz×B/ρ), and viscous diffusion. Induction: frozen-flux term `∇×(v×B)` + resistive diffusion η·∇²B. Explicit Euler at dt=0.02 with periodic boundaries. Fields soft-clamped to ±2.0 per step. 4 visualization modes: current density Jz, plasma density, magnetic field magnitude (direction-colored), flow speed.
 
-Shallow-water erosion model with terrain heightmap, rainfall, gravity-driven water flow, sediment erosion/transport/deposition, and evaporation physics. 8 presets (River Valley, Mountain Gorge, Badlands, etc.) with height-based color gradient and blue water overlay showing river networks.
+**Changed file:** `life.py` (+~500 lines)
 
-### Added: Lightning / Dielectric Breakdown
+**Core mechanics:**
 
-Electrical discharge patterns using the Dielectric Breakdown Model (DBM). Gauss-Seidel solver for Laplace's equation with growth candidates weighted by potential^eta for realistic branching. 8 presets from Classic Lightning to Ball Lightning with age-based channel coloring.
+| Equation | Key terms |
+|----------|-----------|
+| Continuity | `−∇·(ρv) + 0.01·∇²ρ` |
+| Momentum | `−(v·∇)v − ∇p/ρ + (Jz×B)/ρ + ν·∇²v` |
+| Induction | `∇×(v×B) + η·∇²B` |
 
-### Added: Spatial Prisoner's Dilemma (Evolutionary Game Theory)
+**8 presets:**
 
-Spatial Prisoner's Dilemma on a 2D grid where cells play against 8 Moore neighbors and adopt the strategy of the highest-scoring neighbor (imitation dynamics). 8 presets covering classic dilemma, snowdrift, and stag hunt variants with cooperation percentage tracking.
+| Preset | η | ν | Init | Character |
+|--------|---|---|------|-----------|
+| Harris Current Sheet | 0.008 | 0.005 | harris | Tearing instability |
+| Orszag-Tang Vortex | 0.005 | 0.005 | orszag_tang | MHD turbulence benchmark |
+| Magnetic Island | 0.010 | 0.008 | island | Tearing/island formation |
+| Blast Wave | 0.005 | 0.005 | blast | Radial outward kick |
+| Kelvin-Helmholtz | 0.008 | 0.010 | kh | Shear flow instability |
+| Double Current Sheet | 0.010 | 0.005 | double_harris | Coupled reconnection |
+| Magnetic Flux Rope | 0.006 | 0.006 | flux_rope | Twisted azimuthal field |
+| Random Turbulence | 0.008 | 0.008 | random | Decaying MHD turbulence |
 
-### Added: Snowflake Growth (Reiter Crystal)
+**Interactive controls:** `}` (toggle mode), `Space` (play/pause), `n` (step), `e`/`E` (η ±0.002), `w`/`W` (ν ±0.002), `v` (cycle view), `p` (inject perturbation), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Reiter's crystal growth model on a hexagonal lattice. Receptive cells accumulate vapor at configurable rate, non-receptive cells diffuse, and cells freeze at vapor ≥ 1.0. 8 presets covering dendrite, needle, plate, fernlike, and stellar morphologies.
+### Added: Chemotaxis & Bacterial Colony Growth — 3-field PDE system with nutrient-dependent morphogenesis
 
-### Added: Traffic Flow (Nagel-Schreckenberg)
+3-field PDE system: bacteria B (logistic growth scaled by nutrients + motility diffusion + chemotactic upwind flux), nutrients N (diffusion − bacterial consumption), and chemoattractant signal S (bacteria-produced + diffusion − decay). Upwind scheme for chemotaxis stabilises advection against numerical oscillations. Reproduces principal colony morphologies: compact Eden clusters, DLA-like tendrils, dense branching, chemotactic rings, and swarming fronts.
 
-Nagel-Schreckenberg cellular automaton for traffic flow with acceleration, braking, random slowdown, and simultaneous movement updates. 8 presets (Light/Moderate/Heavy/Congested traffic, Highway with 8 lanes) with speed-dependent car glyphs and real-time flow metrics.
+**Changed file:** `life.py` (+~420 lines)
 
-### Added: Ising Model (Magnetic Spin)
+**Core mechanics:**
 
-2D Ising model with Metropolis single-spin-flip dynamics. Full sweep per generation with periodic boundaries. 8 presets (Critical Point T≈2.27, Quench to Cold, External Field, Domain Wall) with interactive temperature and field controls, real-time magnetization and energy stats.
+| Field | PDE |
+|-------|-----|
+| Bacteria B | `∂B/∂t = r·B·N·(1−B) + μ·∇²B + χ·Φ_chemo` |
+| Nutrient N | `∂N/∂t = D_N·∇²N − k·B·N` |
+| Signal S | `∂S/∂t = σ·B − δ·S + 0.1·∇²S` |
 
-### Added: Hodgepodge Machine (BZ Reaction)
+**8 presets:**
 
-Gerhardt-Schuster BZ reaction model where healthy cells become infected based on neighbor counts, infected cells advance toward illness, and ill cells reset. 8 presets (Classic Spirals, Target Waves, Chaotic Mix, Crystal Growth) with interactive parameter tuning.
+| Preset | r | μ | χ | k | Init | Character |
+|--------|---|---|---|---|------|-----------|
+| Eden Cluster | 0.8 | 0.010 | 0.0 | 0.30 | center | Dense compact disc |
+| DLA Tendrils | 0.5 | 0.005 | 0.3 | 0.60 | center | Fractal branches |
+| Dense Branching | 0.6 | 0.020 | 0.15 | 0.40 | center | Bushy morphology |
+| Concentric Rings | 0.4 | 0.030 | 0.50 | 0.50 | center | Chemotactic ring waves |
+| Swarming Colony | 0.7 | 0.080 | 0.40 | 0.30 | center | Rapid spreading front |
+| Multi-Colony | 0.6 | 0.020 | 0.20 | 0.40 | multi | Competing colonies |
+| Nutrient Gradient | 0.5 | 0.015 | 0.25 | 0.40 | gradient | Directional growth |
+| Quorum Sensing | 0.5 | 0.010 | 0.60 | 0.35 | center | Density-dependent behavior |
 
-### Added: Turmites (2D Turing Machine)
+**Interactive controls:** `{` (toggle mode), `Space` (play/pause), `n` (step), `g`/`G` (growth rate ±0.05), `c`/`C` (chemotaxis ±0.05), `d`/`D` (motility ±0.005), `v` (cycle view: bacteria/nutrient/signal), `p` (inoculate patch), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Generalization of Langton's Ant where ants carry internal state and follow transition tables for color writes, turns, and state changes. 10 presets (Fibonacci Spiral, Square Builder, Snowflake, Highway Builder, Diamond, 3-Color Spiral) with adjustable steps/frame.
+### Added: Belousov-Zhabotinsky (BZ) Reaction — 3-variable Oregonator chemical oscillator with spiral waves
 
-### Added: Schelling Segregation Model
+3-variable Oregonator-inspired model: activator grows autocatalytically suppressed by recovery (`da = a(α−a−β·c) + D·∇²a`), inhibitor tracks activator (`db = a−b`), recovery driven by activator and decays (`dc = γ(a−c)`). Euler integration at dt=0.05 with 5-point Laplacian diffusion, toroidal boundaries. Phase-based rendering maps activator/recovery state to color wheel. 5 initialization types: spiral_seed, center_seed, random_seeds, random_noise, multi_spiral.
 
-Agents on a toroidal grid check Moore neighbors for similarity and relocate to random empty cells if below tolerance threshold. 8 presets varying tolerance, density, and number of groups (2-4), demonstrating how mild individual preferences produce strong macro-level segregation.
+**Changed file:** `life.py` (+~400 lines)
 
-### Added: Predator-Prey (Lotka-Volterra) Ecosystem
+**Core mechanics:**
 
-Three cell types — grass, prey, and predators — with emergent Lotka-Volterra population oscillations. Prey eat grass and gain energy, predators hunt prey, grass regrows on timers. 8 presets from Classic Oscillation to Extinction Edge.
+| Parameter | Range | Effect |
+|-----------|-------|--------|
+| α (activator rate) | 0.1–3.0 | Autocatalytic growth strength |
+| γ (recovery rate) | 0.1–3.0 | Return to excitability speed |
+| D (diffusion) | 0.01–1.0 | Spatial spreading; higher = smoother waves |
 
-### Added: Cyclic Cellular Automaton
+**8 presets:**
 
-Cells advance to (s+1) % N when ≥ threshold neighbors are already in the successor state. 8 presets varying state count (4-16), neighborhood type (Moore/Von Neumann), and threshold to produce spirals, waves, and crystalline patterns.
+| Preset | α | γ | D | Init | Character |
+|--------|---|---|---|------|-----------|
+| Classic Spirals | 1.0 | 1.0 | 0.20 | spiral_seed | Self-organizing spiral |
+| Dense Spirals | 1.2 | 0.8 | 0.15 | random_seeds | Competing spirals |
+| Slow Waves | 0.7 | 0.6 | 0.30 | center_seed | Large concentric rings |
+| Turbulent | 1.4 | 1.0 | 0.10 | random_noise | Chaotic spiral breakup |
+| Target Waves | 0.9 | 0.9 | 0.25 | center_seed | Bull's-eye rings |
+| Multi-Spiral | 1.0 | 1.0 | 0.20 | multi_spiral | Four competing spirals |
+| Gentle Ripples | 0.6 | 0.5 | 0.35 | random_noise | Soft undulations |
+| Fast Chaos | 1.3 | 1.2 | 0.12 | random_seeds | Rapid fragmented arcs |
 
-### Added: Forest Fire Cellular Automaton
+**Interactive controls:** `` ` `` (toggle mode), `Space` (play/pause), `n` (step), `a`/`A` (α ±0.1), `g`/`G` (γ ±0.1), `d`/`D` (diffusion ±0.02), `p` (add excitation patch), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Classic Forest Fire CA where burning cells become empty, adjacent trees catch fire, trees grow from empty cells with probability p, and lightning strikes ignite with probability f. 8 presets from Dense Forest to Firestorm with tunable growth and lightning rates.
+### Added: Spiking Neural Network (Izhikevich) — 2D grid of coupled neurons with spike dynamics and glow trails
 
-### Added: Abelian Sandpile
+Every cell is an Izhikevich neuron: `v' = 0.04v² + 5v + 140 − u + I`, `u' = a(bv−u)`, spike at v=30mV with reset to `c`, `u += d`. Synaptic current I from 8 Moore neighbors (excitatory +weight, inhibitory −weight) plus Gaussian noise. Fire history with exponential decay provides afterglow trails. Per-neuron (a,b,c,d) tuples enable diverse firing: regular spiking, fast spiking, chattering, cortical-realistic distributions.
 
-Abelian Sandpile model with parallel toppling and open boundary conditions. 7 presets (Single Tower, Big Pile, Random Rain, Four Corners, Diamond Seed, Checkerboard, Max Stable) with cursor-based grain dropping and configurable drop modes.
+**Changed file:** `life.py` (+~420 lines)
 
-### Added: Epidemic / SIR Disease Spread
+**Core mechanics:**
 
-SIR (Susceptible-Infected-Recovered-Dead) disease spread dynamics with distance-weighted transmission, recovery timers, configurable mortality, and optional reinfection. 8 presets (Seasonal Flu, COVID-like, Deadly Plague, Measles, Superspreader) with runtime parameter controls.
+| Concept | Implementation |
+|---------|----------------|
+| Neuron model | Izhikevich 2-variable: v (membrane), u (recovery) |
+| Synaptic coupling | 8-neighbor Moore; excitatory +weight, inhibitory −weight |
+| Integration | Euler sub-steps; total 1ms simulated per call |
+| Visualization | 4-layer: firing (yellow/cyan), glow trails (red/magenta at 3 levels), subthreshold (faint cyan) |
 
-### Added: Diffusion-Limited Aggregation (DLA)
+**10 presets:**
 
-Random walkers diffuse and stick to a growing crystal aggregate with configurable stickiness, drift bias, and rotational symmetry. 6 presets (Crystal Growth, Snowflake with 6-fold symmetry, Electrodeposition, Line Seed, Ring Seed) with age-based crystal coloring.
+| Preset | Exc% | Weight | Noise | Character |
+|--------|------|--------|-------|-----------|
+| Sparse Random Firing | 80% | 8.0 | 3.0 | Occasional spontaneous spikes |
+| Synchronized Bursting | 80% | 18.0 | 5.0 | Rhythmic population bursts |
+| Traveling Waves | 90% | 12.0 | 1.0 | Wave front propagation |
+| Spiral Activity | 85% | 14.0 | 1.5 | Rotating spiral |
+| Excitation Cascade | 95% | 15.0 | 4.0 | Dense avalanche dynamics |
+| Inhibition-Dominated | 50% | 12.0 | 6.0 | Sparse patterns |
+| Chattering Network | 80% | 10.0 | 4.0 | Fast rhythmic bursting |
+| Cortical Column | 80% | 10.0 | 5.0 | Realistic RS/FS distribution |
+| Noise-Driven | 80% | 6.0 | 12.0 | Stochastic thalamic input |
+| Two-Cluster Sync | 80% | 14.0 | 3.0 | Dual band stimulation |
 
-### Added: N-Body Gravity (Orbital Simulation)
+**Interactive controls:** `Space` (play/pause), `n` (step), `w`/`W` (weight ±1.0), `v`/`V` (noise ±0.5), `p` (stimulate 7×7 patch), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Gravitational N-body physics with Velocity Verlet integration. Features O(N²) force computation with softened gravity, body merging on collision with momentum conservation, and optional orbital trails. 6 presets (Solar System, Binary Star, Galaxy Collision, Figure-Eight, Lagrange Points).
+### Added: Kuramoto Coupled Oscillators — Phase synchronization with continuous order-disorder transition
 
-### Added: Maze Generation & Pathfinding
+Each grid cell is an autonomous oscillator with Gaussian-distributed natural frequency ωᵢ. Phase evolves via `θᵢ(t+dt) = θᵢ + dt·[ωᵢ + (K/4)·Σsin(θⱼ−θᵢ) + η]` with 4 von Neumann neighbors and periodic boundaries. Coupling K drives a continuous phase transition: below critical value oscillators remain incoherent, above it global synchronization sweeps the grid. Order parameter r = |1/N·Σexp(iθ)| measures transition in real time. Phase rendered through 6-color rainbow wheel with block-character density gradation.
 
-Animated maze generation and solving with 3 generation algorithms (Recursive Backtracker, Prim's, Kruskal's) and 4 solving algorithms (A*, Dijkstra, BFS, DFS). Real-time visualization with color-coded walls, explored cells, and solution path.
+**Changed file:** `life.py` (+~380 lines)
 
-### Added: Ant Colony Optimization (ACO)
+**Core mechanics:**
 
-Pheromone-based ant foraging simulation where ants search for food, deposit pheromone trails, and navigate using directional pheromone sensing. Features pheromone evaporation and diffusion mechanics. 6 presets with tuned parameters for different foraging dynamics.
+| Concept | Implementation |
+|---------|----------------|
+| Coupling | K/4 × Σsin(θⱼ−θᵢ) over von Neumann neighbors |
+| Order parameter | r = |1/N·Σexp(iθ)|; 0 = incoherent, 1 = synchronized |
+| Init modes | random, gradient (linear phase ramp), spiral (atan2 vortex), chimera (mixed sync/async) |
 
-### Added: Wave Function Collapse (WFC)
+**12 presets:**
 
-WFC simulation with 6 presets (Island, Coastline, Village, Maze, Terrain, Dungeon) using 10 tile types with adjacency constraints. Core algorithm uses entropy-based cell selection, random collapse, and BFS constraint propagation.
+| Preset | K | σ | Noise | Init | Character |
+|--------|---|---|-------|------|-----------|
+| Gentle Sync | 0.5 | 1.0 | 0.0 | random | Slow coherent islands |
+| Strong Sync | 3.0 | 1.0 | 0.0 | random | Rapid global lock-in |
+| Critical Point | 1.5 | 1.0 | 0.0 | random | Order from chaos |
+| Noisy Oscillators | 2.0 | 1.0 | 0.3 | random | Flickering domains |
+| Narrow Band | 1.0 | 0.3 | 0.0 | random | Easy sync |
+| Wide Band | 2.0 | 3.0 | 0.0 | random | Frustrated, hard to sync |
+| Phase Gradient | 1.0 | 1.0 | 0.0 | gradient | Travelling wave |
+| Spiral Seed | 1.5 | 0.5 | 0.0 | spiral | Topological vortex |
+| Chimera State | 1.2 | 1.0 | 0.0 | chimera | Mixed sync/async |
+| Frozen Random | 0.0 | 1.0 | 0.0 | random | K=0, independent |
+| Fast Dynamics | 1.5 | 1.0 | 0.0 | random | Large dt |
+| Noise Dominant | 0.5 | 1.0 | 1.0 | random | Noise overwhelms coupling |
 
-### Added: Fluid Dynamics (Lattice Boltzmann)
+**Interactive controls:** `Space` (play/pause), `n` (step), `c`/`C` (K ±0.1), `d`/`D` (dt ±0.01), `v`/`V` (noise ±0.05), `p` (perturb random patch), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Full D2Q9 Lattice Boltzmann Method fluid simulation with BGK collision operator, streaming with bounce-back boundaries, and Zou-He style inflow/outflow. 6 presets (wind tunnel, von Kármán vortex street, lid-driven cavity) with 3 visualization modes (speed, vorticity, density).
+### Added: 2D Wave Equation — Finite-difference membrane simulator with reflection, absorption, and diffraction
 
-### Added: Particle Life
+Full membrane wave simulator: `u_next = 2·u − u_prev + c²·(Laplacian)` with per-step multiplicative damping. Three boundary conditions: reflect (Neumann zero-derivative), absorb (Dirichlet zero), wrap (periodic). Double-slit preset places a hard barrier wall with two openings and drives a sinusoidal plane wave to produce sustained diffraction. Wave speed kept ≤0.5 for numerical stability. Signed displacement mapped to 5-tier block palette with positive crests in cyan/yellow and negative troughs in magenta/blue.
 
-Colored particle types interact via a randomized N×N attraction/repulsion matrix creating emergent self-organizing behaviors. Features toroidal physics with short-range repulsion and tunable mid-range forces. 6 presets (Primordial Soup, Symbiosis, Clusters, Predator-Prey, Galaxy, Chaos).
+**Changed file:** `life.py` (+~400 lines)
 
-### Added: Boids Flocking Simulation
+**Core mechanics:**
 
-Craig Reynolds' Boids algorithm with separation, alignment, and cohesion behaviors using toroidal distance. 6 presets (Murmuration, Fish School, Swarm, Migration, Dense Flock, Chaos) with directional Unicode arrow rendering and interactive radius/weight controls.
+| Concept | Implementation |
+|---------|----------------|
+| Wave equation | Standard 5-point finite difference with Courant number c |
+| Damping | Multiplicative per-step factor (0.95–1.0); 1.0 = lossless |
+| Boundaries | Reflect (Neumann), Absorb (Dirichlet), Wrap (periodic) |
+| Double slit | Barrier wall at cols/4 with two openings; continuous sine wave drive at left edge |
 
-### Added: Physarum Slime Mold Simulation
+**12 presets:**
 
-Particle-based Physarum polycephalum simulation where agents sense chemical trails, steer toward the strongest signal, deposit chemical, and move forward. Box-blur diffusion with configurable decay produces emergent vein-like transport networks. 6 presets from Explorer to Galaxy.
+| Preset | c | Damping | Boundary | Initial condition |
+|--------|---|---------|----------|-------------------|
+| Center Drop | 0.45 | 0.999 | reflect | Gaussian drop at center |
+| Reflecting Pool | 0.40 | 0.9995 | reflect | Standing waves |
+| Absorbing Edges | 0.45 | 0.999 | absorb | No reflections |
+| Wraparound Torus | 0.40 | 0.999 | wrap | Wraps across edges |
+| Double Slit | 0.35 | 0.9995 | absorb | Driven diffraction |
+| Corner Pulse | 0.45 | 0.999 | reflect | Pulse from corner |
+| Rain Drops | 0.40 | 0.999 | reflect | Random multi-drop |
+| Ring Wave | 0.40 | 0.999 | reflect | Annular displacement |
+| Cross Pattern | 0.40 | 0.999 | reflect | Cross-shaped ridge |
+| Undamped Pool | 0.40 | 1.000 | reflect | Energy conserved forever |
+| Slow Ripple | 0.20 | 0.999 | reflect | Clear propagation |
+| Fast Chaos | 0.48 | 0.998 | wrap | Max speed + random drops |
 
-### Added: Lenia Continuous Cellular Automaton
+**Interactive controls:** `Space` (play/pause), `n` (step), `c`/`C` (wave speed ±0.05), `d`/`D` (damping ±0.001), `b` (cycle boundary), `p` (pluck — random Gaussian impulse), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
 
-Continuous-state CA with smooth ring-shaped kernel convolution and Gaussian growth dynamics. Growth function G(u) maps potential to [-1,1] for smooth state transitions. 6 preset species (Orbium, Geminium, Scutium, etc.) with interactive parameter tuning.
+### Enhanced: Snowflake Crystal Growth — Six-Fold Symmetry & Diffusion Control
 
-### Added: Reaction-Diffusion (Gray-Scott)
+Two major upgrades: (1) True six-fold symmetry enforcement — when a cell freezes, its hex coordinates are transformed through all 12 symmetric images (6 rotations × 2 reflections) and all are frozen simultaneously, producing crystallographically correct snowflakes. (2) A diffusion rate parameter μ controlling vapor field smoothing — low μ creates steep gradients and narrow dendritic arms, high μ grows broad hexagonal plates. Visualization upgraded to 3-tier crystal renderer based on frozen neighbor count. A symmetry toggle (`s`) allows comparing constrained vs free growth mid-run. Presets expanded from 8 to 12.
 
-Gray-Scott reaction-diffusion system with two-chemical (U/V) continuous concentration grids and Laplacian diffusion. 6 parameter presets (spots, stripes, coral growth, mitosis, worms, waves) with live feed/kill rate adjustment and Unicode density rendering.
+**Changed file:** `life.py` (+~150 lines)
 
-### Added: Falling Sand Particle Simulation
+**New parameter:**
 
-Falling-sand style particle physics with five element types: Sand (piles up, sinks through water), Water (flows sideways to fill containers), Fire (rises, ignites plants), Stone (static boundaries), Plant (grows near water, burns near fire). 5 presets including Hourglass and Lava Lamp.
+| Parameter | Symbol | Range | Effect |
+|-----------|--------|-------|--------|
+| Diffusion rate | μ | 0.05–1.0 | Low = dendritic arms, high = plate morphology |
 
-### Added: Wireworld Cellular Automaton
+**12 presets:**
 
-4-state cellular automaton (empty, conductor, electron head, electron tail) designed for simulating digital logic circuits. 7 preset circuits (Diode, Clock, OR/AND/XOR gates, Loop) with interactive drawing mode and color-coded rendering.
+| Preset | α | β | μ | Sym | Character |
+|--------|---|---|---|-----|-----------|
+| Classic Dendrite | 0.40 | 0.40 | 0.80 | ❄ | Balanced six-armed branching |
+| Thin Needles | 0.30 | 0.30 | 0.90 | ❄ | Long thin branches |
+| Broad Plates | 0.50 | 0.55 | 0.50 | ❄ | Wide faceted plates |
+| Fernlike | 0.65 | 0.35 | 0.70 | ❄ | Highly branched ferns |
+| Stellar Dendrite | 0.45 | 0.45 | 0.85 | ❄ | Classic star snowflake |
+| Sectored Plate | 0.20 | 0.60 | 0.60 | ❄ | Sector-plate morphology |
+| Simple Hexagon | 0.15 | 0.70 | 0.40 | ❄ | Compact hexagonal prism |
+| Hollow Columns | 0.35 | 0.50 | 0.75 | ❄ | Hollow column morphology |
+| Noisy Crystal | 0.40 | 0.40 | 0.80 | ~ | High γ, irregular natural |
+| Asymmetric Growth | 0.40 | 0.40 | 0.80 | ~ | No symmetry, naturalistic |
+| Fast Dendrite | 0.55 | 0.35 | 0.50 | ❄ | Rapid dense fractal arms |
+| Sparse Frost | 0.25 | 0.25 | 0.90 | ❄ | Slow sparse crystal |
 
-### Added: Hexagonal Grid Mode
+**Interactive controls:** `Space` (play/pause), `n` (step), `a`/`A` (α ±0.05), `d`/`D` (μ ±0.05), `s` (toggle 6-fold symmetry), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q` (exit)
 
-Offset-row hex coordinate system with parity-dependent 6-neighbor adjacency tables. Default hex rule B2/S34 produces interesting emergent patterns. Hex tiling rendering uses ⬡ for alive and · for dead cells.
+### Added: Spatial Rock-Paper-Scissors — Cyclic dominance ecology with self-organizing spiral waves
 
-### Added: Langton's Ant Turmite
+Cyclic dominance ecology producing self-organizing spiral waves. Each step performs `floor(rows × cols × swap_rate)` interaction attempts: a random cell is chosen, then a random von Neumann neighbor. The attacker replaces the defender iff `defender == (attacker − 1) % N`. This asymmetric rule sustains persistent spiral waves rather than extinction. 3 or 5 species with three layout modes: random, blocks (vertical stripes), and seeds (circular minority clusters).
 
-Langton's Ant simulation with core turmite logic, toroidal wrapping, and sparse cell storage. 8 preset rules (RL, RLR, LLRR, etc.) plus custom rule input, multi-ant support (1-4 ants), and configurable steps-per-frame (up to 500) for fast-forwarding to highway emergence.
+**Changed file:** `life.py` (+~280 lines)
 
-### Added: Wolfram 1D Elementary Cellular Automaton
+**Core mechanics:**
 
-Full Wolfram elementary CA viewer with rule selection menu, 12 notable presets (rules 30, 90, 110, 184, etc.), custom rule entry (0-255), and three seed modes (center cell, GoL middle row, random). Renders top-to-bottom cascade with the 8-bit rule table displayed.
+| Concept | Implementation |
+|---------|----------------|
+| Dominance | Cyclic: species i beats (i−1) % N |
+| Interactions | `swap_rate × grid_size` random attempts per step |
+| Neighborhood | Von Neumann (4-connected), toroidal |
+
+**6 presets:**
+
+| Preset | Species | Swap rate | Layout | Character |
+|--------|---------|-----------|--------|-----------|
+| Classic Spiral Waves | 3 | 0.50 | random | Self-organizing spirals |
+| Slow Spirals | 3 | 0.20 | random | Larger, slower spirals |
+| Fast Chaos | 3 | 0.90 | random | Turbulent rapid dynamics |
+| Territorial Blocks | 3 | 0.50 | blocks | Watch invasion fronts |
+| Five Species | 5 | 0.50 | random | RPS-Lizard-Spock |
+| Seeded Spirals | 3 | 0.40 | seeds | Circular clusters nucleate spirals |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `s`/`S` (swap rate ±0.05), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Voronoi Crystal Growth — Competitive frontier growth with per-grain crystallographic anisotropy
+
+Polycrystalline solidification where nucleation seeds expand via frontier-based growth. Each grain has a random preferred growth angle; growth probability = `max(0.1, 1.0 − aniso × (angular_deviation / π))`. Frontier cells processed in random order each step. 15 distinct 256-color grain colors (red through sea green); grain boundaries detected via 8-connected scan and rendered as grey `▒▒`. Seed layouts: random, edge (columnar), center (radial), bicrystal.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Anisotropy | Off-axis growth suppressed by `aniso × (deviation / π)`; range 0.0–0.9 |
+| Frontier | Shuffled each step; successful claims add unclaimed 8-neighbors to frontier |
+| Grain boundaries | Detected when 8-connected neighbor belongs to different grain |
+
+**8 presets:**
+
+| Preset | Seeds | Anisotropy | Layout | Character |
+|--------|-------|-----------|--------|-----------|
+| Fine Microstructure | 60 | 0.20 | random | Dense polycrystalline texture |
+| Coarse Grains | 12 | 0.45 | random | Few large crystals with facets |
+| Columnar Growth | 25 | 0.50 | edge | Columnar columns from left edge |
+| Dendritic Arms | 20 | 0.70 | random | Branching faceted domains |
+| Isotropic Foam | 35 | 0.00 | random | Soap-bubble-like cells |
+| Sparse Nucleation | 6 | 0.35 | random | Large irregular territories |
+| Bicrystal | 2 | 0.40 | bicrystal | Single grain boundary study |
+| Radial Burst | 20 | 0.30 | center | Radial competitive growth |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `a`/`A` (anisotropy ±0.05), `+`/`-` (steps/frame ±2), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Hydraulic Erosion — Shallow-water erosion with procedural terrain, rainfall, and sediment transport
+
+Procedural heightmap terrain carved by five-stage physics: (1) uniform rainfall with ±20% spatial jitter; (2) effective height computation and downhill neighbor identification; (3) water flow to lower neighbors with erosion proportional to `solubility × slope × flow`; (4) sediment deposition when water pools or load exceeds threshold; (5) evaporation with remaining sediment deposited. Terrain generated with multi-octave smooth noise; 8 terrain types with additional shaping (ridges, cliffs, mesas, volcanoes). Height mapped to 8 color levels (deep blue → white peaks) with blue water overlay.
+
+**Changed file:** `life.py` (+~450 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Erosion | `solubility × slope × flow`, capped at 10% local height per step |
+| Deposition | When no downhill outlet or suspended load exceeds threshold |
+| Boundaries | Edge cells drain at 50% per step to prevent flooding |
+
+**8 presets:**
+
+| Preset | Terrain type | Character |
+|--------|-------------|-----------|
+| River Valley | gentle | Wide meandering rivers |
+| Mountain Gorge | steep | Deep narrow canyons |
+| Coastal Plateau | plateau | Flat top with cliff edges |
+| Badlands | rough | Dense dendritic networks |
+| Alpine Peaks | alpine | Glacial-style carving |
+| Rolling Hills | hills | Shallow streams |
+| Canyon Lands | mesa | Slot canyon formation |
+| Volcanic Island | volcano | Radial drainage |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `w`/`W` (rain rate ±0.002), `e`/`E` (solubility ±0.002), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Lightning / Dielectric Breakdown — DBM with Gauss-Seidel potential field and configurable branching
+
+Electrical discharge patterns modelled with the Dielectric Breakdown Model (DBM). An iterative Gauss-Seidel solver approximates Laplace's equation, establishing a potential field between the channel (fixed at 0) and the boundary (fixed at 1). Growth candidates (4-connected neighbors of channel) are weighted by `potential^eta` and selected via weighted random sampling. Channel age drives color: fresh = white/yellow `██`, fading through cyan `▓▓`, blue `▒▒`, dim blue `░░`.
+
+**Changed file:** `life.py` (+~380 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Potential solver | Gauss-Seidel relaxation, `min(80, max(rows,cols))` iterations per step |
+| Growth weighting | `potential^eta` — higher eta = straighter paths, lower = more branching |
+| Source positions | `top`, `center`, `point` — determines seed location and ground boundary |
+
+**8 presets:**
+
+| Preset | eta | Source | Character |
+|--------|-----|--------|-----------|
+| Classic Lightning | 2.0 | top | Natural branching bolt |
+| Sparse Bolt | 4.0 | top | Few branches, straighter |
+| Dense Branching | 1.0 | top | Heavily branched |
+| Lichtenberg Figure | 1.5 | center | Radial fractal |
+| Point Discharge | 2.0 | point | Star-like from single point |
+| Feathery Discharge | 0.5 | center | Maximum branching |
+| Minimal Tree | 3.0 | top | Moderate branching |
+| Ball Lightning | 3.5 | center | Sparse radial discharge |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `e`/`E` (eta ±0.25), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Spatial Prisoner's Dilemma (Evolutionary Game Theory) — Imitation dynamics on a 2D grid with cooperator clusters
+
+Spatial Prisoner's Dilemma on a periodic 2D grid. Scoring phase: every cell plays the PD payoff matrix against all 8 Moore neighbors (C-C→R, C-D→S, D-C→T, D-D→P). Update phase: each cell adopts the strategy of the highest-scoring neighbor — pure imitation dynamics producing characteristic cooperator-cluster patterns (Nowak & May, 1992). Cells rendered as color blocks scaled by score intensity.
+
+**Changed file:** `life.py` (+~310 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Payoff matrix | R (mutual cooperation), T (temptation), P (mutual defection), S (sucker's payoff) |
+| Update rule | Pure imitation — adopt strategy of highest-scoring Moore neighbor |
+| Stats | Live cooperator/defector counts with cooperation percentage |
+
+**8 presets:**
+
+| Preset | T | R | P | S | Init C% | Character |
+|--------|---|---|---|---|---------|-----------|
+| Classic | 1.5 | 1.0 | 0.0 | 0.0 | 50% | Standard PD; cooperator clusters |
+| Weak Dilemma | 1.2 | 1.0 | 0.0 | 0.0 | 50% | Low temptation; cooperation spreads |
+| Strong Dilemma | 2.0 | 1.0 | 0.0 | 0.0 | 50% | High temptation; defection dominates |
+| Snowdrift | 1.5 | 1.0 | 0.1 | 0.5 | 50% | Coexistence regime |
+| Stag Hunt | 1.2 | 1.5 | 0.0 | 0.0 | 40% | High reward for cooperation |
+| Critical Threshold | 1.65 | 1.0 | 0.0 | 0.0 | 50% | Phase transition; fragile clusters |
+| Mostly Defectors | 1.4 | 1.0 | 0.0 | 0.0 | 15% | Few cooperators try to survive |
+| Mostly Cooperators | 1.4 | 1.0 | 0.0 | 0.0 | 85% | Defectors try to invade |
+
+**Interactive controls:** `@` (toggle mode), `Space` (play/pause), `n` (step), `t`/`T` (temptation ±0.05), `+`/`-` (speed), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Snowflake Growth (Reiter Crystal) — Hexagonal lattice crystal growth with deposition and diffusion
+
+Reiter's 1995 crystal growth model on a hexagonal lattice using even-r offset coordinates with six-neighbour connectivity. Each step: (1) identify receptive cells (any frozen hex neighbor); (2) deposit α (+ noise ±γ) to receptive cells; (3) diffuse vapor among non-frozen cells via hex-neighbor averaging; (4) freeze cells with vapor ≥ 1.0. Seeds from a single frozen nucleus at grid center. Frozen ice rendered bright cyan; vapor density shown via block characters.
+
+**Changed file:** `life.py` (+~320 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Lattice | Hexagonal (even-r offset, 6 neighbors) |
+| Deposition | α per step to receptive cells, with optional noise ±γ |
+| Diffusion | Hex-neighbor averaging for non-frozen cells |
+| Freezing | Receptive cells with vapor ≥ 1.0 become permanently frozen |
+
+**8 presets:**
+
+| Preset | α | β (initial vapor) | Character |
+|--------|---|-------------------|-----------|
+| Classic Dendrite | 0.40 | 0.40 | Balanced six-fold branching |
+| Thin Needles | 0.30 | 0.30 | Long thin branches |
+| Broad Plates | 0.50 | 0.55 | Wide faceted plates |
+| Fernlike | 0.65 | 0.35 | Highly branched fern shapes |
+| Stellar Dendrite | 0.45 | 0.45 | Classic six-pointed star |
+| Sectored Plate | 0.20 | 0.60 | High vapor, low deposition |
+| Sparse Growth | 0.25 | 0.25 | Very slow sparse crystal |
+| Noisy Crystal | 0.40 | 0.40 | High noise, irregular natural look |
+
+**Interactive controls:** `*` (toggle mode), `Space` (play/pause), `n` (step), `a`/`A` (deposition rate ±0.05), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Traffic Flow (Nagel-Schreckenberg) — Minimal stochastic highway traffic model with phantom jams
+
+Nagel-Schreckenberg cellular automaton: the minimal stochastic model of single-lane highway traffic. Four simultaneous rules per step: (1) Acceleration — speed +1 up to vmax; (2) Braking — reduce to gap if gap < speed; (3) Randomisation — with probability p_slow, speed −1 (driver hesitation); (4) Movement — advance by final speed. Multiple lanes run independently (no lane-changing). Car glyphs encode speed: `█` (stopped, red) → `▓` → `▒` → `░` → `◈` → `►` (fast, green).
+
+**Changed file:** `life.py` (+~300 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Rules | Acceleration, braking, random slowdown, movement — all simultaneous |
+| Road | Circular (periodic boundaries per lane) |
+| Stats | Average speed and flow (total speed / total cells) live-tracked |
+
+**8 presets:**
+
+| Preset | vmax | p_slow | density | Lanes | Character |
+|--------|------|--------|---------|-------|-----------|
+| Light Traffic | 5 | 0.3 | 0.10 | 4 | Free flow at vmax |
+| Moderate Traffic | 5 | 0.3 | 0.25 | 4 | Occasional slowdowns |
+| Heavy Traffic | 5 | 0.3 | 0.40 | 4 | Phantom jams emerge |
+| Congested | 5 | 0.3 | 0.55 | 4 | Stop-and-go waves |
+| Slow Road | 2 | 0.3 | 0.35 | 4 | Low speed limit |
+| Cautious Drivers | 5 | 0.5 | 0.25 | 4 | High braking probability |
+| Aggressive Drivers | 5 | 0.1 | 0.30 | 4 | Low braking, smooth until not |
+| Highway (8 lanes) | 5 | 0.3 | 0.25 | 8 | Wide highway |
+
+**Interactive controls:** `T` (toggle mode), `Space` (play/pause), `n` (step), `d`/`D` (density ±0.05), `p`/`P` (brake probability ±0.05), `+`/`-` (speed), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Ising Model (Magnetic Spin) — Metropolis dynamics with phase transition at T≈2.27
+
+The 2D Ising model: canonical statistical-mechanics lattice of interacting binary spins (+1/−1). Metropolis single-spin-flip: each generation performs N random flip attempts, accepting unconditionally when ΔE ≤ 0, else with Boltzmann probability exp(−ΔE/kT). Pre-computed Boltzmann factors avoid repeated `exp()` calls. Periodic boundaries; external field adds −h·s per site. After each sweep, magnetisation ⟨m⟩ and energy E/N recomputed.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Dynamics | Metropolis single-spin-flip; N random attempts per sweep |
+| Acceptance | ΔE ≤ 0: always; else exp(−ΔE/kT) with pre-computed lookup |
+| Boundary | Periodic (toroidal); 4 nearest neighbors |
+| Observables | Magnetisation ⟨m⟩, energy per spin E/N (right+down pairs to avoid double-counting) |
+
+**8 presets:**
+
+| Preset | T | h | Init | Description |
+|--------|---|---|------|-------------|
+| Critical Point | 2.269 | 0.0 | random | Phase transition with fractal domains |
+| Low Temperature | 1.0 | 0.0 | random | Ordered phase; large aligned domains |
+| Very Cold | 0.5 | 0.0 | random | Near ground state |
+| High Temperature | 4.0 | 0.0 | random | Disordered, random-looking |
+| Quench to Cold | 0.1 | 0.0 | random | Rapid coarsening into domains |
+| External Field | 2.0 | 0.5 | random | Field biases alignment near Tc |
+| Domain Wall | 1.5 | 0.0 | half | Left up / right down; watch boundary evolve |
+| All Up + Heat | 3.0 | 0.0 | all_up | Ordered start melts into disorder |
+
+**Interactive controls:** `#` (toggle mode), `Space` (play/pause), `n` (step), `t`/`T` (temperature ±0.1), `f`/`F` (field ±0.1), `+`/`-` (sweeps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Hodgepodge Machine (BZ Reaction) — Gerhardt-Schuster discrete model with spiral waves and target patterns
+
+Gerhardt-Schuster (1989) discrete model of the Belousov-Zhabotinsky oscillating chemical reaction. Each cell carries integer state in `[0, n−1]`: 0 = healthy, n−1 = ill, between = infected. Three simultaneous update rules: (1) ill cells reset to healthy; (2) healthy cells get `floor(a/k1) + floor(b/k2)` where a = infected neighbors, b = ill neighbors; (3) infected cells advance by `floor(avg_nonzero_states + g)`. Parameters `k1`, `k2` control susceptibility; `g` controls progression speed.
+
+**Changed file:** `life.py` (+324 lines)
+
+**Core mechanics:**
+
+| Parameter | Role | Effect when increased |
+|-----------|------|---------------------|
+| `n_states` | Total states (10–255) | Longer infection cycle, slower spirals |
+| `k1` | Infection weight from infected neighbors | Smaller = more susceptible healthy cells |
+| `k2` | Infection weight from ill neighbors | Smaller = more susceptible healthy cells |
+| `g` | Illness progression speed | Faster advance, tighter spiral arms |
+
+**8 presets:**
+
+| Preset | n_states | k1 | k2 | g | Character |
+|--------|----------|----|----|---|-----------|
+| Classic Spirals | 100 | 2 | 3 | 28 | Smooth iconic BZ spirals |
+| Tight Spirals | 200 | 1 | 2 | 45 | Dense, tightly-wound waves |
+| Target Waves | 100 | 3 | 3 | 18 | Concentric expanding rings |
+| Chaotic Mix | 50 | 2 | 3 | 10 | Turbulent interacting wavefronts |
+| Slow Waves | 150 | 1 | 1 | 55 | Large, slow-moving spirals |
+| Fast Reaction | 60 | 3 | 4 | 8 | Rapid small-scale activity |
+| Crystal Growth | 80 | 1 | 4 | 35 | Angular, geometric wave patterns |
+| Thin Filaments | 255 | 2 | 3 | 80 | Delicate thin spiral arms |
+
+**Interactive controls:** `~` (toggle mode), `Space` (play/pause), `n` (step), `g`/`G` (progression speed ±1), `s`/`S` (state count ±10), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Turmites (2D Turing Machine) — Generalized Langton's Ant with internal state and transition tables
+
+Turmites generalize Langton's Ant: a single ant carries an internal state and reads the cell color. A transition table `table[state][color]` returns `(write_color, turn, new_state)` — the ant writes a new color, rotates (0=straight, 1=right, 2=U-turn, 3=left), advances state, then moves forward. Grid stored sparsely as `dict[(r,c) -> color]`; blank cells default to 0. Steps per frame selectable from {1, 5, 10, 50, 100, 500}.
+
+**Changed file:** `life.py` (+403 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Transition table | `table[state][color] = (write_color, turn_code, new_state)` |
+| Turn codes | 0=straight, 1=right (CW 90°), 2=U-turn (180°), 3=left (CCW 90°) |
+| Grid storage | Sparse dict; cells cycling to 0 removed from memory |
+| Rendering | Colored blocks by state; ant shown as directional arrow glyph |
+
+**10 presets:**
+
+| Preset | States | Colors | Behavior |
+|--------|--------|--------|----------|
+| Langton's Ant | 1 | 2 | Classic RL — highway after ~10,000 steps |
+| Fibonacci Spiral | 2 | 2 | Fibonacci-like spiral arm growth |
+| Square Builder | 2 | 2 | Expanding filled square |
+| Snowflake | 3 | 2 | Symmetric crystal-like growth |
+| Chaos | 2 | 2 | Complex chaotic, non-repeating |
+| Highway Builder | 2 | 2 | Rapid highway construction |
+| Spiral Growth | 3 | 2 | Expanding spiral with internal structure |
+| Diamond | 2 | 2 | Diamond-shaped filled region |
+| Worm Trail | 3 | 2 | Worm-like trailing path |
+| 3-Color Spiral | 2 | 3 | Three-color spiral behavior |
+
+**Interactive controls:** `Q` (toggle mode), `Space` (play/pause), `n` (step), `+`/`-` (cycle steps/frame through {1,5,10,50,100,500}), `r` (reset), `R`/`m` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Schelling Segregation Model — How mild preferences produce strong macro-level segregation
+
+Thomas Schelling's 1971 model of residential segregation on a toroidal grid with Moore neighborhoods. Each occupied cell belongs to one of 2–4 groups. Every step identifies all unhappy agents (fraction of same-group neighbors below tolerance threshold) and relocates them to random vacancies. Even tolerances as low as 30% reliably produce near-total macro-level segregation from random initial distributions. A satisfaction bar shows real-time happy/unhappy split.
+
+**Changed file:** `life.py` (+378 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Satisfaction test | `similar_neighbors / occupied_neighbors >= tolerance`; isolated agents always happy |
+| Move rule | All unhappy agents simultaneously relocate to random empty cells per step |
+| Grid encoding | 0 = empty; 1..`n_groups` = group identity |
+
+**8 presets:**
+
+| Preset | Tolerance | Density | Groups | Character |
+|--------|-----------|---------|--------|-----------|
+| Mild Preference | 30% | 90% | 2 | Fast segregation at low threshold |
+| Classic Schelling | 37.5% | 90% | 2 | Original 1/3 threshold |
+| Moderate Bias | 50% | 85% | 2 | Slower, stronger clustering |
+| Strong Preference | 62.5% | 90% | 2 | Near-total segregation |
+| Three Groups | 37.5% | 85% | 3 | Three competing populations |
+| Four Cultures | 35% | 80% | 4 | Complex four-way boundaries |
+| Sparse City | 40% | 50% | 2 | Abundant vacancies, faster diffusion |
+| Packed Metropolis | 37.5% | 97% | 2 | Few vacancies, slow churn |
+
+**Interactive controls:** `K` (toggle mode), `Space` (play/pause), `n` (step), `t`/`T` (tolerance ±2.5%), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Predator-Prey (Lotka-Volterra) Ecosystem — Grid-based agent simulation with emergent population oscillations
+
+Three cell types coexist on a toroidal grid: grass (regrows on empty cells after a configurable timer), prey (seek adjacent grass, gain energy from eating, reproduce by splitting energy, die at 0 energy), and predators (hunt adjacent prey, gain energy from kills, starve without food). All prey are shuffled and moved in random order before predators act. Population oscillatory signature emerges from agent interactions alone — no equation is explicitly solved.
+
+**Changed file:** `life.py` (+510 lines)
+
+**Core mechanics:**
+
+| Entity | Behavior |
+|--------|----------|
+| Empty (regrowing) | Counts down timer; converts to grass at 0 |
+| Grass | Passive; eaten by prey, starts regrowth timer |
+| Prey | Moves toward grass, eats for +`prey_gain` energy, −1/step, reproduces at threshold, dies at 0 |
+| Predator | Hunts prey preferentially, +`pred_gain` energy, −1/step, reproduces at threshold, dies at 0 |
+
+**8 presets:**
+
+| Preset | grass_regrow | prey_breed | pred_breed | Character |
+|--------|-------------|-----------|-----------|-----------|
+| Classic Oscillation | 5 | 6 | 10 | Clear population cycles |
+| Predator Boom | 4 | 6 | 12 | Prey crash then predator starvation |
+| Prey Paradise | 3 | 5 | 10 | Few predators, prey explosion |
+| Fast Dynamics | 2 | 4 | 7 | Rapid oscillations |
+| Sparse Savanna | 12 | 8 | 14 | Slow regrowth, fragile ecosystem |
+| Dense Jungle | 2 | 5 | 8 | Chaotic dynamics |
+| Extinction Edge | 6 | 6 | 14 | Predators barely viable |
+| Stable Coexistence | 4 | 7 | 12 | Long-term stable oscillations |
+
+**Interactive controls:** `J` (toggle mode), `Space` (play/pause), `n` (step), `g`/`G` (grass regrowth ±1), `b`/`B` (prey breed ±1), `p`/`P` (pred breed ±1), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Cyclic Cellular Automaton — Greenberg-Hastings rotating spirals with configurable state count and threshold
+
+Cells cycle through N discrete states, advancing to `(s+1) % N` only when ≥ `threshold` neighbors already hold the successor state. Starting from a random grid the rule self-organises into rotating spiral waves (low state count), concentric rings (high count), diamond patterns (Von Neumann neighborhood), or crystalline domains (high threshold). Fully synchronous update with toroidal wrapping. State-to-colour uses a 16-entry table cycling through 6 curses color pairs at three block-character intensities.
+
+**Changed file:** `life.py` (+266 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| State count N | 2–16 discrete states |
+| Threshold | Minimum successor-state neighbors to advance (1–8) |
+| Neighbourhood | Moore (8-cell) or Von Neumann (4-cell), selectable |
+| Update | Fully synchronous parallel |
+
+**8 presets:**
+
+| Preset | States | Threshold | Neighbourhood | Character |
+|--------|--------|-----------|---------------|-----------|
+| Classic Spirals | 8 | 1 | Moore | Rotating spirals |
+| Fine Spirals | 14 | 1 | Moore | Thin delicate spirals |
+| Turbulent | 5 | 1 | Moore | Fast chaotic waves |
+| Slow Waves | 16 | 1 | Moore | Slow majestic spirals |
+| Von Neumann | 8 | 1 | VN | Diamond-shaped waves |
+| High Threshold | 8 | 3 | Moore | Sparse, requires 3 neighbors |
+| Minimal | 4 | 1 | Moore | Simple fast cycling |
+| Crystalline | 6 | 2 | VN | Geometric crystal growth |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `t`/`T` (threshold ±1), `s`/`S` (state count ±1), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Forest Fire Cellular Automaton — Drossel-Schwabl model with self-organised criticality
+
+Drossel–Schwabl Forest Fire CA, a two-parameter stochastic automaton exhibiting self-organised criticality. Burning cells become empty; trees catch fire if any Moore neighbor is burning, or spontaneously with probability `f` (lightning); empty cells grow trees with probability `p`. Fire spreads to all adjacent trees in a single generation and burns out immediately, producing sharp fire-front geometry.
+
+**Changed file:** `life.py` (+269 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Growth probability `p` | Empty → Tree per step; range 0.001–1.0 |
+| Lightning probability `f` | Tree → Burning (spontaneous); range 0.0001–0.1 |
+| Neighbourhood | Moore (8-cell) for fire spread |
+| Fire duration | 1 generation (burns out immediately) |
+
+**8 presets:**
+
+| Preset | Density | Growth `p` | Lightning `f` |
+|--------|---------|-----------|---------------|
+| Classic | 0.55 | 0.030 | 0.0005 |
+| Dense Forest | 0.85 | 0.050 | 0.0002 |
+| Dry Season | 0.30 | 0.010 | 0.0030 |
+| Regrowth | 0.40 | 0.080 | 0.0010 |
+| Tinderbox | 0.70 | 0.020 | 0.0050 |
+| Savanna | 0.15 | 0.020 | 0.0020 |
+| Rainforest | 0.95 | 0.060 | 0.0001 |
+| Firestorm | 0.50 | 0.040 | 0.0100 |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `p`/`P` (growth ±0.005), `l`/`L` (lightning ±0.0005), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Abelian Sandpile — Self-organised criticality with parallel toppling and open boundaries
+
+Canonical example of self-organised criticality. Each step optionally drops grains at a configured location, then runs a parallel toppling loop: cells with ≥4 grains fire simultaneously, losing 4 and donating 1 to each von Neumann neighbor. Edge grains are permanently lost (open boundary). Toppling repeats until stable or iteration cap (1,000) reached. Four grain levels color-coded: empty, 1 blue `░░`, 2 green `▒▒`, 3 yellow `▓▓`, ≥4 red `██` bold during topple.
+
+**Changed file:** `life.py` (+392 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Topple threshold | Fixed at 4 grains (standard Abelian rule) |
+| Update scheme | Parallel — all unstable cells fire simultaneously each pass |
+| Boundary | Open — edge grains lost on topple |
+| Drop modes | center, random, corners (quarter-inset), cursor |
+| Max topple iterations | 1,000 per step |
+
+**7 presets:**
+
+| Preset | Initial state | Drop mode |
+|--------|---------------|-----------|
+| Single Tower | Empty | center, 1 grain/step |
+| Big Pile | 10,000 grains at centre | center, off |
+| Random Rain | Empty | random, 1 grain/step |
+| Four Corners | Empty | corners, 1 grain/step |
+| Diamond Seed | Diamond of 3-grain cells | center, 1 grain/step |
+| Checkerboard | Alternating 3-grain cells | off |
+| Max Stable | All cells at 3; centre perturbed | off |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `d` (cycle drop mode), `a`/`A` (add 100/1000 grains), `e` (drop at cursor), arrow keys/`hjkl` (move cursor), `+`/`-` (steps/frame 1–50), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Epidemic / SIR Disease Spread — Compartmental disease dynamics with distance-weighted transmission
+
+Four-state SIR(D) compartmental disease model on a grid. Phase 1: each infected cell scans within configurable Euclidean radius and attempts transmission to susceptible neighbours using distance-weighted probability `p * (1 − dist/(radius+1))`. Phase 2: apply infections atomically. Phase 3: decrement recovery timers; on expiry transition to Recovered or Dead by mortality rate. Optional Phase 4: Recovered cells lose immunity stochastically (0.005/step) for endemic reinfection waves. Live horizontal bar chart shows S/I/R/D proportions.
+
+**Changed file:** `life.py` (+364 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Transmission | Distance-weighted within Euclidean radius; base probability × (1 − dist/radius) |
+| Recovery | Per-cell timer; on expiry: die with `mortality` probability, else recover |
+| Reinfection | Optional: Recovered → Susceptible at 0.005/step |
+| Population bar | Horizontal S/I/R/D segments, color-coded green/red/blue/dim |
+
+**8 presets:**
+
+| Preset | Density | Radius | Trans. | Recovery | Mortality | Reinfection |
+|--------|---------|--------|--------|----------|-----------|-------------|
+| Seasonal Flu | 1.0 | 1.5 | 0.25 | 25 | 0.00 | No |
+| COVID-like | 0.8 | 2.0 | 0.35 | 30 | 0.02 | No |
+| Deadly Plague | 0.7 | 1.5 | 0.40 | 40 | 0.15 | No |
+| Measles | 1.0 | 3.0 | 0.60 | 15 | 0.01 | No |
+| Reinfection Wave | 0.9 | 1.5 | 0.30 | 20 | 0.00 | Yes |
+| Sparse Rural | 0.3 | 2.0 | 0.20 | 25 | 0.05 | No |
+| Superspreader | 0.8 | 5.0 | 0.15 | 20 | 0.01 | No |
+| Fast Burn | 1.0 | 2.0 | 0.50 | 8 | 0.00 | No |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `t`/`T` (transmission ±0.05), `v`/`V` (recovery ±5), `d`/`D` (mortality ±0.02), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Diffusion-Limited Aggregation (DLA) — Fractal crystal growth from random walker attachment
+
+Random walkers diffuse on an integer grid and irreversibly attach when adjacent to existing crystal, building fractal aggregates. Attachment is probabilistic (stickiness parameter), enabling tunable branching density. Optional per-axis drift bias enables directed growth (electrodeposition). Symmetric presets use rotated + reflected attachment positions for 6-fold dihedral D₆ snowflake symmetry. Crystal age drives color gradient (blue → cyan → green → yellow → white).
+
+**Changed file:** `life.py` (+508 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Attachment | Probabilistic — walker adjacent to crystal sticks with probability `stickiness` (1.0 = always) |
+| Drift bias | Per-axis bias deflects walkers directionally (e.g., −0.15 for upward electrodeposition) |
+| Symmetry | `_dla_attach_symmetric` rotates hit offset by `2π/symmetry` and writes all positions; 6-fold adds mirror |
+| Spawn radius | Grows with crystal extent; walkers killed if >20 cells beyond spawn radius |
+| Visual | Age fraction → 5 color tiers; neighbor count → glyph density `░▒▓█` |
+
+**6 presets:**
+
+| Preset | Seed | Walkers | Stickiness | Symmetry | Character |
+|--------|------|---------|------------|----------|-----------|
+| Crystal Growth | Center point | 300 | 1.0 | 1 | Classic dendritic fractal |
+| Multi-Seed | 5 points | 400 | 1.0 | 1 | Competing aggregates |
+| Snowflake | Center point | 300 | 0.7 | 6 | 6-fold dihedral symmetry |
+| Electrodeposition | Bottom edge | 500 | 1.0 | 1 | Upward drift bias |
+| Line Seed | Horizontal strip | 400 | 1.0 | 1 | Forest-like vertical fronds |
+| Ring Seed | Circle | 400 | 1.0 | 1 | Growth inward and outward |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `s`/`S` (stickiness ±0.1), `w`/`W` (walker count ±50), `+`/`-` (steps/frame ±2), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: N-Body Gravity (Orbital Simulation) — Velocity Verlet integrator with softened gravity and collision merging
+
+Full two-pass Velocity Verlet integrator for gravitational N-body dynamics with O(N²) pairwise force computation. Uses softened gravity `F = G·m₁·m₂ / (r² + ε²)^(3/2)` to prevent singularities. Bodies closer than `0.3 + 0.1·ln(1 + m_total)` cells merge via momentum conservation. Orbital trails maintained as fixed-length deques per body; center-of-mass viewport tracking keeps the system centered.
+
+**Changed file:** `life.py` (+570 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Integration | Velocity Verlet (symplectic, two-pass acceleration) |
+| Force law | Softened gravity with configurable G, ε |
+| Collision | Distance threshold scales with mass; merged body inherits centroid + momentum |
+| Trails | 30-step deque per body; merged bodies inherit constituent trails |
+
+**6 presets:**
+
+| Preset | Bodies | G | dt | Character |
+|--------|--------|---|-----|-----------|
+| Solar System | 7 | 1.0 | 0.02 | Central star + 6 planets on circular orbits |
+| Binary Star | 22 | 1.0 | 0.02 | Two equal stars + 20 debris particles |
+| Galaxy Collision | 82 | 0.5 | 0.03 | Two offset disk galaxies with opposing velocities |
+| Random Cluster | 60 | 0.8 | 0.03 | Random masses and positions |
+| Figure-Eight | 3 | 1.0 | 0.01 | Chenciner–Montgomery periodic 3-body orbit |
+| Lagrange Points | 19 | 1.0 | 0.02 | Central mass + planet + Trojans at L4/L5 |
+
+**Visual encoding:** `☉` (mass ≥100), `●` (≥10), `◆` (≥1), `·` (<1); brightness reflects speed; trail aging `· ∘ •`
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `g`/`G` (G ±0.1), `d`/`D` (dt ±0.005), `s`/`S` (softening ±0.1), `t` (toggle trails), `c` (toggle COM tracking), `+`/`-` (steps/frame), `r` (reset), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Maze Generation & Pathfinding — Animated generation and solving with 3+4 algorithms
+
+Two-phase animated simulation: maze generation followed by pathfinding, both rendered step-by-step. The maze uses binary odd/even cell encoding (odd = passages, even = walls). Generation transitions automatically to solving when the work queue empties.
+
+**Changed file:** `life.py` (+559 lines)
+
+**3 generation algorithms:**
+
+| Algorithm | Strategy |
+|-----------|----------|
+| Recursive Backtracker (DFS) | Stack-based; pick random unvisited neighbor 2 cells away, carve wall between, push; backtrack on dead end |
+| Prim's | Frontier edge list; pop random edge, carve if target unvisited, add its new edges |
+| Kruskal's | Union-find; pre-enumerate shuffled edges; carve if endpoints in different sets |
+
+**4 solving algorithms:**
+
+| Algorithm | Data structure | Heuristic |
+|-----------|---------------|-----------|
+| A* | Min-heap on `(f, g, r, c)` | Manhattan distance |
+| Dijkstra | Min-heap on `(dist, r, c)` | Uniform cost |
+| BFS | FIFO list | None (shortest path) |
+| DFS | LIFO list | None (no length guarantee) |
+
+**6 presets:** Classic DFS+A*, Prim+Dijkstra, Kruskal+BFS, Backtracker+DFS, Prim+A*, Kruskal+Dijkstra
+
+**Visual encoding:** `██` dim white (wall), green `SS`/red `EE` (start/end), bold green `██` (solution), blue `░░` (explored), bold red `██` (generation head), yellow `▓▓` (backtracker trail)
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `s`/`S` (steps/frame 1–20), `r` (reseed), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Ant Colony Optimization (ACO) — Pheromone-based foraging with emergent trail networks
+
+Pheromone-based foraging simulation where continuous-position ants perform biased random walks, depositing and sensing pheromone trails to guide the colony toward food. Each ant samples pheromone at three look-ahead points (left, center, right at ±0.5 rad) and steers toward the strongest signal. Ants carrying food home deposit pheromone with 30% angular correction toward nest. Two-stage pheromone dynamics: 3×3 Moore diffusion kernel + flat evaporation subtraction produces realistic trail narrowing.
+
+**Changed file:** `life.py` (+411 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Sensor model | 3 sensors at ±0.5 rad, sampling 3 cells ahead |
+| Trail deposition | Carrying ants deposit `deposit_strength` per step; clamped to 1.0 |
+| Pheromone decay | 3×3 box diffusion + flat evaporation subtraction per step |
+| Food sources | Placed randomly ≥25% grid distance from nest; finite reserves drain by 1.0 per collection |
+| Walker count | `ratio × rows × cols` (minimum 20) |
+
+**6 presets:**
+
+| Preset | Evap | Deposit | Ants | Food sources | Character |
+|--------|------|---------|------|-------------|-----------|
+| Forager | 0.020 | 0.30 | 8% | 4 | Standard foraging |
+| Highway | 0.005 | 0.60 | 12% | 3 | Strong persistent trails |
+| Explorer | 0.050 | 0.20 | 10% | 6 | Spread-out exploration |
+| Swarm | 0.015 | 0.40 | 25% | 5 | Dense ant coverage |
+| Minimal | 0.010 | 0.50 | 4% | 2 | Sparse colony |
+| Feast | 0.030 | 0.35 | 15% | 8 | Many food sources |
+
+**Interactive controls:** `Space` (play/pause), `n` (step), `e`/`E` (evaporation ±0.005), `d`/`D` (deposit ±0.05), `s`/`S` (steps/frame), `r` (reseed), `R` (preset menu), `q`/`Esc` (exit)
+
+### Added: Wave Function Collapse (WFC) — Step-by-step procedural generation with entropy-driven tile collapse
+
+WFC procedural generation algorithm adapted for real-time terminal rendering. The grid initializes with every cell holding the full set of valid tile indices; each step the solver finds minimum-entropy uncollapsed cells, picks one, collapses it to a random tile, and runs BFS constraint propagation outward. Adjacency rules enforced bidirectionally. Uncollapsed cells display entropy-shaded blocks (`▓▓` → `▒▒` → `░░` → `!!`) revealing the wave front as it collapses.
+
+**Changed file:** `life.py` (+433 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Entropy selection | Min-cardinality scan across uncollapsed cells; ties broken randomly |
+| Collapse | Uniform random sample from possibility set; cell marked in `wfc_collapsed` |
+| Propagation | BFS: neighbor possibilities intersected with union of allowed tiles from current cell |
+| Auto-cascade | Cells reduced to one possibility immediately committed |
+| Contradiction | Empty set halts run; `r` restarts |
+
+**10 tile types:** grass (`░░` green), water (`██` blue), sand (`▓▓` yellow), forest (`╬╬` bold green), mountain (`∧∧` white), river (`~~` bold blue), town (`##` magenta), house (`⌂⌂` cyan), deep water (`≈≈` dim blue), path (`··` dim yellow)
+
+**6 presets:**
+
+| Preset | Tiles | Character |
+|--------|-------|-----------|
+| Island | water, sand, grass, forest, mountain | Land masses surrounded by ocean |
+| Coastline | deep water, water, sand, grass | Layered shores |
+| Village | grass, path, house, town, forest | Towns and paths among fields |
+| Maze | wall, corridor | Winding corridors |
+| Terrain | water, sand, grass, forest, mountain, river | Full landscape with rivers |
+| Dungeon | wall, floor, corridor, door | Rooms and corridors |
+
+**Interactive controls:** `X` (toggle mode), `Space` (auto-run toggle), `n` (single collapse step), `s`/`S` (steps per frame 1–50), `r` (restart), `R` (preset menu), `q` (exit)
+
+### Added: Fluid Dynamics (Lattice Boltzmann) — D2Q9 LBM with BGK collision, Zou-He boundaries, and live vorticity
+
+The largest single-commit addition in the pre-refactor monolith brings a full D2Q9 Lattice Boltzmann Method fluid solver. The solver stores the 9-component particle-distribution function `f[r][c][9]` and advances each tick through streaming (propagation), bounce-back (obstacle reflection), and BGK collision (relaxation toward Maxwell–Boltzmann equilibrium at rate ω). Left-boundary inflow uses Zou-He fixed-density equilibrium; right boundary uses zero-gradient outflow.
+
+**Changed file:** `life.py` (+571 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Lattice | D2Q9 (9 discrete velocities + rest) |
+| Collision | BGK single-relaxation: each component relaxes toward equilibrium at rate ω |
+| Viscosity | ν = (1/ω − 0.5) / 3; ω range 0.50–1.99 |
+| Boundaries | Solid: full bounce-back; Inflow: Zou-He at ρ=1, u=u₀; Outflow: zero-gradient copy; Cavity: moving top wall |
+
+**3 visualization modes (cycle with `v`):**
+
+| Mode | Description |
+|------|-------------|
+| Speed | Velocity magnitude → `░▒▓█` with blue→yellow→red color |
+| Vorticity | Curl of velocity; CCW positive (red), CW (blue) |
+| Density | Pressure deviation from ρ=1 in magenta/green |
+
+**6 presets:**
+
+| Preset | ω | u₀ | Obstacle | Character |
+|--------|---|-----|---------|-----------|
+| Wind Tunnel | 1.40 | 0.10 | Single cylinder | Steady flow + wake |
+| Von Kármán Street | 1.85 | 0.12 | Smaller cylinder | Vortex shedding |
+| Lid-Driven Cavity | 1.50 | 0.10 | 3-wall enclosure | Recirculating vortex |
+| Channel Flow | 1.60 | 0.08 | Top+bottom walls | Poiseuille profile |
+| Obstacle Course | 1.50 | 0.10 | 5 cylinders | Weaving flow |
+| Turbulence | 1.90 | 0.15 | Small cylinder | High-speed chaos |
+
+**Interactive controls:** `F` (toggle mode), `Space` (play/pause), `n` (step), `w`/`W` (ω ±0.05), `u`/`U` (inflow speed ±0.01), `v` (cycle view), `r` (reset), `R` (preset menu), `+`/`-` (steps/frame 1–20), `q` (exit)
+
+### Added: Particle Life — N-body system with randomized attraction/repulsion matrix for emergent self-organization
+
+Continuously-iterated N-body system where colored particle types interact through a randomized N×N attraction/repulsion matrix. Each particle carries `[row, col, vr, vc, type]` state; the force profile has two regimes: within 30% of `max_radius` a strong universal repulsion prevents overlap; beyond that a rule-matrix-derived force peaks at ~0.6× `max_radius` and fades to zero at the boundary. Friction damping and velocity clamping keep the system stable. Each type rendered with distinct Unicode symbols (`● ◆ ■ ▲ ★ ◉ ♦ ✦`).
+
+**Changed file:** `life.py` (+383 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Force profile | 0–30% max_radius: repulsion `(rel/0.3 − 1.0)`; 30–100%: rule-matrix force `attraction × (1 − |2·rel − 1.3| / 0.7)` |
+| Rule matrix | N×N values in [−1, 1]; some presets use fixed seeds for reproducibility |
+| Physics | Toroidal distance wrapping, friction damping, velocity hard-clamp at 2.0 |
+
+**6 presets:**
+
+| Preset | Types | max_r | friction | Character |
+|--------|-------|-------|----------|-----------|
+| Primordial Soup | 6 | 15.0 | 0.50 | Random rules, classic emergent life |
+| Symbiosis | 4 | 18.0 | 0.40 | Species that orbit and depend on each other |
+| Clusters | 3 | 12.0 | 0.60 | Tight self-organizing clumps |
+| Predator-Prey | 5 | 20.0 | 0.30 | Chasing and fleeing dynamics |
+| Galaxy | 4 | 25.0 | 0.35 | Spiraling orbital structures |
+| Chaos | 8 | 14.0 | 0.25 | High energy, many types, wild behavior |
+
+**Interactive controls:** `0` (toggle mode), `Space` (play/pause), `n` (step), `f`/`F` (friction), `d`/`D` (interaction radius), `g`/`G` (force scale), `x` (re-randomize rule matrix), `r` (reseed), `R` (preset menu), `+`/`-` (steps/frame), `q` (exit)
+
+### Added: Boids Flocking Simulation — Craig Reynolds' three-rule steering with emergent murmuration
+
+Craig Reynolds' classic Boids algorithm implementing separation, alignment, and cohesion steering behaviors over a continuous toroidal arena. Each boid is a floating-point `[row, col, vr, vc]` velocity vector; on every tick the algorithm performs O(n²) pairwise scans using toroidal distance, accumulates three independent force channels, blends them with per-preset weights, then clamps velocity to a configurable maximum. Rendering maps each boid's velocity angle to one of eight directional Unicode arrows (`↑ ↗ → ↘ ↓ ↙ ← ↖`) with brightness proportional to speed.
+
+**Changed file:** `life.py` (+389 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Separation | Inverse-square repulsion from close neighbors within `sep_radius` |
+| Alignment | Velocity-matching with neighbors within `ali_radius` |
+| Cohesion | Steer toward center-of-mass of neighbors within `coh_radius` |
+| Speed limits | Velocity clamped at `max_speed`; minimum floor of 0.1 prevents stalling |
+| Agent count | `max(30, rows × cols × ratio)` per preset |
+
+**6 presets:**
+
+| Preset | sep/ali/coh radii | Weights | max_spd | Character |
+|--------|-------------------|---------|---------|-----------|
+| Murmuration | 2.5/7/12 | 2.5/1.2/1.0 | 1.2 | Tight flocks, predator avoidance |
+| Fish School | 3/6/10 | 1.5/1.5/1.8 | 0.6 | Slow, highly cohesive groups |
+| Swarm | 2/10/15 | 1.0/0.8/0.5 | 1.5 | Fast, loosely coupled agents |
+| Migration | 3/15/20 | 1.2/2.0/0.8 | 1.0 | Long-range directional movement |
+| Dense Flock | 2/5/8 | 2.0/1.5/2.0 | 0.8 | Tightly packed formation |
+| Chaos | 4/6/8 | 3.0/0.5/0.3 | 1.8 | High separation, near-zero cohesion |
+
+**Interactive controls:** `9` (toggle mode), `Space` (play/pause), `n` (step), `s`/`S` (separation radius), `a`/`A` (alignment radius), `c`/`C` (cohesion radius), `+`/`-` (steps/frame), `r` (reseed), `R` (preset menu), `q` (exit)
+
+### Added: Physarum Slime Mold Simulation — Agent-based trail-following with emergent vein networks
+
+Particle-based simulation of *Physarum polycephalum*. Each agent is a floating-point triple `[row, col, heading]` operating on a shared continuous trail grid (values `[0, 1]`). Every step, each agent reads three sensors (left, centre, right) at configurable angular offsets, steers toward the strongest signal (or randomly when centre is weakest), advances, and deposits trail. Diffusion runs as a 3×3 box blur followed by uniform decay subtraction, producing characteristic vein-narrowing and branch-merging behavior.
+
+**Changed file:** `life.py` (+~310 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Sensor model | Three sensors at `±sensor_angle` from heading, sampling trail grid at `sensor_dist` cells ahead |
+| Steering | 4-case rule: straight when centre strongest; random ±`turn_speed` when centre weakest; turn toward stronger flank otherwise |
+| Trail dynamics | Agent deposits `deposit` amount at landing cell; 3×3 box blur diffusion; uniform `decay` subtraction per step |
+| Spawning | Agents placed in filled disk of radius `0.3·min(rows,cols)`, facing outward with ±0.5 rad jitter |
+
+**6 presets:**
+
+| Preset | SA | SD | TS | Description |
+|--------|----|----|----|-------------|
+| Explorer | 0.40 | 9.0 | 0.30 | Sparse network — long-range foraging |
+| Dense Web | 0.30 | 5.0 | 0.40 | Thick interconnected veins |
+| Tendrils | 0.60 | 12.0 | 0.20 | Thin branching filaments |
+| Pulsing | 0.35 | 7.0 | 0.50 | Rhythmic contraction patterns |
+| Maze Solver | 0.25 | 8.0 | 0.60 | Finds shortest paths between food |
+| Galaxy | 0.80 | 10.0 | 0.15 | Spiral arm formation |
+
+**Interactive controls:** `8` (toggle mode), `Space` (play/pause), `n` (step), `a`/`A` (sensor angle ±0.05), `s`/`S` (sensor distance ±1.0), `t`/`T` (turn speed ±0.05), `d`/`D` (decay ±0.005), `+`/`-` (steps/frame), `r` (reseed), `R`/`m` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Lenia Continuous Cellular Automaton — Smooth kernel convolution with Gaussian growth dynamics
+
+Lenia generalises Conway's Game of Life following Bert Chan's 2020 formulation. Cell states are real values in `[0, 1]` rather than binary. A ring-shaped convolution kernel of radius `R` concentrates weight in an annular band peaking at distance `0.5R`, analogous to the alive-neighbor count in classic Life. The growth function `G(u) = 2·exp(−((u − µ) / σ)² / 2) − 1` produces a Gaussian bump so cells in the sweet-spot neighborhood grow while all others decay; update rule: `A(t+dt) = clip(A(t) + dt·G(U), 0, 1)`.
+
+**Changed file:** `life.py` (+~320 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Kernel | `(2R+1)×(2R+1)` array, value at distance `r/R` = `exp(−((r−0.5)/0.15)²/2)`, zeroed outside unit circle, L1-normalised |
+| Growth function | `G(u) = 2·exp(−((u−µ)/σ)²/2) − 1` mapping potential to `(−1, 1)` |
+| Seeding | Circular blobs with cosine-falloff density and multiplicative noise (×0.8–1.2) |
+| Rendering | 5-glyph density scale with warm organic gradient (dark green → bright green → orange → red → white) |
+
+**6 preset species:**
+
+| Species | R | µ | σ | dt | Description |
+|---------|---|---|---|-----|-------------|
+| Orbium | 13 | 0.150 | 0.015 | 0.10 | Smooth traveling glider |
+| Geminium | 10 | 0.140 | 0.014 | 0.10 | Self-replicating twin organism |
+| Scutium | 12 | 0.160 | 0.016 | 0.10 | Shield-shaped stationary life |
+| Hydrogeminium | 15 | 0.150 | 0.017 | 0.05 | Fluid replicator with organic motion |
+| Pentadecathlon | 8 | 0.120 | 0.012 | 0.10 | Pulsating ring oscillator |
+| Wanderer | 10 | 0.130 | 0.020 | 0.08 | Erratic slow-moving blob |
+
+**Interactive controls:** `7` (toggle mode), `Space` (play/pause), `n` (step), `u`/`U` (µ ±0.005), `s`/`S` (σ ±0.001), `d`/`D` (R ±1, rebuilds kernel), `t`/`T` (dt ±0.01), `+`/`-` (steps/frame), `r` (reseed), `R`/`m` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Reaction-Diffusion (Gray-Scott) — Two-chemical pattern formation with continuous concentration fields
+
+Gray-Scott two-chemical reaction-diffusion system. Two continuous concentration grids, `U` and `V`, evolve via coupled PDEs: `dU/dt = Du·∇²U − UV² + f(1−U)` and `dV/dt = Dv·∇²V + UV² − (f+k)V`, using a 5-point discrete Laplacian with toroidal boundaries. Multiple simulation steps can be batched per render frame (default 4, adjustable 1–20) to accelerate pattern formation. Rendering maps V concentration linearly to 5 density glyphs and 8 color tiers.
+
+**Changed file:** `life.py` (+~280 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Diffusion | 5-point discrete Laplacian with toroidal wrapping via negative index arithmetic |
+| Seeding | 3×3 to `cols/12`-radius square patches of `U≈0.5, V≈0.25` at random positions; count scales as `max(3, rows×cols/800)` |
+| Rendering | V concentration → 5 density glyphs (`  ░░ ▒▒ ▓▓ ██`) and 8 color tiers (dark blue → cyan → yellow → white) |
+| Parameters | `Du = 0.16`, `Dv = 0.08`, `dt = 1.0` fixed; only `f` and `k` are live-tunable |
+
+**6 presets:**
+
+| Preset | f | k | Description |
+|--------|---|---|-------------|
+| Spots (α) | 0.035 | 0.065 | Circular spots that fill space |
+| Stripes | 0.025 | 0.060 | Labyrinthine stripe patterns |
+| Coral Growth | 0.055 | 0.062 | Branching coral-like tendrils |
+| Mitosis | 0.0367 | 0.0649 | Self-replicating spots that divide |
+| Worms | 0.078 | 0.061 | Moving worm-like solitons |
+| Waves | 0.014 | 0.054 | Pulsating concentric wave patterns |
+
+**Interactive controls:** `6` (toggle mode), `Space` (play/pause), `n` (step), `f`/`F` (feed rate ±0.001), `k`/`K` (kill rate ±0.001), `+`/`-` (steps per frame ±1), `r` (reseed), `R`/`m` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Falling Sand Particle Simulation — Five-element physics with gravity, combustion, and growth
+
+Falling-sand style particle physics implemented as a sparse dictionary mapping `(row, col)` positions to `(element, age)` tuples. Each tick processes rows bottom-to-top so gravity resolves correctly in a single pass; within each row, columns are shuffled randomly to eliminate directional bias. Fire carries an age counter and expires after 12–20 ticks, produces flicker by toggling bold at 30% probability per frame, and ignites adjacent plants at 40% chance per contact.
+
+**Changed file:** `life.py` (+~350 lines)
+
+**5 element types:**
+
+| Element | Glyph | Color | Behavior |
+|---------|-------|-------|----------|
+| Sand | `░░` | Yellow | Falls straight down; tries diagonal on block; sinks through water via swap |
+| Water | `≈≈` | Blue | Falls then diagonals; flows sideways when fully blocked |
+| Fire | `██` | Red→Yellow | Rises stochastically; ignites neighbors; expires after 12–20 ticks |
+| Stone | `▓▓` | White | Static; never moved |
+| Plant | `██` | Green | Grows near water; ignites when adjacent to fire |
+
+**5 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Hourglass | Stone-walled chamber split by narrow gap; top half filled with sand |
+| Rainfall | Water sheet above staggered stone ledges |
+| Bonfire | Randomised plant forest (60% fill) with fire at base |
+| Sandbox | Empty grid — freehand drawing only |
+| Lava Lamp | Sealed vessel with alternating rows of sand and water |
+
+**Interactive controls:** `5` (toggle mode), `Space` (play/pause), `n` (step), `1`–`4`/`6` (select element brush), `0` (eraser), `+`/`-` (brush size 1–5), arrow keys/`hjkl` (move), `Enter`/`d` (paint), `r` (clear), `R` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Wireworld Cellular Automaton — 4-state CA for simulating digital logic circuits
+
+Wireworld is a 4-state cellular automaton designed specifically for simulating digital logic circuits. Each cell holds one of four states — empty, conductor, electron head, or electron tail — and three deterministic transition rules model the flow of electron signals along conductor paths. Heads propagate forward by becoming tails; tails decay back into conductors; a conductor fires into a head only when it has exactly 1 or 2 head-state neighbors. This single conditional makes it possible to construct diodes, clocks, and all standard logic gates.
+
+**Changed file:** `life.py` (+~414 lines)
+
+**State transition table:**
+
+| Current state | Next state | Condition |
+|---------------|------------|-----------|
+| Empty | Empty | Always |
+| Electron head | Electron tail | Always |
+| Electron tail | Conductor | Always |
+| Conductor | Electron head | 1 or 2 head neighbors |
+| Conductor | Conductor | 0 or 3+ head neighbors |
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Grid storage | Sparse `dict[(r,c) -> state]`; only non-empty cells stored |
+| Step function | Builds candidate set from all current cells plus Moore neighborhood of every conductor |
+| Drawing mode | Opens in edit mode by default; number keys `0`–`3` select brush (eraser/conductor/head/tail); cursor movement auto-paints |
+| Rendering | Double-width `██` blocks: blue for electron heads, white for tails, yellow for conductors |
+
+**7 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Diode | One-way electron flow using fanout junction |
+| Clock | Periodic electron emitter loop |
+| OR gate | Output fires if any input carries a signal |
+| AND gate | Output fires only when both inputs fire simultaneously |
+| XOR gate | Output fires when exactly one input fires |
+| Loop | Single electron circulating in a closed conductor loop |
+| Empty grid | Blank canvas for drawing custom circuits |
+
+**Interactive controls:** `4` (toggle mode), `Space` (play/pause), `n` (step), `e` (toggle draw mode), `0`–`3` (select brush), `Enter` (cycle cell state), arrow keys/`hjkl` (move/paint), `r` (clear), `R`/`m` (preset menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Hexagonal Grid Mode — 6-neighbor topology with offset-row hex coordinates
+
+Hexagonal grid mode replaces the standard 8-neighbor Moore neighborhood with a 6-neighbor topology appropriate to a hexagonal tiling, toggled by `3`. Because Conway's B3/S23 rules are tuned for a square lattice, enabling hex mode simultaneously switches to **B2/S34** — a well-known hex-life rule that produces interesting emergent structures — and disabling it reverts to B3/S23 automatically.
+
+**Changed file:** `life.py` (+~85 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Coordinate system | Offset-row (even-q) scheme with `HEX_NEIGHBORS_EVEN` / `HEX_NEIGHBORS_ODD` tables — parity-dependent 6 `(dr, dc)` pairs |
+| Neighbor counting | `_count_neighbours` dispatches on `hex_mode` boolean to select 6-neighbor hex offsets or original 8-neighbor loop |
+| Rendering | Odd grid rows shifted 1 screen column right for visual stagger; live cells render as `⬡` (U+2B22); dead cells as `·` (U+00B7) |
+| Rule auto-switch | Toggling hex mode sets B2/S34; toggling off restores B3/S23 |
+
+| Property | Square grid | Hex grid |
+|----------|-------------|----------|
+| Neighbor count | 8 (Moore) | 6 (offset-row) |
+| Default rule | B3/S23 | B2/S34 |
+| Live cell glyph | `██` | `⬡ ` |
+| Dead cell glyph | (blank) | `· ` |
+| Row stagger | none | odd rows +1 column |
+
+**Interactive controls:** `3` (toggle hex grid on/off with auto rule switch), `R` (change rule while in hex mode); all existing GoL controls function identically
+
+### Added: Langton's Ant Turmite — 2D Turing machine with emergent highways and fractal growth
+
+Langton's Ant is a two-dimensional Turing machine where one or more "ants" traverse the grid by reading the color state of the cell they occupy, turning according to a rule string, advancing the cell to the next color state, and stepping forward. The classic `RL` rule spends roughly 10,000 steps in apparent chaos before abruptly locking into a repeating "highway" diagonal corridor — one of the most striking examples of emergent order from simple rules. Extended rule strings introduce additional color states, producing fractal spirals and symmetric filled shapes.
+
+**Changed file:** `life.py` (+~369 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Grid storage | Sparse `dict[(r,c) -> color_state]`; only non-zero cells occupy memory; cells cycling to state 0 are removed |
+| Step function | For each ant: read cell's color_state, look up rule character at `state % rule_len`, turn R or L, advance cell to `(state+1) % rule_len`, move forward with toroidal wrapping |
+| Multi-ant | 2–4 ants placed symmetrically around grid center at spacing of `grid_rows // 8` |
+| Steps per frame | Configurable 1–500 steps per display refresh for fast-forwarding to highway emergence |
+| Rendering | Double-width `██` colored by state index using color pairs 1–8; ants overlaid as directional arrows (`▲ ▶ ▼ ◀`) |
+
+**8 presets:**
+
+| Rule | Colors | Character |
+|------|--------|-----------|
+| `RL` | 2 | Classic — highway after ~10,000 steps |
+| `RLR` | 3 | Symmetric triangular patterns |
+| `LLRR` | 4 | Grows a filled square |
+| `LRRRRRLLR` | 9 | Intricate fractal growth |
+| `RRLLLRLLLRRR` | 12 | Chaotic spiral expansion |
+| `RRLL` | 4 | Diamond-shaped growth |
+| `RLLR` | 4 | Square with internal structure |
+| `LRRL` | 4 | Complex highway variant |
+
+**Interactive controls:** `2` (toggle mode), `Space` (play/pause), `n` (step), `+`/`-` (steps per frame 1→500), `r` (reset), `R`/`m` (rule menu), `<`/`>` (speed), `q`/`Esc` (exit)
+
+### Added: Wolfram 1D Elementary Cellular Automaton — All 256 elementary rules with cascading space-time rendering
+
+Wolfram's elementary cellular automaton framework covers all 256 rules of the classic 1D CA formalism. Rather than evolving a 2D grid, each generation produces a single row derived from the previous one by examining every 3-cell neighborhood — so the full space-time history cascades top-to-bottom on screen, making patterns like the Sierpinski triangle or Rule 30's pseudorandom chaos visually immediate.
+
+**Changed file:** `life.py` (+~379 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Rule computation | `_wolfram_apply_rule`: 3-cell neighborhood `(left, center, right)` assembled into a 3-bit index, used as bit-position lookup into the 8-bit rule number |
+| Step function | `_wolfram_step` applies rule across every cell with toroidal boundary conditions, appending result as new row |
+| Rendering | Most recent rows that fit the display shown, scrolling naturally; live cells render as `█`; row alternation uses color pairs 1 and 2 |
+| Rule table display | Row 1 always shows the 8-entry lookup table (`111=# 110=. …`) for instant reference |
+
+**12 presets:**
+
+| Rule | Character |
+|------|-----------|
+| 30 | Chaotic / pseudorandom — used in Mathematica's RNG |
+| 90 | Sierpinski triangle (bitwise XOR of neighbors) |
+| 110 | Turing-complete — supports universal computation |
+| 184 | Traffic flow model |
+| 73 | Complex structures |
+| 54 | Complex patterns with triangles |
+| 150 | Sierpinski variant |
+| 22 | Nested triangles |
+| 126 | Complement of Rule 90 |
+| 250 | Simple stripes |
+| 0 | All cells die immediately |
+| 255 | All cells become alive |
+
+**3 seed modes:** `center` (single live cell in middle), `gol_row` (middle row of current GoL grid), `random` (each cell randomized)
+
+**Interactive controls:** `1` (toggle mode), `Space` (play/pause), `n` (step), `←`/`→` (decrement/increment rule number), `r` (reset), `R`/`m` (rule menu), `<`/`>` (speed), `q`/`Esc` (exit)
 
 ---
 
 ## 2026-03-14
 
-### Added: Genetic Algorithm Evolution Mode
+### Added: Genetic Algorithm Evolution Mode — Automated rule discovery through evolutionary search
 
-Genetic algorithms to evolve Conway's Game of Life rulesets. Configurable population size, mutation rate, elite count, and simulation generations. GA evaluates fitness across four criteria (longevity, stability, diversity, population) with selectable weighting modes. Features tiled multi-grid visualization, fitness scoreboard with sparklines, and best-ever tracking.
+Rule discovery in Life-like cellular automata is normally manual: the user types a B/S string, watches what happens, and iterates by intuition. This automates the process with a genetic algorithm that maintains a population of competing rulesets, simulates them in parallel, scores them against configurable fitness criteria, and breeds the survivors into the next generation.
 
-### Added: Puzzle/Challenge Mode
+**Changed file:** `life.py` (+~500 lines)
 
-10 challenges across 6 types: still life construction, oscillator building, population growth, spaceship escape, extinction, and survival. Three-phase gameplay loop (planning, running, result) with cell placement limits, efficiency-based scoring, and contextual hints.
+**Genetic operators:**
 
-### Added: 3D Isometric View Mode
+| Operator | Implementation |
+|----------|---------------|
+| Random rule generation | Each digit 0–8 included in birth/survival independently with 30% probability |
+| Mutation | Each digit position flipped independently with configurable probability |
+| Crossover | Uniform crossover — for each digit 0–8, pick from parent 1 or 2 with 50/50 probability |
+| Selection | Top `elite_count` by fitness kept unchanged; remaining filled by crossover+mutation of elite pairs |
 
-Pseudo-3D isometric cityscape rendering of the Game of Life grid. Living cells appear as vertical pillars using Unicode block/shade characters with height reflecting cell age (1-5 rows). Uses oblique projection with back-to-front painter's algorithm for correct occlusion.
+**Fitness criteria:**
 
-### Added: Zoom/Scale Mode
+| Criterion | Computation | Max |
+|-----------|-------------|-----|
+| Longevity | Steps where population > 0 | `grid_gens` |
+| Population | Average population, capped at 200 | 200 |
+| Stability | `max(0, 100 − CV × 100)` where CV = std/mean | 100 |
+| Diversity | `min(unique pop values in last 100 steps × 2, 100)` | 100 |
 
-Multi-level zoom (1x, 2x, 4x, 8x) that aggregates grid cells into density glyphs (░▒▓█) for zoomed-out views of large patterns. Each screen cell represents a zoom×zoom block with glyph chosen by alive-cell density.
+**4 fitness weighting modes:** `balanced` (equal weights), `longevity` (3× longevity), `diversity` (3× diversity), `population` (3× population)
 
-### Added: Multiplayer Mode (TCP Networking)
+**Configuration:**
 
-~1,100 lines of multiplayer functionality using only Python built-in modules (socket, threading, queue, json). Two players connect via TCP, place cells during a 30-second planning phase, then watch an authoritative simulation with ownership tracking and territory scoring.
+| Parameter | Default | Range |
+|-----------|---------|-------|
+| Population size | 12 | 4–24 |
+| Sim generations | 200 | 50–2000 |
+| Mutation rate | 15% | 0–100% |
+| Elite survivors | 4 | 2–pop/2 |
+| Fitness criteria | balanced | 4 modes |
 
-### Added: Race Mode
+**UI:** Upper region tiles all grids in a √N layout with rule labels; lower region shows scoreboard with rank, rule, score components, and population sparklines. Best-ever tracker persists across all GA generations. `★` marks the best, `●` marks elites.
 
-Head-to-head rule comparison pitting 2-4 CA rule sets against each other on cloned grids. Features tiled side-by-side rendering, per-grid tracking of population/extinction/oscillation, live scoreboard with progress bar, and composite scoring for winner determination.
+**Interactive controls:** `E` (enter/exit evolution mode), `Space` (play/pause or breed next generation), `n` (step/breed), `s` (skip to end), `a` (adopt selected rule into main simulator), `f` (cycle fitness mode), `m` (set mutation rate), `↑`/`↓` (select individual)
 
-### Added: Sound/Music Mode
+### Added: Puzzle/Challenge Mode — 10 goal-directed challenges with cell budgets and scoring
 
-Generative music engine mapping active cells to a pentatonic scale (C-D-E-G-A) across multiple octaves. Features SoundEngine class with sine wave synthesis, auto-detected audio player, 12-voice polyphony, attack/release envelopes, and tempo-locked playback.
+Every other mode in the simulator is open-ended: the user sets things up and watches what happens. Puzzle mode reverses the relationship — it presents a specific cellular automaton objective, gives the player a limited cell budget, and scores them on how efficiently they achieve the goal. Ten built-in puzzles span six challenge types, with a three-phase gameplay loop (planning → running → result).
 
-### Added: GIF Recording and Export
+**Changed file:** `life.py` (+~350 lines)
 
-Animated GIF recording using a zero-dependency GIF89a encoder built on the struct module. LZW compression, 8-color age-tier palette, and speed-aware frame delay. Recording captures grid snapshots on each step and exports to ~/.life_saves/.
+**6 challenge types:**
 
-### Added: Blueprint Mode
+| Type | Win condition | Fail conditions |
+|------|--------------|-----------------|
+| `still_life` | Grid reaches period-1 cycle with cells alive | Population 0; time limit |
+| `oscillator` | Grid enters cycle with period ≥ min_period | Population 0; still life; time limit |
+| `reach_population` | `population >= target` | Population 0; time limit |
+| `escape_box` | Any live cell exits the initial bounding box | Population 0; time limit |
+| `extinction` | `population == 0` | Cycle detected with pop > 0; time limit |
+| `survive_gens` | Pattern survives N+ gens, not still or extinct | Extinction; still life; time limit |
 
-Blueprint system for selecting rectangular grid regions, capturing alive cells as named patterns, and saving to a persistent library (~/.life_saves/blueprints.json). Blueprints appear alongside built-in patterns with [BP] prefix and can be stamped onto the grid.
+**10 puzzles:**
 
-### Added: Pattern Recognition Engine
+| # | Name | Type | Budget | Goal |
+|---|------|------|--------|------|
+| 1 | First Still Life | still_life | 4 | Build a stable pattern |
+| 2 | Blinker Builder | oscillator | 5 | Build an oscillator |
+| 3 | Population Boom | reach_population | 5 | Reach population 20 |
+| 4 | Spaceship Launch | escape_box | 6 | Escape 10×10 box |
+| 5 | Extinction Event | extinction | 7 | Kill all cells |
+| 6 | Higher Period | oscillator (≥3) | 20 | Period-3+ oscillator |
+| 7 | Population Explosion | reach_population | 10 | Reach population 100 |
+| 8 | Efficient Still Life | still_life | 6 | Stable with minimal cells |
+| 9 | Speed Run | reach_population | 8 | Reach 50 quickly |
+| 10 | Grand Challenge | survive_gens | 6 | Survive 500+ generations |
 
-Real-time pattern detection identifying known Game of Life structures (still lifes, oscillators, spaceships) in any orientation. Rotation/reflection-agnostic matching across all 8 orientations for 12 patterns (block, beehive, blinker, glider, etc.) with color-coded highlighting.
+**Scoring:** `cell_bonus = 100 × max_cells / cells_used` + `gen_bonus = 50 × (limit − win_gen) / limit`; fewer cells and faster wins yield higher scores. Best scores tracked per puzzle for the session.
 
-### Added: Heatmap Visualization Mode
+**Interactive controls:** `C` (enter/exit puzzle mode), `↑`/`↓` (navigate), `Enter` (start/next), `e`/`d`/`x` (place/draw/erase cells), `c` (clear), `?` (show hint), `Esc` (abort), `r` (retry)
 
-Toggleable heatmap overlay tracking how often each cell has been alive across all generations. Cool-to-hot color gradient (dim blue → cyan → yellow → red → white) with 256-color support and 8-color fallback. Currently-alive cells render bold.
+### Added: 3D Isometric View Mode — Pseudo-3D cityscape where cell age becomes pillar height
 
-### Added: Time-Travel Timeline Bar with Bookmarks
+The existing flat 2D representation treats every living cell as identical. Cell age — already tracked numerically and expressed through colour gradients — contains useful structural information: old cells belong to stable cores, young cells are the active frontier. This adds a pseudo-3D isometric cityscape renderer that makes age physically tangible by extruding each living cell into a vertical pillar whose height grows with age.
 
-Non-destructive timeline scrubbing replacing the destructive rewind system. Timeline bar UI with filled/empty block characters and bookmark markers. Bracket keys scrub ±10 steps, 'b' bookmarks generations, and 'B' opens a bookmark list with jump-to and delete support.
+**Changed file:** `life.py` (+~180 lines)
 
-### Added: Multi-Grid Side-by-Side Comparison
+**Core mechanics:**
 
-Split-screen comparison mode running two grids simultaneously with different rule sets from the same initial configuration. Includes rule picker for the second grid, split rendering with vertical divider, independent population tracking with sparklines.
+| Concept | Implementation |
+|---------|----------------|
+| Projection | Oblique projection: each successive grid row shifted one column right and one row up on screen |
+| Rendering order | Painter's algorithm — grid rows rendered back-to-front so closer pillars correctly occlude farther ones |
+| Z-buffer | Sparse `zbuf` dict keyed on screen `(sy, sx)` accumulates glyph and colour data; only cells needing drawing write to it |
+| Right-face shading | Each pillar has a right-face shade column using `_ISO_SHADE_MAP` (`█→▓`, `▓→▒`, `▒→░`) |
 
-### Added: RLE Pattern File Import
+**Pillar height tiers:**
 
-Parser for standard .rle files used by the Game of Life community (e.g., LifeWiki). Supports RLE metadata (#N, #C, #O), B3/S23 and legacy S/B rule formats, and auto-applies embedded rules. Imported patterns are centered on the grid.
+| Cell age | Pillar height | Characters (bottom → top) |
+|----------|---------------|---------------------------|
+| ≤ 1 (newborn) | 1 row | `█` |
+| 2–3 (young) | 2 rows | `█`, `▓` |
+| 4–8 (mature) | 3 rows | `█`, `▓`, `▒` |
+| 9–20 (old) | 4 rows | `█`, `▓`, `▒`, `░` |
+| > 20 (ancient) | 5 rows | `█`, `▓`, `▒`, `░`, `·` |
 
-### Added: Rule Editor for Life-Like Cellular Automata
+**Interactive controls:** `I` (toggle 3D isometric view on/off), arrow keys/`hjkl` (move cursor/pan viewport), `Space` (play/pause), `n` (single step), `H` (toggle heatmap overlay)
 
-9 rule presets (Conway's, HighLife, Day & Night, Seeds, etc.) with birth/survival set definitions. Rule string parser and formatter (B.../S... notation). Configurable birth/survival rules replace hardcoded Conway's rules, persisted in save/load data.
+### Added: Zoom/Scale Mode — Multi-level density-glyph zoom for surveying large-scale pattern structure
 
-### Added: Stamp Mode
+The simulator has always rendered the grid at 1:1 scale — one terminal character per living cell. For small patterns this is ideal, but emergent large-scale structures (glider streams, oscillator fields, methuselah explosions) were impossible to survey without scrolling. This adds a multi-level zoom system that compresses each N×N block of grid cells into a single Unicode density glyph that encodes how many of those cells are alive.
 
-Stamp pattern selector ('t' key) that overlays the chosen pattern centered on the current cursor without clearing the grid. Complements the existing 'p' pattern loader which clears the grid before placing.
+**Changed file:** `life.py` (+~120 lines)
 
-### Added: Generation Rewind/Undo
+**Core mechanics:**
 
-Step backwards through simulation history using 'u' key. A deque-based history buffer (capped at 500 generations) stores grid snapshots before each step. Rewinding pauses the simulation and restores the most recent snapshot.
+| Concept | Implementation |
+|---------|----------------|
+| Zoom levels | `ZOOM_LEVELS = [1, 2, 4, 8]`; each screen character represents a `zoom × zoom` block of grid cells |
+| Density glyphs | 0% → space, 1–25% → `░░`, 26–50% → `▒▒`, 51–75% → `▓▓`, 76–100% → `██` |
+| Overlay interop | Heatmap mode sums heat across the block; blueprint highlighting works at block level; pattern labels reposition by dividing coordinates by zoom factor |
+| Cursor | Block containing cursor rendered with `A_REVERSE` |
+| Key rebinding | Speed controls moved from `+`/`-` to `>`/`<` to free zoom keys |
 
-### Added: Draw/Erase Mode
+**4 zoom levels:**
 
-Toggle-able draw ('d') and erase ('x') modes for continuous cell painting while moving the cursor, replacing the one-cell-at-a-time toggle. Esc exits either mode.
+| Level | Grid cells per character | Use case |
+|-------|--------------------------|----------|
+| 1× | 1 × 1 | Editing, detailed inspection |
+| 2× | 2 × 2 | Overview of medium-sized patterns |
+| 4× | 4 × 4 | Surveying large evolving structures |
+| 8× | 8 × 8 | Full-grid macro view |
 
-### Added: Cycle Detection
+**Interactive controls:** `+`/`=` (zoom in), `-`/`_` (zoom out), `0` (reset to 1:1), `>`/`<` (speed up/down)
 
-Auto-pause on repeating states by hashing grid states (MD5 of alive cell positions) and comparing against history. Displays extinction (all dead), still life (period 1), or oscillator (period N) messages. Resets on grid modification.
+### Added: Multiplayer Mode (TCP Networking) — Two-player competitive Game of Life over TCP with territory scoring
 
-### Added: Population Sparkline Display
+Two players on separate terminals claim halves of the same grid and battle for cellular dominance. The host binds a TCP port; the client connects. After a 30-second planning phase — where each player draws cells exclusively in their territory — the host runs an authoritative simulation for 200 generations. Newborn cells inherit ownership by majority-neighbor vote, creating fluid battle lines that shift with each generation. Built entirely on Python built-in modules (`socket`, `threading`, `queue`, `json`).
 
-Unicode sparkline chart (▁▂▃▄▅▆▇█) visualizing population history over time, rendered above the status bar. Auto-scales to min/max range and adapts width to terminal size. Resets on grid operations.
+**Changed file:** `life.py` (+1,108 lines)
 
-### Added: Save/Load Feature
+**Core mechanics:**
 
-Save and load Game of Life grid states to JSON files stored in ~/.life_saves/. 's' opens a text prompt to name and save; 'o' opens an interactive selection menu to browse and load saved states with arrow/vim-key navigation.
+| Concept | Implementation |
+|---------|----------------|
+| Transport | `MultiplayerNet` class: TCP socket with newline-delimited JSON wire protocol, background I/O thread so curses loop never blocks |
+| Message types | `hello`, `start_planning`, `place`, `ready`, `start_sim`, `state`, `finished`, `quit` |
+| 4-phase flow | `idle` → `lobby` (waiting for peer) → `planning` (30 s timer) → `running` (200 gen) → `finished` (results) |
+| Territory split | Grid halved vertically: P1 (Blue) owns the left, P2 (Red) the right; placement enforced per-player during planning |
+| Real-time sync | Cell placements broadcast immediately as `place` messages; host broadcasts compact state every 3rd generation |
+| Ownership propagation | `_mp_step()` applies GoL rules then recomputes owners: surviving cells keep theirs; newborn cells assigned by majority neighbor vote; ties produce contested (yellow) |
+| Scoring | `base = owned_cells`; `territory_bonus = owned cells in opponent's half × 2`; final = `base + territory_bonus` |
+| Host authority | Only the host runs `_mp_step()`; client receives and applies state, preventing divergence |
 
-### Added: Terminal-Based Conway's Game of Life Simulator
+**Interactive controls (planning):** Arrow keys/`hjkl` (move cursor), `e` (toggle cell), `d` (draw mode), `r` (random fill own territory), `c` (clear own territory), `Enter` (mark ready)
 
-Single-file curses implementation (life.py) with 12 preset patterns (glider, glider gun, pulsar, R-pentomino, etc.), interactive controls (play/pause, step, speed, cursor, cell editing, random fill, clear), age-based colored cells (green → cyan → yellow → magenta → red), toroidal grid, CLI flags, and help screen.
+**Interactive controls (game):** Running phase is view-only; `Enter` (host, finished — new round), `N` (open/exit multiplayer)
+
+**CLI flags:** `--host [PORT]` (launch into host lobby), `--connect HOST:PORT` (connect as client)
+
+### Added: Race Mode — Multi-rule evolutionary tournament on cloned grids
+
+Race mode turns rule exploration into a competition. The user selects 2–4 Life-like rule sets from the preset library (or types custom `B.../S...` strings), and each rule is seeded with an identical copy of the current grid state. All grids then evolve simultaneously, step-for-step, while a live scoreboard tracks their diverging fates. A composite scoring formula crowns a winner once the configured generation limit is reached.
+
+**Changed file:** `life.py` (+454 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Grid cloning | `_start_race()` deep-copies `cells`, `generation`, and `population` from the live grid into fresh `Grid` instances, each with a different `birth`/`survival` set |
+| Simultaneous stepping | `_step_race()` advances every non-extinct grid each generation; extinct grids frozen |
+| Extinction detection | Per-grid `extinction_gen` recorded on first generation population hits zero |
+| Oscillation detection | State hash stored each generation; hash collision gives `osc_period = current_gen - first_seen_gen` |
+| Scoring formula | `score = current_pop + survival_bonus + osc_bonus(50) + peak_pop // 2` |
+| Layout | 2 grids: side-by-side (1×2); 3–4 grids: 2×2 tile layout with border separators |
+| Progress bar | `█░` fill proportional to `gens_elapsed / race_max_gens` with percentage readout |
+| Scoreboard | Columns: Rank, Rule, Pop, Peak, Osc period, Extinction gen, Score; sorted by live pop during race, final score after |
+
+**Interactive controls:** `Z` (open rule selection / exit race mode), `Space` (toggle rule on/off, max 4), `/` (custom rule string), `g` (set race duration 10–10,000 gens), `Enter` (start race, requires ≥2 rules), `Esc`/`q` (cancel)
+
+### Added: Sound/Music Mode — Grid-driven procedural audio synthesizer
+
+The Game of Life grid becomes a real-time generative instrument. Each generation, living cells are scanned row-by-row: the row index determines pitch (top rows map to high frequencies, bottom rows to low), producing an evolving pentatonic melody driven entirely by the emergent patterns on screen. All audio is synthesized from scratch in pure Python — no external libraries, just `math`, `wave`, `struct`, and a subprocess pipe to whatever player the system provides.
+
+**Changed file:** `life.py` (+204 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Pitch mapping | `_row_to_freq()` inverts row index so row 0 is highest pitch, wraps through multiple octaves using `_PENTATONIC = [0, 2, 4, 7, 9]` semitone offsets (C-D-E-G-A) from a 220 Hz base |
+| Polyphony cap | At most 12 simultaneous voices; when more rows are active, evenly-spaced rows are sampled |
+| Volume scaling | Master amplitude derived from live population density: `0.15 + 0.85 * density` |
+| Waveform synthesis | `_synthesize()` sums per-frequency sine waves into a mixed S16LE mono PCM buffer; per-voice amplitude = `volume / len(freqs)` to prevent clipping |
+| Click prevention | 5 ms linear attack and release ramps applied at start and end of each audio chunk |
+| Tempo lock | Chunk duration = `max(0.05, min(speed_delay * 0.8, 2.0))` seconds, keeping audio rhythm synchronized to simulation speed |
+| Player detection | `_detect_player()` probes for `paplay`, `aplay`, and `afplay` in order; macOS `afplay` requires a temp `.wav` file |
+| Threading | Each chunk plays in a daemon thread; if a previous thread is still alive, the frame is skipped |
+
+**Interactive controls:** `M` (toggle sound on/off; flashes "no audio player found" if none detected); status bar shows `♪ SOUND` when active
+
+### Added: GIF Recording and Export — Zero-dependency animated GIF export of simulation runs
+
+Press `G` to start recording, run or step the simulation for as long as you like, press `G` again, and a fully-formed animated GIF lands in `~/.life_saves/` — no external libraries, no Pillow, no ImageMagick. The entire GIF89a encoder, including LZW compression, is implemented from scratch using only Python's `struct` module.
+
+**Changed file:** `life.py` (+238 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| GIF89a structure | `write_gif()` assembles header, logical screen descriptor, global color table, Netscape looping extension, per-frame graphic control extensions, image descriptors, and trailer byte |
+| 8-color palette | `_GIF_PALETTE` maps indices 0–7 to background dark, five age-tier colors (green/cyan/yellow/magenta/red), a subtle grid grey, and spare white |
+| Age-to-palette mapping | `_gif_age_index(age)` converts cell age integers to palette indices using the same tier thresholds as `color_for_age` |
+| LZW compression | `_lzw_compress(pixels, min_code_size)` implements full variable-width LZW: maintains code table, emits clear codes on overflow (>4095), packs bits LSB-first |
+| Sub-block framing | `_gif_sub_blocks(data)` splits compressed output into GIF sub-blocks of ≤255 bytes |
+| Frame capture | `_capture_recording_frame()` snapshots `grid.cells` with a list comprehension for shallow copy of all cell ages |
+| Speed-aware delay | `delay_cs = max(2, int(SPEEDS[self.speed_idx] * 100))` so GIF playback speed matches simulation speed |
+| Cell rendering | Each cell rendered at `cell_size=4` pixels per side — clean blocky squares with no interpolation |
+| Filename convention | `recording_gen{start}-{end}_{unix_timestamp}.gif` written to `~/.life_saves/` |
+
+**Interactive controls:** `G` toggles recording on/off; status bar shows `⏺ REC(N)` with live frame count while active
+
+### Added: Blueprint Mode — Interactive region capture and persistent personal pattern library
+
+The built-in pattern library covers classic structures, but Game of Life creativity lives in what users construct themselves. Blueprint mode closes the loop between freehand grid editing and reusable patterns: select any rectangular region, capture whatever alive cells are inside it, name the result, and it is immediately available as a stamp — indistinguishable from built-in patterns throughout the UI, and persisted across sessions in a JSON file on disk.
+
+**Changed file:** `life.py` (+293 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Persistence layer | `BLUEPRINT_FILE` points to `~/.life_saves/blueprints.json`; `_load_blueprints()` / `_save_blueprints()` handle JSON read/write with error recovery |
+| Region selection | `W` anchors the selection at the cursor; cursor movement extends the rectangle; `_blueprint_region()` returns `(min_r, min_c, max_r, max_c)` |
+| Cell capture | Collects alive cells within the bounding box, normalizes to (0,0) origin, prompts for name, sanitizes (lowercase, underscores, alphanum only), and refuses to overwrite built-in patterns |
+| Unified lookup | `_get_pattern(name)` checks `PATTERNS` first, then `self.blueprints`, giving all code a single API for both sources |
+| Pattern list rebuild | Merges `set(PATTERNS.keys()) | set(self.blueprints.keys())` into one sorted list after every create/delete |
+| Deletion | `_delete_blueprint(name)` removes from memory, re-saves JSON, and rebuilds the list |
+
+**Visual feedback:**
+
+| Signal | Meaning |
+|--------|---------|
+| Green `░░` overlay | Empty cells inside the active selection rectangle |
+| Green bold highlight | Alive cells inside the active selection rectangle |
+| `📐 BLUEPRINT` | Status bar indicator when selection mode is active |
+| `[BP]` prefix | Marks user blueprints in pattern/stamp menus |
+
+**Interactive controls:** `W` (enter blueprint selection mode; move to expand; `Enter` to capture and name; `Esc` to cancel), `T` (open blueprint library; `↑`/`↓` navigate; `Enter` to stamp; `D`/`Delete` to remove; `q`/`Esc` to close)
+
+### Added: Pattern Recognition Engine — Real-time identification of known Game of Life structures in any orientation
+
+The simulation has always been a canvas for watching patterns emerge, but until now there was no way to know _what_ you were watching. This introduces a full pattern recognition subsystem that continuously scans the live grid and labels every known structure it finds — still lifes, oscillators, and spaceships — all color-coded by category and annotated with name tags rendered directly on the grid.
+
+**Changed file:** `life.py` (+274 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Canonical normalization | `_normalise(cells)` shifts any cell-set to a (0,0) top-left origin for comparison |
+| Orientation generation | `_orientations(cells)` produces up to 8 distinct variants (4 rotations × optional reflection), deduplicating by normalized form |
+| Recognition database | `_build_recognition_db()` builds from `PATTERNS` plus 5 extra patterns (loaf, boat, tub, ship, pond), filtered to ≤15 cells for performance |
+| Grid scan | `scan_patterns(grid)` iterates every alive cell as a candidate anchor; tries all orientations against the live `alive` set |
+| Bounding-box guard | For each candidate match, extra alive cells in the bounding box disqualify the match, preventing false sub-pattern hits |
+| Cell claiming | Matched cells added to a `claimed` set; no cell can belong to two patterns; larger patterns tried first |
+
+**Recognized patterns:**
+
+| Category | Patterns | Color |
+|----------|----------|-------|
+| Still lifes | block, beehive, loaf, boat, tub, ship, pond | Cyan |
+| Oscillators | blinker, toad, beacon | Yellow |
+| Spaceships | glider, lwss | Magenta |
+
+**Interactive controls:** `F` toggles pattern search mode on/off; status bar shows `🔍 SEARCH(N)` with live match count; scan re-runs on every step and cell edit
+
+### Added: Heatmap Visualization Mode — See where life has concentrated across every generation at a glance
+
+The cell-aging color scheme shows how long individual cells have been continuously alive, but it resets whenever a cell dies. The heatmap overlay answers a different question: across the entire simulation so far, which positions have been alive most often? Glider highways, oscillator cores, and still-life clusters all leave distinct thermal signatures. Toggle it with `H`.
+
+**Changed file:** `life.py` (+89 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Counter storage | `self.heatmap: list[list[int]]` — 2D grid matching dimensions, initialized to zero; `self.heatmap_max: int` tracks peak for normalisation |
+| Per-generation accumulation | `_update_heatmap()` iterates all cells; inner loop checks `row_cells[c] > 0` and increments the counter, updating the peak inline |
+| Gradient mapping | `color_for_heat(fraction)` selects from `HEAT_PAIRS_256` or `HEAT_PAIRS_8` based on `curses.COLORS >= 256` |
+| 256-color tiers | 8 tiers: near-black blue → blue → bright blue → cyan → yellow → orange → red → white (xterm indices 17→19→27→51→226→208→196→231) |
+| 8-color fallback | Graceful fallback using standard ANSI colors for terminals with fewer than 256 colors |
+| Live-cell emphasis | Renderer applies `curses.A_BOLD` when `age > 0` on top of the heat color, distinguishing currently alive cells from historical hotspots |
+| Counter reset | Both `c` (clear) and `r` (randomize) reset heatmap to all-zeros |
+| Status indicator | `"  │  🔥 HEATMAP"` appended to status bar when active |
+
+**Interactive controls:** `H` (toggle heatmap on/off), `c` (clear grid + reset heatmap), `r` (randomize grid + reset heatmap)
+
+### Added: Time-Travel Timeline Bar with Bookmarks — Non-destructive VCR-style history scrubber replacing destructive rewind
+
+The original rewind system was destructive: pressing `u` popped the most-recent state off a `deque`, consuming it. Scrubbing back five steps made those five states permanently unreachable. This replaces that model entirely. History is now stored in a plain `list` supporting random access, and a `timeline_pos` integer pointer marks where in that list the display currently sits. Rewinding moves the pointer without touching the list; resuming play from a scrubbed-back position truncates only the future portion before appending the new state.
+
+A visual timeline bar renders above the population sparkline. When scrubbed back it shows a filled-block (`█`) segment proportional to how far through the saved buffer the current position is, followed by empty-block (`░`) characters representing the unvisited future. Saved bookmarks appear as `★` glyphs at their proportional positions on the bar.
+
+**Changed file:** `life.py` (+148 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| History data structure | Changed from `collections.deque(maxlen=500)` to `list[tuple[dict, int]]` with manual `history_max = 500` cap |
+| Non-destructive pointer | `timeline_pos: int \| None` — `None` means "live at head"; an integer is a 0-based index into `self.history` |
+| Future truncation | `_push_history` checks `if self.timeline_pos is not None: self.history = self.history[:self.timeline_pos + 1]` before appending |
+| 10-step scrubbing | `_scrub_back(10)` clamps to 0; `_scrub_forward(10)` returns to `None` (live) when index exceeds `len(history) - 1` |
+| Timeline bar | Bar width = `max_x - label_widths`; bookmark glyphs located by scanning history for matching generation numbers |
+| Bookmark storage | Each bookmark stores a `(generation, grid_dict, pop_len)` triple, kept sorted by generation number |
+| Bookmark deduplication | `_add_bookmark` refuses duplicates by checking for an existing entry with the same generation number |
+
+**Interactive controls:** `u` (rewind one step, non-destructive), `[` (scrub back 10 steps), `]` (scrub forward 10 steps), `b` (bookmark current generation), `B` (open bookmark list), `↑`/`↓` or `j`/`k` (navigate bookmarks), `Enter` (jump to bookmark), `D`/`Delete` (delete bookmark), `q`/`Esc` (close menu)
+
+### Added: Multi-Grid Side-by-Side Comparison — Watch two rule sets diverge from the same seed
+
+Running two simulations from an identical initial configuration and watching them evolve under different rule sets is the clearest possible demonstration of how sensitive cellular automata are to their rule parameters. This adds a full split-screen comparison mode, toggled with `V`, that forks the current live grid state into a second independent simulation running a user-chosen rule. Both grids step in perfect lockstep — whether via auto-play or manual single-stepping — so generation numbers stay synchronised and divergence is immediately visible.
+
+**Changed file:** `life.py` (+231 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| State isolation | `grid2: Grid \| None` holds the second simulation; `pop_history2: list[int]` tracks its population independently |
+| Forking | `_start_compare()` copies `grid.cells` row-by-row, copies `generation`, `population`, and the full `pop_history` list, then assigns the new `birth`/`survival` sets |
+| Lockstep stepping | Both the auto-play loop and the single-step handler call `grid2.step()` and append to `pop_history2` immediately after advancing the primary grid |
+| Split renderer | `_draw_compare()` computes `half_x = max_x // 2` as the divider column, allocates left and right cell columns per panel |
+| Rule picker | `compare_rule_menu` flag routes key events to `_handle_compare_rule_menu_key`; supports preset selection, `Enter` to confirm, and `/` for custom entry |
+| Dual sparklines | Each panel footer shows its own `sparkline(pop_history, spark_w)` independently |
+
+**Interactive controls:** `V` (enter/exit comparison mode), `↑`/`↓` or `j`/`k` (navigate rule presets), `Enter` (confirm rule), `/` (custom `B.../S...` rule string), `q`/`Esc` (cancel picker), `Space`/`n` (advance both grids simultaneously)
+
+### Added: RLE Pattern File Import — Load any pattern from the Game of Life community's standard file format
+
+The app's built-in pattern library covers classic structures, but the broader Game of Life community has catalogued thousands of objects — spaceships, methuselahs, logic gates, self-replicators — almost all distributed as `.rle` files (Run Length Encoded), the interchange format used by LifeWiki and Golly. This adds a complete RLE parser and an import workflow bound to the `i` key, allowing users to download any pattern from the web and load it directly into the simulator. The parser handles the full metadata header, both the modern `B3/S23` rule notation and the older `S/B` legacy format, and auto-applies whatever rule the pattern embeds — so a HighLife pattern loaded from LifeWiki will automatically switch the engine to HighLife rules without any manual intervention.
+
+**Changed file:** `life.py` (+136 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Metadata parsing | Line-by-line pre-scan reads `#N` (name), `#C`/`#c` (comments), and `#O` (author) before the header; unrecognised `#` tags are silently ignored |
+| Header extraction | The `x = M, y = N [, rule = ...]` line is split on commas and `=`, populating a `parts` dict; `rule` is optional |
+| Dual rule format support | If the rule value starts with `B`, it is used as-is (modern notation); if it contains `/` with digit-only parts, it is reinterpreted from legacy `S/B` order into `B.../S...` |
+| RLE run-length decode | A single-pass character scan accumulates a numeric run count, then dispatches on `b`/`.` (skip columns), `o`/`A` (emit alive cells), and `$` (advance rows); the loop terminates at `!` |
+| Centered placement | Offsets computed as `off_r = (grid.rows - height) // 2`, `off_c = (grid.cols - width) // 2`; cells placed with modular wrapping |
+| Rule auto-apply | After parsing, if `rle["rule"]` is non-empty, `parse_rule_string()` is called and the result is applied to `grid.birth`/`grid.survival` |
+| Status summary | Flash message reports pattern name, bounding box dimensions, and live cell count |
+
+**Interactive controls:** `i` — prompt for RLE file path (supports `~` expansion); Enter at empty prompt or non-existent path cancels with error flash
+
+### Added: Rule Editor for Life-Like Cellular Automata — Explore beyond Conway's with configurable birth/survival rules
+
+Conway's Game of Life is one specific point in a vast space of two-state, totalistic cellular automata. This generalises the simulation engine to support the full family of "Life-like" rules — where any combination of neighbor counts can trigger birth or survival — and adds an interactive rule editor so users can explore that space without touching code. Nine curated presets cover a broad range of behaviors: stable-growth rules like HighLife (which supports a second replicator), chaotic rules like Day & Night (symmetric under alive/dead inversion), explosive rules like Seeds (no survival, pure birth), and slow-changing structures like Anneal. Rules persist in save files so an experiment can be resumed exactly, and the active rule is always visible in the status bar.
+
+**Changed file:** `life.py` (+117 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Generalised step function | `Grid.step()` replaces hardcoded `n in (2, 3)` / `n == 3` checks with `n in self.survival` and `n in self.birth` set membership tests |
+| Rule string format | `rule_string(birth, survival)` formats rules as `B{digits}/S{digits}` (e.g., `B3/S23`); `parse_rule_string()` validates and parses the same notation |
+| Nine presets | `RULE_PRESETS` dict: Conway's Life, HighLife, Day & Night, Seeds, Life w/o Death, Diamoeba, 2x2, Morley, Anneal |
+| Custom rule entry | Pressing `/` inside the rule menu calls `_prompt_text()` for a free-form rule string; invalid input is rejected with an error flash |
+| Save/load persistence | `Grid.to_dict()` serialises the active rule string; `Grid.load_dict()` restores it, with graceful fallback to Conway's for older save files |
+| Status bar display | The formatted rule string (e.g., `Rule: B36/S23`) is injected into the status line on every draw frame |
+
+**9 rule presets:**
+
+| Preset | Rule | Behavior |
+|--------|------|----------|
+| Conway's Life | B3/S23 | The classic — gliders, oscillators, spaceships |
+| HighLife | B36/S23 | Supports a small self-replicator |
+| Day & Night | B3678/S34678 | Symmetric under alive/dead inversion |
+| Seeds | B2/S (none) | Explosive — no survival, every birth is a one-shot spark |
+| Life w/o Death | B3/S012345678 | Cells never die — ink-blot growth |
+| Diamoeba | B35678/S5678 | Amoeba-like expanding blobs |
+| 2x2 | B36/S125 | Replicating blocks |
+| Morley | B368/S245 | Complex long-lived dynamics |
+| Anneal | B4678/S35678 | Slowly annealing domain walls |
+
+**Interactive controls:** `R` — open rule editor; `↑`/`↓` or `j`/`k` — navigate presets; `Enter` — apply selected preset; `/` — type a custom `B.../S...` rule string; `q` / `Esc` — cancel
+
+### Added: Stamp Mode — Non-destructive pattern overlay at cursor position
+
+Until this commit, the only way to place a preset pattern was via the `p` key, which wiped the entire grid before placing the pattern at the center. Stamp mode introduces a second, non-destructive placement path: press `t` to open a pattern selector, choose a pattern, and it is overlaid centered on the current cursor without disturbing any existing cells. This makes it practical to compose complex scenes — placing multiple gliders aimed at each other, positioning an eater next to a glider gun, or layering oscillators — all within a single session without rebuilding from scratch.
+
+**Changed file:** `life.py` (+43 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Separate menu state | New `self.stamp_menu` boolean, independent of `self.pattern_menu`, prevents the two modes from interfering |
+| Cursor-centered placement | `_stamp_pattern()` computes `off_r = cursor_r - max_r // 2` and `off_c = cursor_c - max_c // 2` using the pattern's bounding box, then calls `grid.load_pattern()` with those offsets |
+| Shared UI, forked behavior | The existing `_draw_pattern_menu()` and `_handle_menu_key()` are reused; the Enter handler branches on `stamp_menu` vs `pattern_menu` to decide whether to clear-and-place or overlay |
+| No history wipe | Unlike normal pattern load, stamp mode does not call `pop_history.clear()`, preserving the population graph |
+
+**Interactive controls:** `t` — open stamp pattern selector; `Enter` — stamp selected pattern at cursor; `q` / `Esc` — cancel without stamping
+
+### Added: Generation Rewind/Undo — Step backwards through simulation history one generation at a time
+
+The simulator already supports stepping forward manually with `n` and running at variable speeds, but there was no way to go back and inspect a past state — once a generation was computed it was gone. This feature adds a rewind buffer: before every generation advance the full grid state is serialized via `Grid.to_dict()` and pushed onto a bounded `deque`. Pressing `u` pops the most recent snapshot, restores the grid, trims the population history array back to the length it had at that moment, resets cycle detection, and flashes a confirmation showing the restored generation number. The buffer is capped at 500 entries so memory use stays bounded regardless of how long the simulation runs.
+
+**Changed file:** `life.py` (+35 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| History buffer | `App.history: collections.deque[tuple[dict, int]]` with `maxlen=500`; each entry is a `(grid_dict, pop_history_length)` tuple |
+| Snapshot | `_push_history()` calls `self.grid.to_dict()` and records `len(self.pop_history)` before every `grid.step()` call |
+| Restore | `_rewind()` calls `self.history.pop()`, restores the grid with `self.grid.load_dict(grid_dict)`, slices `self.pop_history` back to the saved length, and resets cycle detection |
+| Buffer cap | `deque(maxlen=500)` — oldest entries are automatically discarded when the buffer is full |
+| Population history sync | The saved `pop_history_length` integer lets `_rewind()` trim the population graph precisely back to match the rewound generation |
+| Integration points | `_push_history()` called in both the auto-play loop and the manual-step key handler |
+
+**Interactive controls:** `u` (pause simulation and rewind one generation), `n` / `.` (step forward — each step is saved to the rewind buffer first), `Space` (resume play — history accumulates during auto-play too)
+
+### Added: Draw/Erase Mode — Freehand continuous cell painting and erasing with modal cursor movement
+
+Before this feature the only way to place cells manually was to move the cursor to each cell individually and press `e` to toggle it — a slow, one-click-at-a-time workflow poorly suited to drawing custom patterns. Draw mode and erase mode change this by making cursor movement itself the painting action. Activating draw mode with `d` immediately sets the cell under the cursor alive and enters a persistent mode where every subsequent cursor movement automatically sets each visited cell alive. Erase mode (`x`) works identically but sets cells dead. Both modes are fully symmetric: pressing `d` again while already in draw mode turns it off, and likewise for `x`; `Esc` exits either mode unconditionally. A visual indicator (`✏ DRAW` or `✘ ERASE`) appears in the status bar so the user always knows which mode is active.
+
+**Changed file:** `life.py` (+59 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Mode state | `App.draw_mode: str \| None` — holds `None`, `"draw"`, or `"erase"` |
+| Paint-on-move | `_apply_draw_mode()` helper called after every cursor movement; calls `Grid.set_alive()` or `Grid.set_dead()` at the new cursor position when a mode is active |
+| Mode activation | `d` / `x` key handlers set `draw_mode`, immediately paint/erase the current cursor cell, and flash a descriptive hint |
+| Mode exit | Pressing the same mode key again, or pressing `Esc` (keycode 27), sets `draw_mode = None` |
+| Cycle detection integration | `_reset_cycle_detection()` called on every paint and erase action to keep state history consistent |
+| Status bar indicator | Mode string appended to the status line as `"  │  ✏ DRAW"` or `"  │  ✘ ERASE"` when active |
+
+**Interactive controls:** `d` (toggle draw mode — paint alive cells while moving), `x` (toggle erase mode — clear cells while moving), `Esc` (exit either mode), arrow keys / `hjkl` (move cursor and paint/erase when a mode is active)
+
+### Added: Cycle Detection — Auto-pause when the simulation reaches a fixed point or repeating loop
+
+Conway's Game of Life patterns often quietly stabilize into still lifes, oscillators, or simply die out — but without feedback, a user watching a long-running evolution has no way to know when it has settled. This feature introduces automatic cycle detection: after every generation step the grid state is fingerprinted using an MD5 hash of all alive-cell positions, and that fingerprint is compared against a growing dictionary of previously-seen states. The moment a repeated state is recognized the simulation auto-pauses and displays a diagnostic flash message. Three distinct outcomes are distinguished: complete extinction (population reaches zero), a still life (the grid is identical to the previous generation, i.e. period 1), and a general oscillator (period N, where N is the difference between the current generation counter and the generation at which that state was first recorded). The detection history resets automatically whenever the grid is modified externally — via clear, randomize, cell toggle, pattern load, or save load — and also when the user resumes play after a pause.
+
+**Changed file:** `life.py` (+45 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| State fingerprinting | `Grid.state_hash()` serializes alive-cell positions as a sorted list of `row * cols + col` integers, packs them into 4-byte little-endian words, and returns the MD5 hexdigest |
+| History store | `App.state_history: dict[str, int]` maps each fingerprint to the generation number when it was first recorded |
+| Period calculation | `period = current_generation - state_history[hash]`; period 1 means still life |
+| Detection outcomes | Extinction (population == 0), still life (period == 1), oscillator (`"Cycle detected (period N)"`) |
+| Reset triggers | Clear (`c`), randomize (`r`), cell toggle (`e`), draw/erase mode paint, pattern load, save load, and resuming play after a detection |
+| Initial seed | The starting grid state is inserted into `state_history` at `run()` startup to correctly measure period-1 still lifes from the very first step |
+
+**Interactive controls:** `Space` (resume play after detection — also clears history to allow fresh observation); `n` / `.` (manual step also participates in detection)
+
+### Added: Population Sparkline Display — live Unicode mini-chart of population history above the status bar
+
+A sparkline is a word-sized chart stripped of axes and labels — pure signal. This adds a row of Unicode block characters (`▁▂▃▄▅▆▇█`) directly in the terminal one line above the status bar. Each character represents the population at one past generation, auto-scaled so the minimum maps to `▁` and the maximum to `█`. The result turns the status bar area into a live oscilloscope: oscillators produce regular sawtooth waves, glider guns show a rising staircase punctuated by periodic drops, and chaotic patterns like the R-pentomino or acorn display an unmistakable explosion-then-settle shape. The sparkline width adapts to the terminal width dynamically, and history resets whenever the grid is fundamentally changed.
+
+**Changed file:** `life.py` (~700 lines after this commit, +40 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Character set | `SPARKLINE_CHARS = "▁▂▃▄▅▆▇█"` — 8 Unicode block elements (U+2581–U+2588) |
+| Scaling | `idx = int((v − lo) / (hi − lo) * 7)` — linear map from population value to character index; range clamped to 1 when `hi == lo` to avoid division by zero |
+| Width adaptation | `spark_width = max_x − 16` — reserves 14 characters for the `" Pop history: "` label; sparkline fills the rest of the terminal row |
+| History window | `sparkline()` slices `values[-width:]` — only the most recent `spark_width` generations are shown, so the chart scrolls as the simulation advances |
+| History tracking | `App.pop_history: list[int]` — appended via `_record_pop()` on simulation start, on every auto-advance step, and on every manual `n`/`.` step |
+| History reset | `pop_history.clear()` + immediate `_record_pop()` triggered by: `c` (clear), `r` (randomize), pattern load from menu, and save-file load — so the chart always reflects the current continuous run |
+| Viewport adjustment | `vis_rows` reduced from `max_y − 3` to `max_y − 4` to give the sparkline row its own screen line above the status bar |
+
+**Also changed:**
+- New module-level constant `SPARKLINE_CHARS`
+- New module-level function `sparkline(values, width) -> str`
+- New `App._record_pop()` helper method
+
+### Added: Save/Load Feature — persist and restore grid states across sessions
+
+Until now, any pattern built or evolved in the simulator was lost on exit. This commit adds a full save/load system so users can bookmark interesting configurations — mid-run methuselahs, hand-drawn patterns, stable configurations worth returning to — and reload them in a later session. Saves are plain JSON files stored in `~/.life_saves/`, human-readable and easy to copy or share. The serialization captures not just which cells are alive but also each cell's age (generation count since birth), so color tinting and behavioral context are preserved exactly on reload.
+
+**Changed file:** `life.py` (~660 lines after this commit, +110 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Serialization format | JSON via `json.dump` / `json.load`; file schema: `{rows, cols, generation, cells: [[r, c, age], …], name}` |
+| Storage location | `SAVE_DIR = os.path.expanduser("~/.life_saves")`; directory created with `os.makedirs(..., exist_ok=True)` on first save |
+| Filename sanitization | Characters that are not alphanumeric, `-`, or `_` are replaced with `_` to produce safe filenames |
+| Deserialization | `Grid.load_dict(data)` rebuilds `self.cells` from the sparse alive-cell list, recounting `self.population` in the process |
+| Text input | `App._prompt_text()` switches curses to blocking mode (`nodelay(False)`), reads characters one at a time with backspace support, and returns the string on Enter or `None` on ESC |
+| Load menu | Scans `~/.life_saves/*.json`, renders a scrollable highlighted list in the same visual style as the pattern selector; navigation via arrows or vim keys; corrupt files caught with `json.JSONDecodeError / KeyError / TypeError` |
+
+**New keybindings:**
+
+- `s` — open a text prompt on the bottom line; type a name and press Enter to save the current grid state to `~/.life_saves/<name>.json`; ESC cancels
+- `o` — open an interactive load menu listing all saves in `~/.life_saves/`; arrow/vim navigation; Enter restores the selected state and pauses playback; ESC or `q` cancels
+
+**Also changed:**
+- Hint bar updated: `[s]=save [o]=load` added to the key reference line
+- Help screen overlay updated with `s` (save) and `o` (open/load) entries
+- New imports: `json`, `os`
+
+### Added: Terminal-Based Conway's Game of Life Simulator — curses TUI with patterns, age-tinted cells & full interactivity
+
+Conway's Game of Life needs no introduction, but this implementation goes well beyond a bare grid. Written as a single self-contained Python file with no external dependencies, it uses the standard-library `curses` module to render a live, color-tinted simulation directly in the terminal. Cells age visually across five color tiers — newborn cells glow green, then pass through cyan, yellow, and magenta before settling into red for the oldest survivors — giving an at-a-glance sense of stability and churn. The grid is toroidal (edges wrap), and the viewport automatically recenters on the cursor so the action stays in view. Thirteen classic patterns are built in and selectable from an interactive menu, and the simulator ships with CLI flags for headless scripting or quick demos.
+
+**New file:** `life.py` (~550 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|----------------|
+| Evolution rule | Standard B3/S23: dead cells with exactly 3 live neighbours are born; live cells with 2 or 3 live neighbours survive; all others die |
+| Cell age | `Grid.cells[r][c]` stores an integer: `0` = dead, `>0` = alive age in generations; incremented each step via `cells[r][c] + 1` |
+| Neighbour counting | 8-neighbourhood loop over `dr, dc ∈ {-1,0,1}` with modular wrapping for toroidal boundary: `(r + dr) % rows` |
+| Simulation speed | 8 discrete steps: 2.0 s → 1.0 → 0.5 → 0.25 → 0.1 → 0.05 → 0.02 → 0.01 s (0.5× to 100×); stored as `SPEEDS` index |
+| Viewport | Recomputed every frame: `view_r = cursor_r − vis_rows // 2` — keeps cursor centred; cells rendered at `sx * 2` columns to approximate square aspect ratio using `██` (U+2588) |
+| Age-to-color mapping | 5 tiers via `color_for_age()`: age ≤ 1 → green (pair 1), ≤ 3 → cyan (2), ≤ 8 → yellow (3), ≤ 20 → magenta (4), >20 → red (5) |
+
+**13 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| `glider` | Small pattern that moves diagonally across the grid |
+| `blinker` | Period-2 oscillator — 3 cells flip between horizontal and vertical |
+| `toad` | Period-2 oscillator — two offset rows of 3 |
+| `beacon` | Period-2 oscillator — two touching 2×2 blocks |
+| `pulsar` | Period-3 oscillator — large 13×13 symmetric pattern |
+| `pentadecathlon` | Period-15 oscillator — the longest-period common oscillator |
+| `lwss` | Lightweight spaceship — travels horizontally |
+| `glider_gun` | Gosper glider gun — 36-cell pattern that emits an endless stream of gliders |
+| `r_pentomino` | 5-cell seed that churns chaotically and stabilises after 1,103 generations |
+| `diehard` | 7-cell methuselah that vanishes completely after exactly 130 generations |
+| `acorn` | 7-cell seed that takes 5,206 generations to stabilise |
+| `block` | 2×2 still life — the simplest stable pattern |
+| `beehive` | 6-cell still life in hexagonal arrangement |
+
+**Interactive controls:**
+
+- `Space` — toggle play/pause auto-advance
+- `n` / `.` — step forward one generation (pauses if playing)
+- `+` / `=` — increase simulation speed
+- `-` / `_` — decrease simulation speed
+- Arrow keys / `hjkl` — move cursor around the grid
+- `e` — toggle the cell under the cursor alive/dead
+- `p` — open the pattern selector menu (arrow/vim navigation, Enter to load)
+- `r` — fill the grid randomly (~20% density)
+- `c` — clear the entire grid and reset generation counter
+- `?` / `h` — open the help screen overlay (any key to close)
+- `q` — quit
+
+**CLI flags:**
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `-p` / `--pattern` | none | Start with a named preset centered on the grid |
+| `--rows` | 80 | Grid height in cells |
+| `--cols` | 120 | Grid width in cells |
+| `--list-patterns` | — | Print all preset names and descriptions, then exit |
 
 ### Initial Commit
 
