@@ -4,6 +4,59 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Time-Travel Timeline Branching — fork alternate timelines from any past frame and compare divergent evolution side-by-side
+
+Pause any running simulation, scrub backward through its history, then fork an alternate
+timeline from any past frame — change the rule, draw new cells, or keep everything the same —
+and watch both the original and the branched timeline evolve side-by-side in a split view with
+live divergence tracking. Answers questions like "what if I had removed that glider at frame 200?"
+or "how would B36/S23 differ from B3/S23 starting from this exact configuration?"
+
+Builds on the existing time-travel scrubbing (rewind/fast-forward through history), the compare
+mode infrastructure (split-view rendering), and the analytics overlay (sparklines, metrics).
+
+**New file:** `life/modes/timeline_branch.py` (~478 lines)
+
+**Fork workflow:**
+1. Run simulation to build up history
+2. Press `u` or `[`/`]` to scrub back to any past frame
+3. Press `Ctrl+F` to open the fork menu
+4. Choose: fork with same rules (what-if same conditions) or fork with different rule (prompts for B.../S... string)
+5. Both timelines evolve side-by-side in lockstep with live divergence metrics
+
+**Split-view features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Dual grid rendering** | Original timeline on left, branch on right, separated by a vertical divider |
+| **Per-panel labels** | Shows rule string, generation count, and population for each timeline |
+| **Dual population sparklines** | Independent sparkline charts for each timeline's population history |
+| **Fork point indicator** | Shows fork generation and elapsed generations since fork |
+| **Live divergence metric** | Percentage of cells that differ between original and branch, with visual bar (█░) |
+| **Status bar** | Play/pause state, speed, rule comparison, generations since fork |
+| **Context-sensitive hints** | Key bindings shown in bottom bar |
+
+**Key controls (in branch split-view):**
+- **Space** — play/pause both timelines in lockstep
+- **n / .** — single-step both timelines
+- **< / >** — change simulation speed
+- **Arrow keys** — scroll viewport
+- **Ctrl+F** — exit branch view
+
+**Fork menu** (`Ctrl+F` while scrubbed back in history):
+- Fork with same rules — identical starting conditions, useful for comparing timeline evolution
+- Fork with different rule — prompts for a B.../S... rule string to apply to the branch
+- Cancel
+
+**Integration points in `life/app.py`:**
+- State initialization via `_tbranch_init()` in `__init__`
+- Key handler dispatch (before time-travel handler in main loop)
+- Branch grid stepping (alongside compare/race stepping)
+- Draw dispatch (branch split-view before compare mode)
+- Fork menu draw (alongside other menu draws)
+- Help overlay and timeline bar updated with `Ctrl+F=fork` hint
+- Fork menu added to `_any_menu_open()` list
+
 ### Added: Neural Cellular Automata — per-cell neural networks learn to self-organize into target patterns via evolutionary strategies
 
 A new mode where cell update rules are defined by small neural networks instead of lookup tables,

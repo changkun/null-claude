@@ -101,6 +101,8 @@ class App:
         self.pop_history2: list[int] = []
         self.compare_rule_menu = False  # picking rule for grid2
         self.compare_rule_sel = 0
+        # Timeline branching state
+        self._tbranch_init()
         # Race mode state: multi-rule evolution competition
         self.race_mode = False
         self.race_grids: list[Grid] = []         # 3-4 grids with different rules
@@ -2458,7 +2460,7 @@ class App:
         # Check all mode-specific menus (pattern: self.X_menu = bool)
         _menu_attrs = [
             'puzzle_menu', 'pattern_menu', 'stamp_menu', 'bookmark_menu',
-            'rule_menu', 'compare_rule_menu', 'race_rule_menu',
+            'rule_menu', 'compare_rule_menu', 'race_rule_menu', 'tbranch_fork_menu',
             'wolfram_menu', 'ant_menu', 'ww_menu', 'sand_menu', 'rd_menu',
             'lenia_menu', 'physarum_menu', 'boids_menu', 'plife_menu',
             'nbody_menu', 'fluid_menu', 'wfc_menu', 'aco_menu', 'maze_menu',
@@ -3250,6 +3252,10 @@ class App:
                 if self.analytics.enabled:
                     self.analytics.update(self.grid, self.pop_history)
                 self._flash("Analytics ON" if self.analytics.enabled else "Analytics OFF")
+                continue
+
+            # ── Timeline branching key handling ──
+            if self._tbranch_handle_key(key):
                 continue
 
             # ── Universal time-travel key handling ──
@@ -4339,6 +4345,8 @@ class App:
                 if self.compare_mode and self.grid2:
                     self.grid2.step()
                     self.pop_history2.append(self.grid2.population)
+                # Step the branch grid in timeline-branch mode
+                self._tbranch_step()
                 # Step all race grids
                 if self.race_mode and self.race_grids and not self.race_finished:
                     self._step_race()
@@ -5810,6 +5818,11 @@ class App:
             self.stdscr.refresh()
             return
 
+        if self.tbranch_fork_menu:
+            self._tbranch_draw_fork_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
         if self.bookmark_menu:
             self._draw_bookmark_menu(max_y, max_x)
             self.stdscr.refresh()
@@ -6690,6 +6703,11 @@ class App:
             self.stdscr.refresh()
             return
 
+        if self.tbranch_mode and self.tbranch_grid:
+            self._tbranch_draw_split(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
         if self.compare_mode and self.grid2:
             self._draw_compare(max_y, max_x)
             self.stdscr.refresh()
@@ -6910,7 +6928,7 @@ class App:
             # Determine current position in history
             if self.timeline_pos is not None:
                 cur_pos = self.timeline_pos + 1  # 1-based
-                pos_label = f" Gen {self.grid.generation} ({cur_pos}/{hist_len}){bookmark_info} "
+                pos_label = f" Gen {self.grid.generation} ({cur_pos}/{hist_len}){bookmark_info} Ctrl+F=fork "
             else:
                 pos_label = f" LIVE Gen {self.grid.generation} ({hist_len} saved){bookmark_info} "
             bar_width = max_x - len(bar_label) - len(pos_label) - 1
@@ -7088,6 +7106,7 @@ class App:
             "║  n / .     Step one generation                ║",
             "║  u         Rewind one generation              ║",
             "║  [ / ]     Scrub timeline back/forward 10     ║",
+            "║  Ctrl+F    Fork branch (while scrubbed back)  ║",
             "║  b         Bookmark current generation        ║",
             "║  B         List/jump to bookmarks             ║",
             "║  + / -     Zoom in / out (density glyphs)     ║",

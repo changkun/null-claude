@@ -272,4 +272,7 @@ MODE_REGISTRY = [
     # ── Neural Cellular Automata ──
     {"name": "Neural Cellular Automata", "key": "Ctrl+Shift+N", "category": "Meta Modes",
      "desc": "Per-cell neural networks learn to grow target patterns via evolutionary strategies", "attr": "nca_mode", "enter": "_enter_nca_mode", "exit": "_exit_nca_mode"},
+    # ── Timeline Branching ──
+    {"name": "Timeline Branching", "key": "Ctrl+F (scrub)", "category": "Meta Modes",
+     "desc": "Fork alternate timelines from any past frame and watch original vs branch evolve side-by-side", "attr": "tbranch_mode", "enter": None, "exit": "_tbranch_exit"},
 ]

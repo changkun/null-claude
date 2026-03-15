@@ -206,6 +206,8 @@ def register_all_modes(App):
     reg_cinematic(App)
     from life.modes.time_travel import register as reg_tt
     reg_tt(App)
+    from life.modes.timeline_branch import register as reg_tbranch
+    reg_tbranch(App)
     from life.modes.sonification import register as reg_sonify
     reg_sonify(App)
     from life.modes.genome import register as reg_genome
