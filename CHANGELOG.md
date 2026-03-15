@@ -4,6 +4,72 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Cinematic Demo Reel — auto-playing director with crossfade transitions, camera moves, and curated playlists
+
+A new meta-mode that turns the terminal into an unattended screensaver showcase of the entire
+simulation library. A virtual "director" sequences through simulations autonomously with smooth
+crossfade transitions between acts, animated camera moves (zoom/pan via smoothstep interpolation),
+and a fading title card overlay for each act. No interaction required — just launch a playlist
+and watch.
+
+**New file:** `life/modes/cinematic_demo.py` (~430 lines)
+
+**8 cinematic acts**, each using a different simulation engine with unique duration and camera path:
+
+| Act | Engine | Duration | Camera Move |
+|-----|--------|----------|-------------|
+| Emergence | Game of Life | 12s | Zoom in |
+| Ripples | Wave Equation | 10s | Static |
+| Morphogenesis | Reaction-Diffusion | 14s | Slow zoom out |
+| Wildfire | Forest Fire | 10s | Pan right |
+| Murmuration | Boids Flocking | 10s | Static |
+| Phase Transition | Ising Model | 10s | Zoom in |
+| Dominance Spirals | Rock-Paper-Scissors | 10s | Diagonal pan |
+| Slime Intelligence | Physarum | 12s | Slow zoom out |
+
+**5 curated playlists:**
+
+| Playlist | Acts | Description |
+|----------|------|-------------|
+| The Grand Tour | All 8 | Every simulation engine in cinematic sequence |
+| Fluid Dreams | Wave, RD, Physarum | Fluid-like phenomena |
+| Life & Death | GoL, Fire, Ising | Creation and destruction |
+| Swarm Logic | Boids, Physarum, RPS | Collective behavior emerges |
+| Random Director | All 8 (shuffled) | Never the same show twice |
+
+**Visual features:**
+- **Crossfade transitions** (1.5s) — previous simulation's density blends into the new one
+- **Camera moves** per act — zoom and pan via smoothstep (ease-in-out) interpolation
+- **Title card overlay** — centered box showing act name/description, fades after 3 seconds
+- **Progress bar status line** — playlist name, current act, countdown timer, generation count
+
+**Controls:**
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+Shift+D` | Enter Cinematic Demo Reel |
+| `Space` | Pause / resume playback |
+| `n` / `→` | Skip to next act |
+| `p` / `←` | Go to previous act |
+| `r` | Restart current act |
+| `Esc` / `q` | Exit to normal mode |
+
+**Integration points in `life/app.py`:**
+- Instance state: 22 `cinem_*` attributes for mode, menu, playlist, simulation, crossfade, camera
+- Draw dispatch: `_draw_cinematic_menu()` and `_draw_cinematic()` before screensaver checks
+- Key dispatch: `_handle_cinematic_menu_key()` and `_handle_cinematic_key()` before screensaver
+
+**Architecture:** Reuses the `_ENGINES` dispatch table from `mashup.py` for simulation
+init/step/density. Each act runs its own independent simulation at full internal resolution,
+with the camera system selecting a viewport sub-region for display. Crossfades blend the
+previous act's density buffer with the current one. Builds on the meta-mode pattern established
+by Mashup, Battle Royale, and Observatory.
+
+**Why:** Every existing mode requires manual selection and interaction. The Demo Reel fills the
+gap of autonomous presentation — a kiosk/screensaver mode that showcases the breadth of the
+simulation library without user intervention. It builds naturally on the Observatory and Mashup
+infrastructure while adding cinematic production value (transitions, camera work, title cards).
+
 ### Added: Simulation Observatory — tiled split-screen running 4-9 simulations simultaneously with synced controls
 
 A new meta-mode that displays multiple simulations side-by-side in a tiled grid, letting users

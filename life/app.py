@@ -2036,6 +2036,28 @@ class App:
         self.collider_collision_points: list = []  # interaction points on ring
         self.collider_detector_log: list = []      # scrolling event log
 
+        # ── Cinematic Demo Reel state ──
+        self.cinem_mode: bool = False
+        self.cinem_menu: bool = False
+        self.cinem_menu_sel: int = 0
+        self.cinem_running: bool = False
+        self.cinem_paused: bool = False
+        self.cinem_act_sequence: list = []
+        self.cinem_act_idx: int = 0
+        self.cinem_loop: bool = True
+        self.cinem_playlist_name: str = ""
+        self.cinem_sim_rows: int = 30
+        self.cinem_sim_cols: int = 40
+        self.cinem_sim_state = None
+        self.cinem_sim_id: str = ""
+        self.cinem_density: list = []
+        self.cinem_prev_density = None
+        self.cinem_crossfade: float = 0.0
+        self.cinem_title_alpha: float = 0.0
+        self.cinem_act_start: float = 0.0
+        self.cinem_act_duration: float = 10.0
+        self.cinem_act = None
+        self.cinem_generation: int = 0
         # ── Screensaver / Demo Reel state ──
         self.screensaver_mode: bool = False
         self.screensaver_menu: bool = False
@@ -2903,6 +2925,17 @@ class App:
                 if key == ord("q"):
                     self._mp_exit()
                 continue
+
+            if self.cinem_menu:
+                if self._handle_cinematic_menu_key(key):
+                    continue
+            elif self.cinem_mode:
+                if self._handle_cinematic_key(key):
+                    if self.cinem_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._cinematic_step()
+                    continue
 
             if self.screensaver_menu:
                 if self._handle_screensaver_menu_key(key):
@@ -5181,6 +5214,16 @@ class App:
     def _draw(self):
         self.stdscr.erase()
         max_y, max_x = self.stdscr.getmaxyx()
+
+        if self.cinem_menu:
+            self._draw_cinematic_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.cinem_mode:
+            self._draw_cinematic(max_y, max_x)
+            self.stdscr.refresh()
+            return
 
         if self.screensaver_menu:
             self._draw_screensaver_menu(max_y, max_x)
