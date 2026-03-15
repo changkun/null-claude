@@ -308,6 +308,12 @@ class App:
         self.mashup_cols = 0
         self.mashup_density_a: list[list[float]] = []
         self.mashup_density_b: list[list[float]] = []
+        # Visual post-processing pipeline state
+        self.pp_active: set[str] = set()       # active effect IDs
+        self.pp_menu = False                   # effect toggle menu visible
+        self.pp_frame_count = 0                # monotonic frame counter
+        self.pp_trail_buf: list = []           # previous frames for motion trails
+        self.pp_trail_depth = 3                # trail history length
         # Wolfram 1D elementary cellular automaton mode
         self.wolfram_mode = False
         self.wolfram_rule = 30           # current rule number (0-255)
@@ -2880,6 +2886,13 @@ class App:
             self._tt_auto_record()
             self._sonify_frame()
             self._draw()
+            # ── Post-processing visual effects pipeline ──
+            if self.pp_active:
+                self._pp_apply()
+            if self.pp_menu:
+                self._pp_draw_menu()
+            elif self.pp_active and not self._any_menu_open():
+                self._pp_draw_indicator()
             # ── Screensaver overlay (drawn after sub-mode content) ──
             if self.screensaver_mode and self.screensaver_running and not self.screensaver_menu:
                 _my, _mx = self.stdscr.getmaxyx()
@@ -2924,6 +2937,10 @@ class App:
 
             # ── Universal topology key handling ──
             if self._topology_handle_key(key):
+                continue
+
+            # ── Post-processing pipeline key handling ──
+            if self._pp_handle_key(key):
                 continue
 
             # ── Multiplayer network tick ──

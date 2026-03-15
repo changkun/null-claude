@@ -210,6 +210,8 @@ def register_all_modes(App):
     reg_genome(App)
     from life.modes.topology import register as reg_topology
     reg_topology(App)
+    from life.modes.post_processing import register as reg_pp
+    reg_pp(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

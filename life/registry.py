@@ -254,4 +254,7 @@ MODE_REGISTRY = [
     # ── Topology Mode ──
     {"name": "Topology Mode", "key": "Ctrl+W", "category": "Meta Modes",
      "desc": "Cycle grid surface: plane, torus, Klein bottle, Möbius strip, projective plane", "attr": None, "enter": "_topology_cycle", "exit": None},
+    # ── Visual Post-Processing Pipeline ──
+    {"name": "Visual FX Pipeline", "key": "Ctrl+V", "category": "Meta Modes",
+     "desc": "Composable ASCII visual effects: scanlines, bloom, trails, edge detect, color cycling, CRT", "attr": None, "enter": None, "exit": None},
 ]

@@ -4,6 +4,35 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Visual Post-Processing Pipeline — composable ASCII visual effects that layer on top of ANY simulation mode
+
+A horizontal meta-feature that adds 6 stackable terminal-space effects applied *after* any mode
+renders, so they work universally across all 100+ simulation modes. Users open a toggle menu with
+**Ctrl+V** and press **1–6** to combine effects freely. A compact `FX:SL+BL+TR` indicator appears
+in the top-right when effects are active.
+
+**New file:** `life/modes/post_processing.py` (~417 lines)
+
+| # | Effect | Key | Description |
+|---|--------|-----|-------------|
+| 1 | Scanlines | `1` | Dims every other row for a retro CRT-phosphor look |
+| 2 | Bloom / Glow | `2` | Bolds visible cells and paints dim `░` glow halos in empty neighbors |
+| 3 | Motion Trails | `3` | Shows fading `▓▒░` echoes of previous frames where cells have moved |
+| 4 | Edge Detection | `4` | Removes interior cells, leaving only boundary/silhouette outlines |
+| 5 | Color Cycling | `5` | Rotates the age-based color pairs over time |
+| 6 | CRT Distortion | `6` | Vignette darkening, odd-row scanlines, and a rounded bezel border |
+
+**Integration points:**
+- `life/app.py` — 5 state variables (`pp_active`, `pp_menu`, `pp_frame_count`, `pp_trail_buf`, `pp_trail_depth`); pipeline apply/draw calls inserted after `_draw()` and before overlay layers; key handling after topology handler
+- `life/modes/__init__.py` — registration
+- `life/registry.py` — mode registry entry (Ctrl+V, Meta Modes category)
+
+**Design decisions:**
+- Effects operate on the curses screen buffer after any mode renders — zero coupling to individual modes
+- Applied before overlay layers (minimap, time-travel scrubber, etc.) so overlays remain unaffected
+- Menu consumes all keys while open to prevent accidental mode changes
+- Trail buffer stores configurable history depth (default 3 frames) with automatic pruning
+
 ### Added: Topology Mode — run any simulation on non-Euclidean surfaces (torus, Klein bottle, Möbius strip, projective plane)
 
 A horizontal meta-feature that transforms how *all* existing simulations behave by changing
