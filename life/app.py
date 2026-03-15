@@ -363,6 +363,12 @@ class App:
         self.reef_steps_per_frame = 1
         self.reef_grid = []
         self.reef_entities = []
+        # ── Quantum Circuit Simulator mode state ──
+        self.qcirc_mode = False
+        self.qcirc_menu = False
+        self.qcirc_menu_sel = 0
+        self.qcirc_running = False
+        self.qcirc_state = None
         # ── Primordial Soup / Origin of Life mode state ──
         self.psoup_mode = False
         self.psoup_menu = False
@@ -3670,6 +3676,13 @@ class App:
                             self._reef_step()
                     continue
 
+            if self.qcirc_menu:
+                if self._handle_qcirc_menu_key(key):
+                    continue
+            elif self.qcirc_mode:
+                if self._handle_qcirc_key(key):
+                    continue
+
             if self.psoup_menu:
                 if self._handle_psoup_menu_key(key):
                     continue
@@ -6141,6 +6154,16 @@ class App:
 
         if self.reef_mode:
             self._draw_reef(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.qcirc_menu:
+            self._draw_qcirc_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.qcirc_mode:
+            self._draw_qcirc(max_y, max_x)
             self.stdscr.refresh()
             return
 

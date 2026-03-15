@@ -4,6 +4,50 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Quantum Circuit Simulator & Visualizer — Interactive Quantum Computing in ASCII
+
+A full quantum circuit simulator and visualizer where users build and simulate quantum
+circuits in the terminal. A pure-Python state vector engine supports single- and
+multi-qubit gates (H, X, Y, Z, S, T, CNOT, CZ, CP, SWAP, M), with measurement
+triggering probabilistic wavefunction collapse. Per-qubit states are rendered as mini
+Bloch sphere projections on the XZ plane, entanglement is detected via reduced density
+matrix purity and highlighted with colored link indicators, and a running histogram
+accumulates measurement statistics across hundreds or thousands of shots. This fills
+the gap between `quantum_walk.py` (random walks on graphs) and the project's deep
+coverage of physics — bringing actual quantum computation to life in the terminal and
+strengthening the underdeveloped CS/computing category.
+
+**New file:** `life/modes/quantum_circuit.py` (~798 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| State vector simulation | Full 2^n complex amplitude vector, gates applied via bit-manipulation loops — no external dependencies |
+| Single-qubit gates | H (Hadamard), X/Y/Z (Pauli), S (π/2 phase), T (π/4 phase) — all implemented as in-place transforms |
+| Multi-qubit gates | CNOT/CX (controlled-NOT), CZ (controlled-Z), CP (controlled-phase with arbitrary angle), SWAP |
+| Measurement | Probabilistic wavefunction collapse — computes Born-rule probabilities, samples outcome, renormalizes |
+| Bloch spheres | Per-qubit reduced density matrix → θ,φ angles → XZ-plane projection rendered as ASCII circle with `*` pointer |
+| Entanglement detection | Computes purity of each qubit's reduced state; purity < 0.99 flags entanglement; pairs highlighted with colored indicators |
+| Circuit diagram | Wire-based ASCII rendering with `[H]`, `[●]`, `[⊕]`, `[M]` symbols, vertical `│` connections for multi-qubit gates, color-coded progress (done/current/pending) |
+| Probability bars | `█░` bar charts showing amplitude probabilities for each basis state |
+| Measurement histogram | Run 100 or 1000 shots of the full circuit; `▓░` histogram with counts and percentages |
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Bell State \|Φ+⟩ | H + CNOT → (|00⟩+|11⟩)/√2 — maximal 2-qubit entanglement |
+| GHZ State | 3-qubit H + CNOT chain → tripartite entanglement (|000⟩+|111⟩)/√2 |
+| Quantum Teleportation | Teleport |1⟩ from q0 to q2 via Bell pair + classical-controlled corrections |
+| Deutsch-Jozsa (3-qubit) | Single oracle query determines constant vs balanced — 4-qubit circuit with balanced oracle |
+| Grover's Search (2-qubit) | Amplitude amplification finds marked state |11⟩ with high probability |
+| Quantum Fourier Transform | 3-qubit QFT of |4⟩ using controlled-phase gates and SWAP |
+
+**Interactive controls:** `Space` auto-run toggle, `n` single-step, `f` run all remaining gates, `m` measure ×100 shots, `M` measure ×1000 shots, `r` reset circuit, `R` return to preset menu, `+`/`-` adjust speed, `q` quit. Accessible via `Ctrl+Q` from the main menu under "Procedural & Computational."
+
+---
+
 ### Added: Primordial Soup / Origin of Life — Abiogenesis Simulation
 
 An abiogenesis simulation where simple molecules spontaneously form self-replicating

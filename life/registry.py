@@ -316,4 +316,7 @@ MODE_REGISTRY = [
     # ── Primordial Soup / Origin of Life ──
     {"name": "Primordial Soup / Origin of Life", "key": "Ctrl+Shift+P", "category": "Chemical & Biological",
      "desc": "Abiogenesis — molecules polymerize, membranes self-assemble, protocells divide & compete", "attr": "psoup_mode", "enter": "_enter_psoup_mode", "exit": "_exit_psoup_mode"},
+    # ── Quantum Circuit Simulator ──
+    {"name": "Quantum Circuit Simulator", "key": "Ctrl+Q", "category": "Procedural & Computational",
+     "desc": "Build & simulate quantum circuits with Bloch spheres, entanglement links & measurement histograms", "attr": "qcirc_mode", "enter": "_enter_qcirc_mode", "exit": "_exit_qcirc_mode"},
 ]
