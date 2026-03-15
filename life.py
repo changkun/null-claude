@@ -12435,6 +12435,8 @@ class App:
         ("Diamond Seed", "Start with grains arranged in a diamond", "diamond", 1, 0, 1),
         ("Checkerboard", "Start with alternating 3-grain cells", "checkerboard", 0, 0, 5),
         ("Max Stable", "Fill grid with 3 grains everywhere, then perturb center", "max_stable", 0, 0, 5),
+        ("Identity Element", "The sandpile identity — unique fractal from 2·max minus topple(2·max)", "identity", 0, 0, 10),
+        ("Random Fill", "Random grain counts (0-3) everywhere, then perturb center", "random_fill", 0, 0, 5),
     ]
 
     # Grain count -> (character, color_pair)
@@ -12516,6 +12518,51 @@ class App:
             # Perturb center to start avalanche
             self.sandpile_grid[cr][cc] = 4
             self.sandpile_total_grains += 1
+        elif drop_mode == "identity":
+            # Identity element of the Abelian Sandpile group.
+            # Computed as: identity = topple(2·max_stable - topple(2·max_stable))
+            # i.e. fill with 6, topple to get E, then identity = topple(6-E each cell).
+            from collections import deque
+            def _topple_to_stable(g: list[list[int]], rs: int, cs: int) -> None:
+                q: deque[tuple[int, int]] = deque()
+                for r in range(rs):
+                    for c in range(cs):
+                        if g[r][c] >= 4:
+                            q.append((r, c))
+                while q:
+                    r, c = q.popleft()
+                    while g[r][c] >= 4:
+                        spill = g[r][c] // 4
+                        g[r][c] %= 4
+                        for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                            nr, nc = r + dr, c + dc
+                            if 0 <= nr < rs and 0 <= nc < cs:
+                                g[nr][nc] += spill
+                                if g[nr][nc] >= 4:
+                                    q.append((nr, nc))
+
+            tmp = [[6] * cols for _ in range(rows)]
+            _topple_to_stable(tmp, rows, cols)
+            # Identity = topple(6 - E) for each cell
+            for r in range(rows):
+                for c in range(cols):
+                    self.sandpile_grid[r][c] = 6 - tmp[r][c]
+            _topple_to_stable(self.sandpile_grid, rows, cols)
+            self.sandpile_total_grains = sum(
+                self.sandpile_grid[r][c] for r in range(rows) for c in range(cols)
+            )
+            self.sandpile_auto_drop = False
+        elif drop_mode == "random_fill":
+            import random as _rng
+            for r in range(rows):
+                for c in range(cols):
+                    v = _rng.randint(0, 3)
+                    self.sandpile_grid[r][c] = v
+                    self.sandpile_total_grains += v
+            # Perturb center to trigger avalanches
+            old_val = self.sandpile_grid[cr][cc]
+            self.sandpile_grid[cr][cc] = 4
+            self.sandpile_total_grains += 4 - old_val
 
         self.sandpile_menu = False
         self.sandpile_mode = True
