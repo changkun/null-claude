@@ -260,4 +260,7 @@ MODE_REGISTRY = [
     # ── Visual Post-Processing Pipeline ──
     {"name": "Visual FX Pipeline", "key": "Ctrl+V", "category": "Meta Modes",
      "desc": "Composable ASCII visual effects: scanlines, bloom, trails, edge detect, color cycling, CRT", "attr": None, "enter": None, "exit": None},
+    # ── Simulation Recording & Export ──
+    {"name": "Recording & Export", "key": "Ctrl+X", "category": "Meta Modes",
+     "desc": "Record terminal frames and export as asciinema .cast or plain-text flipbook", "attr": "cast_recording", "enter": "_cast_rec_toggle", "exit": "_cast_rec_stop"},
 ]

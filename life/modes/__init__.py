@@ -214,6 +214,8 @@ def register_all_modes(App):
     reg_pp(App)
     from life.modes.layer_compositing import register as reg_comp
     reg_comp(App)
+    from life.modes.recording import register as reg_recording
+    reg_recording(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

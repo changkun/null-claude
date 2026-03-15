@@ -132,6 +132,8 @@ class App:
         self.recording = False
         self.recorded_frames: list[list[list[int]]] = []
         self.recording_start_gen = 0
+        # Cast recording (asciinema / flipbook export)
+        self._cast_rec_init()
         # 3D isometric mode
         self.iso_mode = False
         # Sound/music mode
@@ -2200,7 +2202,7 @@ class App:
             'evo_menu', 'chladni_menu', 'cpm_menu', 'fdtd_menu',
             'magfield_menu', 'rbc_menu', 'sph_menu', 'tectonic_menu',
             'volcano_menu', 'ocean_menu', 'weather_menu', 'blackhole_menu',
-            'pexplorer_menu', 'ep_menu',
+            'pexplorer_menu', 'ep_menu', 'cast_export_menu',
         ]
         for attr in _menu_attrs:
             if getattr(self, attr, False):
@@ -2936,7 +2938,29 @@ class App:
                 self._draw_topology_edges(_my, _mx)
                 self.stdscr.refresh()
 
+            # ── Cast recording: capture frame after all drawing ──
+            if self.cast_recording and not self.cast_export_menu:
+                self._cast_rec_capture()
+            # ── Cast recording indicator overlay ──
+            if self.cast_recording and not self._any_menu_open():
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_cast_indicator(_my, _mx)
+                self.stdscr.refresh()
+            # ── Cast export menu ──
+            if self.cast_export_menu:
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_cast_export_menu(_my, _mx)
+
             key = self.stdscr.getch()
+
+            # ── Cast recording export menu (must intercept keys first) ──
+            if self.cast_export_menu:
+                if self._handle_cast_export_key(key):
+                    continue
+
+            # ── Cast recording toggle (Ctrl+X, global) ──
+            if self._cast_handle_key(key):
+                continue
 
             # ── Minimap toggle (Tab key, global across all modes) ──
             if key == 9:  # Tab
@@ -6592,6 +6616,8 @@ class App:
                 mode += "  │  📐 BLUEPRINT"
             if self.recording:
                 mode += f"  │  ⏺ REC({len(self.recorded_frames)})"
+            if self.cast_recording:
+                mode += f"  │  ⏺ CAST({len(self.cast_frames)})"
             if self.sound_engine.enabled:
                 mode += "  │  ♪ SOUND"
             if self.sonify_enabled:
@@ -6768,6 +6794,7 @@ class App:
             "║  Ctrl+N    Magnetic Field Lines (particles)  ║",
             "║  g         Genome: export/import sim config    ║",
             "║  G         Record/stop GIF (export frames)   ║",
+            "║  Ctrl+X    Record/export .cast or .txt file  ║",
             "║  i         Import RLE pattern file            ║",
             "║  r         Fill grid randomly                 ║",
             "║  s         Save grid state to file            ║",

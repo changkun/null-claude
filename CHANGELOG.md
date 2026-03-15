@@ -4,6 +4,53 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Simulation Recording & Export System — capture any simulation as asciinema `.cast` or plain-text flipbook
+
+A horizontal meta-feature that records terminal frames from any running simulation and exports them
+as **asciinema v2 `.cast` files** (for playback via `asciinema play`, web embeds, or asciinema.org)
+or **plain-text flipbook `.txt` files** (frames separated by form-feed characters with timestamps).
+
+The project already had genome sharing for *configs*, but no way to capture the actual *visual
+output*. This closes that gap — record a cinematic demo reel, a mesmerizing Reaction-Diffusion
+pattern, or a 4-layer composite, then share the recording in a universally supported format.
+
+**New file:** `life/modes/recording.py` (~426 lines)
+
+**Frame capture engine:**
+- Reads the curses window cell-by-cell after all drawing and overlays complete
+- Converts curses attributes (color pairs, bold, dim, reverse, underline) to ANSI escape sequences
+- Produces both ANSI-encoded and plain-text versions of each frame simultaneously
+
+**Export formats:**
+
+| Format | Extension | Description |
+|--------|-----------|-------------|
+| Asciinema v2 | `.cast` | JSON header + timestamped `[elapsed, "o", data]` events. Compatible with `asciinema play`, web embeds, asciinema.org |
+| Plain-text flipbook | `.txt` | Frames separated by form-feed (`\f`) with timestamp headers. No ANSI escapes — safe for any text viewer |
+| Both | `.cast` + `.txt` | Exports both formats simultaneously with the same timestamp |
+
+**Recording controls:**
+- **Ctrl+X** — global hotkey to start/stop recording (works in any simulation mode)
+- FPS throttling (default 10 fps) — skips redundant captures when the simulation runs faster
+- Safety cap at 3000 frames — auto-stops to prevent runaway memory usage
+- Blinking `● REC Nf Ns` indicator in the top-right corner during recording
+
+**Export menu** (shown on stop):
+- Arrow keys / j,k to navigate; Enter to confirm; 1/2/3 for direct selection
+- `d` to discard recording, Esc to cancel
+- Files saved to `~/.life_saves/` with `recording_<timestamp>` naming
+
+**Integration points:**
+- `life/app.py` — state initialization via `_cast_rec_init()` in `__init__`; frame capture hook in main loop (after all drawing, before `getch()`); recording indicator overlay; export menu key interception; status bar `CAST(N)` indicator; help screen entry
+- `life/modes/__init__.py` — registration
+- `life/registry.py` — mode entry (Ctrl+X, "Meta Modes" category)
+
+**Design decisions:**
+- Captures *after* all drawing completes (including post-processing effects, topology edges, overlays) so recordings show exactly what the user sees
+- Dual-track capture (ANSI + plain) avoids re-processing frames at export time
+- Export menu intercepts keys before all other handlers to prevent accidental mode changes
+- Uses the existing `SAVE_DIR` (`~/.life_saves/`) and `_flash()` for consistency with the rest of the save/load infrastructure
+
 ### Added: Layer Compositing System — stack 2-4 independent simulations as transparent layers with blend modes
 
 A horizontal meta-feature that adds **depth** to the simulation ecosystem. Where Portal connects
