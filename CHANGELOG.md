@@ -4,6 +4,59 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Molecular Dynamics / Phase Transitions — Lennard-Jones Particle Simulation
+
+A new physics mode that simulates classical molecular dynamics: particles interact via
+the Lennard-Jones 6-12 potential V(r) = 4ε[(σ/r)¹² − (σ/r)⁶], producing short-range
+repulsion and long-range attraction. With velocity-Verlet integration, periodic boundary
+conditions, and a Berendsen-style velocity-rescaling thermostat, particles self-organize
+into crystals at low temperature, melt into disordered liquids, and evaporate into gas —
+all from a single pairwise force law. This fills a gap in the Physics & Waves category:
+the project had wave equations, electromagnetic fields, and quantum circuits, but no
+classical statistical mechanics showing emergent phase transitions from first principles.
+
+**New file:** `life/modes/molecular_dynamics.py` (~810 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Force law | Lennard-Jones 6-12 potential with cutoff at 2.5σ, minimum-image convention for periodic boundaries |
+| Integration | Velocity-Verlet (symplectic, time-reversible, energy-conserving) |
+| Thermostat | Berendsen-style velocity rescaling with gentle coupling (τ = 0.1) for smooth temperature control |
+| Boundary conditions | Periodic (particles wrap around; forces use minimum-image convention) |
+| Phase detection | Heuristic classification from temperature + radial distribution function peak structure |
+| Pressure | Virial equation: P = (NkT + ½ Σ r·F) / V |
+| Observables | KE, PE, total energy, temperature, pressure, RDF g(r), speed distribution histogram |
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Crystal Growth | Cold start (T=0.1, ρ=0.8) — particles freeze into hexagonal lattice |
+| Melting Point | Crystal just above melting (T=0.75) — watch long-range order break down |
+| Supercooling / Nucleation | Quench from random config (T=0.3, ρ=0.6) — crystal islands nucleate and grow |
+| Triple Point | Near solid-liquid-gas coexistence (T=0.69, ρ=0.45) |
+| Boiling | Liquid heated past boiling (T=1.5) — explosive evaporation |
+| Gas / Ideal Gas | High temperature, dilute (T=3.0, ρ=0.15) — random ballistic motion |
+
+**3 view modes:**
+
+| View | What it shows |
+|------|---------------|
+| Particle field | Particles color-coded by kinetic energy (blue=cold through red=hot), using Unicode density characters (·∘○●◉★) |
+| Energy plot | Temperature and KE/particle time series with scrolling history |
+| RDF g(r) | Radial distribution function — sharp peaks = crystalline order, broad peaks = liquid, flat = gas |
+
+**Interactive controls:** `↑`/`↓` adjust target temperature, `Space` pause/resume, `n` single step, `v` cycle views, `t` toggle thermostat, `+`/`-` simulation speed, `r` reset, `R` back to menu, `q` quit. Accessible via `Ctrl+Shift+M` from the mode browser under "Physics & Waves."
+
+**Also changed:**
+- `life/modes/__init__.py`: Added import and registration call for molecular_dynamics mode
+- `life/registry.py`: Added registry entry under "Physics & Waves" category with `Ctrl+Shift+M` shortcut
+- `life/app.py`: Added 8 state attributes, key dispatch block, draw dispatch block, and `moldyn_menu` to `_any_menu_open`
+
+---
+
 ### Added: Tierra Digital Organisms — Self-Replicating Assembly Programs in Shared Memory
 
 A new computational evolution mode inspired by Tom Ray's Tierra system (1990) — one

@@ -363,6 +363,14 @@ class App:
         self.reef_steps_per_frame = 1
         self.reef_grid = []
         self.reef_entities = []
+        # ── Molecular Dynamics / Phase Transitions mode state ──
+        self.moldyn_mode = False
+        self.moldyn_menu = False
+        self.moldyn_menu_sel = 0
+        self.moldyn_sim = None
+        self.moldyn_running = False
+        self.moldyn_view = 0
+        self.moldyn_preset_name = ""
         # ── Quantum Circuit Simulator mode state ──
         self.qcirc_mode = False
         self.qcirc_menu = False
@@ -2711,6 +2719,7 @@ class App:
             'magfield_menu', 'rbc_menu', 'sph_menu', 'tectonic_menu',
             'volcano_menu', 'ocean_menu', 'weather_menu', 'blackhole_menu',
             'pexplorer_menu', 'ep_menu', 'cast_export_menu', 'script_menu',
+            'moldyn_menu',
         ]
         for attr in _menu_attrs:
             if getattr(self, attr, False):
@@ -3682,6 +3691,17 @@ class App:
                         time.sleep(delay)
                         for _ in range(self.reef_steps_per_frame):
                             self._reef_step()
+                    continue
+
+            if self.moldyn_menu:
+                if self._handle_moldyn_menu_key(key):
+                    continue
+            elif self.moldyn_mode:
+                if self._handle_moldyn_key(key):
+                    if self.moldyn_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._moldyn_step()
                     continue
 
             if self.qcirc_menu:
@@ -6162,6 +6182,16 @@ class App:
 
         if self.reef_mode:
             self._draw_reef(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.moldyn_menu:
+            self._draw_moldyn_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.moldyn_mode:
+            self._draw_moldyn(max_y, max_x)
             self.stdscr.refresh()
             return
 
