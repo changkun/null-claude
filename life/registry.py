@@ -251,4 +251,7 @@ MODE_REGISTRY = [
     # ── Cinematic Demo Reel ──
     {"name": "Cinematic Demo Reel", "key": "Ctrl+Shift+D", "category": "Meta Modes",
      "desc": "Auto-playing director with crossfade transitions, camera moves & parameter sweeps", "attr": "cinem_mode", "enter": "_enter_cinematic_demo_mode", "exit": "_exit_cinematic_demo_mode"},
+    # ── Topology Mode ──
+    {"name": "Topology Mode", "key": "Ctrl+W", "category": "Meta Modes",
+     "desc": "Cycle grid surface: plane, torus, Klein bottle, Möbius strip, projective plane", "attr": None, "enter": "_topology_cycle", "exit": None},
 ]

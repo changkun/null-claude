@@ -2903,6 +2903,13 @@ class App:
                 self._draw_sonify_indicator(_my, _mx)
                 self.stdscr.refresh()
 
+            # ── Topology indicator and edge overlays ──
+            if self.grid.topology != "torus" and not self._any_menu_open():
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_topology_indicator(_my, _mx)
+                self._draw_topology_edges(_my, _mx)
+                self.stdscr.refresh()
+
             key = self.stdscr.getch()
 
             # ── Minimap toggle (Tab key, global across all modes) ──
@@ -2913,6 +2920,10 @@ class App:
 
             # ── Universal time-travel key handling ──
             if self._tt_handle_key(key):
+                continue
+
+            # ── Universal topology key handling ──
+            if self._topology_handle_key(key):
                 continue
 
             # ── Multiplayer network tick ──

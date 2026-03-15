@@ -208,6 +208,8 @@ def register_all_modes(App):
     reg_sonify(App)
     from life.modes.genome import register as reg_genome
     reg_genome(App)
+    from life.modes.topology import register as reg_topology
+    reg_topology(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

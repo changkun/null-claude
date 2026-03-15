@@ -4,6 +4,14 @@ import hashlib
 class Grid:
     """Finite grid with wrapping (toroidal) boundaries."""
 
+    # Topology constants
+    TOPO_PLANE = "plane"
+    TOPO_TORUS = "torus"
+    TOPO_KLEIN = "klein_bottle"
+    TOPO_MOBIUS = "mobius_strip"
+    TOPO_PROJECTIVE = "projective_plane"
+    TOPOLOGIES = [TOPO_PLANE, TOPO_TORUS, TOPO_KLEIN, TOPO_MOBIUS, TOPO_PROJECTIVE]
+
     def __init__(self, rows: int, cols: int):
         self.rows = rows
         self.cols = cols
@@ -16,6 +24,9 @@ class Grid:
         self.survival = {2, 3}
         # Hex mode: use 6 neighbors instead of 8
         self.hex_mode = False
+        # Topology: controls how coordinates wrap at boundaries
+        # Default is "torus" which matches the original modulo wrapping
+        self.topology = self.TOPO_TORUS
 
     def set_alive(self, r: int, c: int):
         if 0 <= r < self.rows and 0 <= c < self.cols:
@@ -47,23 +58,79 @@ class Grid:
         for r, c in pattern["cells"]:
             self.set_alive((r + offset_r) % self.rows, (c + offset_c) % self.cols)
 
+    def _wrap(self, r: int, c: int):
+        """Map raw (r, c) to grid coordinates based on active topology.
+
+        Returns (nr, nc) or None if the coordinate is off-grid (plane edges).
+
+        Topology summary:
+          plane           – no wrapping; cells beyond edges are dead
+          torus           – both axes wrap (standard modulo)
+          klein_bottle    – columns wrap normally; rows wrap with horizontal flip
+          mobius_strip     – columns wrap with vertical flip; rows have hard edges
+          projective_plane – both axes wrap with a flip on the opposite axis
+        """
+        rows, cols = self.rows, self.cols
+        topo = self.topology
+
+        if topo == self.TOPO_TORUS:
+            return r % rows, c % cols
+
+        if topo == self.TOPO_PLANE:
+            if 0 <= r < rows and 0 <= c < cols:
+                return r, c
+            return None
+
+        if topo == self.TOPO_KLEIN:
+            # Columns wrap normally
+            nc = c % cols
+            # Rows: wrapping flips the column
+            if 0 <= r < rows:
+                return r, nc
+            nr = r % rows
+            nc = (cols - 1 - nc) % cols
+            return nr, nc
+
+        if topo == self.TOPO_MOBIUS:
+            # Rows have hard edges (no wrap)
+            if r < 0 or r >= rows:
+                return None
+            # Columns wrap with vertical flip
+            if 0 <= c < cols:
+                return r, c
+            nc = c % cols
+            nr = rows - 1 - r
+            return nr, nc
+
+        if topo == self.TOPO_PROJECTIVE:
+            # Both axes wrap with a flip on the opposite axis
+            nr, nc = r, c
+            if nr < 0 or nr >= rows:
+                nr = nr % rows
+                nc = (cols - 1 - nc) % cols
+            if nc < 0 or nc >= cols:
+                nc = nc % cols
+                nr = (rows - 1 - nr) % rows
+            return nr, nc
+
+        # Fallback: torus
+        return r % rows, c % cols
+
     def _count_neighbours(self, r: int, c: int) -> int:
         count = 0
         if self.hex_mode:
             offsets = HEX_NEIGHBORS_EVEN if r % 2 == 0 else HEX_NEIGHBORS_ODD
             for dr, dc in offsets:
-                nr = (r + dr) % self.rows
-                nc = (c + dc) % self.cols
-                if self.cells[nr][nc]:
+                coord = self._wrap(r + dr, c + dc)
+                if coord is not None and self.cells[coord[0]][coord[1]]:
                     count += 1
         else:
             for dr in (-1, 0, 1):
                 for dc in (-1, 0, 1):
                     if dr == 0 and dc == 0:
                         continue
-                    nr = (r + dr) % self.rows
-                    nc = (c + dc) % self.cols
-                    if self.cells[nr][nc]:
+                    coord = self._wrap(r + dr, c + dc)
+                    if coord is not None and self.cells[coord[0]][coord[1]]:
                         count += 1
         return count
 

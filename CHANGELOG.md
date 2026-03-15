@@ -4,6 +4,43 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Topology Mode — run any simulation on non-Euclidean surfaces (torus, Klein bottle, Möbius strip, projective plane)
+
+A horizontal meta-feature that transforms how *all* existing simulations behave by changing
+the grid's boundary conditions and cell connectivity. Users cycle through five surface types
+with **Ctrl+W** and watch how patterns wrap, twist, and tile differently on each surface.
+
+**Core engine:** `life/grid.py` — `_wrap(r, c)` method on `Grid`
+
+The topology lives on the `Grid` object itself, so it automatically affects every simulation
+that uses `_count_neighbours()`. Default is `torus`, which preserves 100% backward
+compatibility (identical to the original modulo wrapping).
+
+| Surface | Wrapping behavior | Visual edge indicator |
+|---------|------------------|-----------------------|
+| Plane | No wrapping — hard dead edges | Thin single lines (─ │) |
+| Torus | Both axes wrap via modulo (default) | No indicator (default) |
+| Klein bottle | Columns wrap normally; rows wrap with horizontal flip | Double lines + wavy twist lines with ⟵⟶ arrows |
+| Möbius strip | Columns wrap with vertical flip; rows have hard edges | Mixed wall/twist borders with ↕ arrows |
+| Projective plane | Both axes wrap with opposite-axis flips | Wavy twist lines on all edges |
+
+**New file:** `life/modes/topology.py` (~269 lines)
+- `TOPOLOGY_INFO` dict with labels, Unicode symbols, descriptions, and edge metadata per surface
+- `_topology_cycle()` / `_topology_set()` — cycle or directly set the active topology
+- `_topology_handle_key()` — Ctrl+W cycles forward
+- `_draw_topology_indicator()` — shows topology name/symbol in top-right (hidden for default torus)
+- `_draw_topology_edges()` — renders color-coded border characters: dim walls, cyan wraps, bold magenta twists with directional arrows at midpoints
+
+**Integration points:**
+- `life/app.py` — overlay drawing after sonification; universal key handler after time-travel
+- `life/modes/__init__.py` — registration
+- `life/registry.py` — mode registry entry (Ctrl+W, Meta Modes category)
+
+**Design decisions:**
+- Topology state on Grid, not App, so it automatically propagates to all neighbor-counting logic
+- `_wrap()` returns `None` for off-grid coordinates (plane/Möbius edges), letting `_count_neighbours()` treat them as dead cells
+- No UI clutter for the default torus — indicators only appear for non-default surfaces
+
 ### Added: Simulation Portal System — spatial gateways connecting two simulations at a boundary with cross-talk
 
 A new meta-mode that creates a spatial boundary inside a single viewport where two different
