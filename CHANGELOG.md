@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Infrastructure: Ralph Task Logs (All Remaining Rounds)
+
+Added all remaining .ralph/round* orchestration logs capturing the complete AI build session history.
+
+---
+
 ### Added: Electric Circuit Simulator — Grid-Based Circuit Builder with Real-Time Analysis
 
 A new physics mode implementing a continuous-value circuit simulator where users place
@@ -2382,18 +2388,454 @@ A relaxing, screensaver-style "zen mode" — the project's first purely ambient 
 
 **Category:** Audio & Visual (~560 lines added to life.py)
 
-## Previous additions (selected)
+### Added: Kaleidoscope / Symmetry Pattern Generator
 
-| Date | Mode | Key |
-|------|------|-----|
-| — | ASCII Aquarium / Fish Tank | Ctrl+Shift+Y |
-| — | Kaleidoscope / Symmetry Patterns | Ctrl+Shift+V |
-| — | Ant Farm Simulation | — |
-| — | Matrix Digital Rain | — |
-| — | Maze Solving Algorithm Visualizer | — |
-| — | Lissajous Curve / Harmonograph | — |
-| — | Fluid Rope / Honey Coiling | — |
-| — | Snowfall & Blizzard | — |
-| — | Fourier Epicycle Drawing | — |
-| — | DNA Helix & Genetic Algorithm | — |
-| — | Sorting Algorithm Visualizer | — |
+Mesmerizing kaleidoscopic patterns with configurable N-fold symmetry (4, 6, 8, 12). Features 8 presets (Snowflake, Mandala, Diamond, Star Burst, Flower, Vortex, Hypnotic, Paint Mode), 7 seed animation styles, 6 color palettes with continuous cycling, and an interactive paint mode with cursor-based drawing mirrored across all symmetry axes.
+
+### Added: Ant Farm Simulation
+
+Side-view ant colony simulation with underground cross-section rendering. Ants exhibit 4 behavioral states (explore, forage, return_food, dig) with dual pheromone trail systems for emergent navigation. Features colony growth mechanics (queen produces new ants per food delivered), soil layers (dirt/clay/rock), 5 presets, and interactive food/rain/rock placement.
+
+### Added: Matrix Digital Rain
+
+The iconic falling-character rain effect from The Matrix. Features per-column independent streams with variable speed, length, and character mutation for the flickering effect. Includes 6 presets (Classic Green, Dense Downpour, Sparse Drizzle, Katakana Only, Binary Rain, Rainbow), 4-level brightness gradient, and 3 color modes.
+
+### Added: Maze Solving Algorithm Visualizer
+
+Interactive maze solver with real-time pathfinding visualization. Implements 4 algorithms (BFS, DFS, A*, Wall Follower) across 3 maze sizes with color-coded exploration states. Uses recursive backtracker for maze generation with 10 presets and step-by-step playback controls.
+
+### Added: Lissajous Curve / Harmonograph
+
+Parametric curve drawing with intensity-accumulating ASCII canvas. Includes 8 presets (Classic 3:2, Figure Eight, Star, Harmonograph, Rose Curve, Decay Spiral, Knot), full harmonograph physics with optional 3rd/4th oscillators, damping, and interpolated line rendering.
+
+### Added: Fluid Rope / Honey Coiling
+
+Viscous fluid rope dynamics with realistic coiling physics. Gravity-accelerated falling rope segments form rotating coils at the surface with viscous pool accumulation and spreading/diffusion. Includes 4 presets (Honey, Chocolate, Shampoo, Lava) with age-based visual fading.
+
+### Added: Snowfall & Blizzard
+
+Realistic snow particle physics with size-dependent fall speed and sinusoidal wind gusts. Features per-column snow accumulation using Unicode block characters, wind-driven drifting, temperature effects on flake size, and visibility/fog effects. 6 presets from Gentle Snowfall to Arctic Whiteout.
+
+### Added: Fourier Epicycle Drawing
+
+Discrete Fourier Transform engine computes coefficients from path points, then plays back the approximation as a chain of spinning epicycles tracing the original shape. Features 7 presets (Free Draw, Circle, Square, Star, Figure Eight, Heart, Spiral Square) with a free-draw mode for arbitrary shapes.
+
+### Added: DNA Helix & Genetic Algorithm
+
+Combines a rotating 3D ASCII double helix visualization with a live genetic algorithm engine. 6 presets (Classic Binary GA, OneMax Challenge, Long Strand, etc.) with tournament selection, crossover, mutation, and elitism. The helix renders depth-based strands with color-coded base pair connections.
+
+### Added: Sorting Algorithm Visualizer
+
+Interactive sorting algorithm visualizer with animated bar charts and step-by-step replay. Implements 6 algorithms (Bubble Sort, Quick Sort, Merge Sort, Heap Sort, Radix Sort, Shell Sort) with color-coded highlights showing sorted elements, swaps, and comparisons in real time.
+
+### Added: Tornado & Supercell Storm
+
+Full tornado and supercell storm simulation with vortex physics, funnel cloud rendering, rain curtains, debris system, branching lightning, mesocyclone rotation, and destruction path tracking. 6 presets from EF3 Wedge to Dust Devil.
+
+### Added: Pendulum Wave
+
+Physically accurate pendulum wave simulation with exact simple harmonic motion. Pendulum lengths are calculated so each completes a different number of oscillations in a realignment period, creating mesmerizing wave patterns. 6 presets from Classic Wave (15 pendulums) to Grand Ensemble (32).
+
+### Added: Aurora Borealis (Northern Lights)
+
+Physics-based aurora rendering with multiple altitude bands showing correct gas emissions (O→green/red, N₂→purple/blue). Features curtain wave dynamics, solar wind particles curving along magnetic field lines, pulsation cycles, and intensity fluctuations. 4 presets from Quiet Arc to Coronal Mass Ejection.
+
+### Added: Solar System Orrery
+
+Accurate Keplerian orbital mechanics for all 8 planets with real semi-major axes, eccentricities, and periods. Features Kepler's equation solver (Newton-Raphson), elliptical orbit paths, asteroid belt (~120 bodies), comets with tails, 6 presets, and interactive zoom/label/info controls.
+
+### Added: Black Hole Accretion Disk
+
+Relativistic black hole dynamics with Keplerian accretion disk, Lense-Thirring frame dragging, relativistic precession, viscous angular momentum transport, gravitational lensing with Einstein ring deflection, relativistic jets, and Hawking radiation. 6 presets from Stellar to Binary Merger.
+
+### Added: Volcanic Eruption & Lava Flow
+
+Full volcanic simulation with magma chamber pressure dynamics, gravity-driven lava flow with temperature-dependent viscosity, cooling/solidification, pyroclastic density currents, wind-advected ash dispersion, volcanic gas diffusion, and ballistic ejecta. 6 presets from Strombolian to Fissure Eruption.
+
+### Added: Ocean Currents & Thermohaline Circulation
+
+Ocean simulation with temperature/salinity fields, simplified UNESCO equation of state, gyre circulation with Coriolis deflection, deep water formation, upwelling, semi-Lagrangian advection, density-driven baroclinic currents, and plankton bloom dynamics with nutrient cycling. 6 presets including Gulf Stream, El Niño, and Thermohaline Conveyor.
+
+### Added: Atmospheric Weather System
+
+Full weather system with pressure-driven wind, Coriolis deflection, semi-Lagrangian advection, frontal dynamics, cloud formation, and precipitation (rain vs snow by temperature). Features drifting pressure centers, frontal boundaries, and 5 visualization layers. 6 presets from Tropical Cyclone to Arctic Outbreak.
+
+### Added: Tectonic Plate Simulation
+
+Voronoi-based plate generation with fractional sub-cell velocity movement and realistic boundary physics: convergent (mountain building, subduction), divergent (rifting, mid-ocean ridges), and transform interactions. Includes volcanic hotspots, erosion, isostatic rebound, and 17-level topographic rendering.
+
+### Added: Doom-style First-Person Raycaster
+
+Column-by-column ASCII raycaster with fisheye correction, distance-based wall shading, floor gradient, and minimap overlay. Includes 6 map presets (Dungeon, Office, Outdoor Ruins, Arena, Maze, Fortress) with WASD movement, collision detection, and wall sliding.
+
+### Added: Artificial Life Ecosystem
+
+Digital terrarium of autonomous creatures with simple neural-network brains (6→4→2 architecture) driving emergent foraging, fleeing, and hunting behaviors. Three creature types (herbivores, predators, omnivores) with evolvable traits (speed, size, sense radius, diet, brain weights) that mutate on reproduction.
+
+### Added: Music Visualizer
+
+Audio visualization mode with spectrum bars, waveform scope, beat particles, combined view, bass tunnel, and frequency rain. Features synthetic audio engine with pentatonic tone generation, simulated FFT spectrum analysis, beat detection, and a reactive particle system.
+
+### Added: Shader Toy
+
+Real-time shader engine evaluating per-pixel math functions rendered as ASCII characters with color. Includes 10 shader presets (Plasma Waves, Tunnel Zoom, Metaballs, Moiré Rings, Fractal Flame, Warp Grid, Lava Lamp, Matrix Rain, Kaleidoscope, Spiral Galaxy), 4 color palettes, and live parameter tweaking.
+
+### Added: 3D Game of Life
+
+Full 3D cellular automaton on a 20³ voxel grid with 26-neighbor Moore neighborhood rules. Features volumetric ASCII ray casting with orbital camera, diffuse lighting, depth fog, ambient occlusion, and position-based coloring. 8 presets with different birth/survival rules.
+
+### Added: SDF Ray Marching 3D Renderer
+
+Signed distance field ray marching renderer with 6 scene presets (sphere, torus, multi-shape, Mandelbulb fractal, infinite repeating spheres, smooth-blended spheres). Features orbital camera, Blinn-Phong lighting with soft shadows, and ASCII shading using an 11-character density ramp.
+
+### Added: 3D Terrain Flythrough
+
+True 3D perspective projection with raycasting-based terrain rendering. Includes 6 procedural terrain presets (Rolling Hills, Mountain Range, Desert Canyon, Volcanic Islands, Glacial Valley, Alien World), full day/night cycle with sky rendering, altitude-based coloring, and distance fog.
+
+### Added: Real-Time Minimap Overlay
+
+Toggleable minimap (Tab key) rendering a downscaled overview of the entire simulation grid in the top-right corner. Uses density-based glyphs with color coding, highlights the current viewport position when zoomed in, and works across all 65+ simulation modes via a universal data accessor.
+
+### Added: Interactive Mode Browser
+
+Searchable, categorized mode browser UI for browsing and launching all 65 simulation modes. Features 10 categories, scrollable list with key bindings and descriptions, real-time search filtering, and clean mode transitions.
+
+### Added: Smoothed Particle Hydrodynamics (SPH)
+
+Full SPH fluid simulation using Poly6 density kernel, Spiky pressure gradient, and viscosity Laplacian kernel with symplectic Euler integration. 6 presets (Dam Break, Double Dam, Dropping Block, Rain, Wave Tank, Fountain) with 3 visualization modes (density, velocity, pressure).
+
+### Added: FDTD Electromagnetic Wave Propagation
+
+2D TM-mode Finite-Difference Time-Domain electromagnetic wave simulator with Yee algorithm updates, PML absorbing boundaries, lossy media support, and dielectric materials. 10 presets from Point Source to Resonant Cavity.
+
+### Added: Magnetic Field Lines
+
+Charged particle dynamics simulation using the Boris push integrator for symplectic integration in electromagnetic fields. Features 4 field configurations (uniform, dipole, magnetic bottle, quadrupole), 3 visualization modes, and field line overlay showing B-field and E-field vectors.
+
+### Added: Cellular Potts Model (CPM)
+
+Full Cellular Potts Model with Metropolis-based energy minimization, adhesion and area constraints, and chemical diffusion for chemotaxis. 6 presets (Cell Sorting, Wound Healing, Tumor Growth, Checkerboard, Foam/Bubbles, Chemotaxis) with 3 visualization modes and incremental area caching.
+
+### Added: Chaos Game / IFS Fractal
+
+Interactive Chaos Game / Iterated Function System fractal renderer with 8 preset fractals (Sierpinski Triangle, Barnsley Fern, Vicsek Snowflake, Dragon Curve, Maple Leaf, Koch Snowflake, Crystal). Features weighted random affine transforms, adaptive auto-scaling, log-scale density rendering, and color-by-transform mode.
+
+### Added: Chladni Plate Vibration Patterns
+
+Models 2D plate vibrations and Chladni figure formation — the patterns sand makes on a vibrating plate. Solves the biharmonic plate equation (∇⁴) using a 13-point stencil with damping and sinusoidal driving. 8 presets from simple (1,2) modes to complex (5,7) cathedral patterns with a Harmonic Sweep auto-cycle mode.
+
+### Added: Rayleigh-Bénard Convection
+
+Simplified 2D Boussinesq approximation with temperature advection-diffusion, buoyancy-driven velocity, upwind advection, and Gauss-Seidel pressure projection. 8 presets from Classic Rolls to Solar Granulation with 3 visualization modes (temperature, velocity, vorticity).
+
+### Added: Double Pendulum Chaos
+
+Full double pendulum physics simulation with 4th-order Runge-Kutta integration. Features 8 presets covering different chaotic regimes, Bresenham line rendering with fading trajectory trails, and a dual pendulum comparison mode showing divergence from nearly identical initial conditions.
+
+### Added: Navier-Stokes Fluid Dynamics
+
+Full incompressible fluid simulator with Gauss-Seidel diffusion solver, semi-Lagrangian advection, and pressure-Poisson projection for divergence-free velocity fields. 6 presets (Dye Playground, Vortex Pair, Jet Stream, Karman Vortices), 4 visualization modes, interactive dye/velocity injection, and obstacle placement.
+
+### Added: Mandelbrot/Julia Set Fractal Explorer
+
+Interactive fractal visualization with real-time exploration of Mandelbrot and Julia sets. 10 presets covering Seahorse Valley, Elephant Valley, Mini-brot, and 5 Julia constants. Features pan/zoom navigation, iteration depth control (20-5000), 5 color schemes, and Julia constant tweaking.
+
+### Added: Fireworks
+
+Interactive fireworks display with 4 burst patterns (spherical, ring, willow, crossette). Features gravity, wind drift, velocity drag, rocket fuse timing, 7-color particles with brightness fading, and trailing sparks. 6 presets from Grand Finale to Random Mix.
+
+### Added: L-System Plant Growth
+
+Procedural plant growth using L-system grammar rules with turtle-graphics interpretation into visual plant structures rendered with Unicode box-drawing characters. 7 presets (Binary Tree, Fern, Bush, Seaweed, Willow, Pine, Garden) with generation-by-generation growth and depth-based coloring.
+
+### Infrastructure: Ralph Task Logs
+
+Added ralph task logs for rounds 154-155, 156-162, 163-186 across multiple commits tracking the AI orchestration session that produced these simulation modes.
+
+### Added: Galaxy Formation
+
+Galaxy formation and dynamics simulation with NFW dark matter halo gravity, grid-based particle gravity, gas pressure/cooling forces, and leapfrog integration. 8 presets (Milky Way, Grand Design, Whirlpool, Elliptical, Dwarf Irregular, Galaxy Merger, Ring Galaxy, Barred Spiral) with 4 view modes.
+
+### Enhanced: Forest Fire — Ember/Ash Lifecycle
+
+Added ember and ash states to create a richer fire lifecycle (tree → burning → ember → ash → empty → tree). Embers spread fire for more realistic cascading dynamics. Added density sparkline showing tree population history and 2 new presets (Critical Density, Slow Burn).
+
+### Added: Cloth Simulation
+
+Verlet integration physics engine with position-based dynamics, spring constraints, gravity, wind, damping, and tearable fabric. 6 presets (Hanging Cloth, Curtain, Flag, Hammock, Net, Silk Sheet) with interactive pinning/tearing and tension-based coloring.
+
+### Added: Smoke & Fire Fluid Simulation
+
+Buoyancy-driven fire and smoke physics with combustion, fuel consumption, advection via bilinear velocity sampling, diffusion, altitude-based cooling, wind/turbulence, and temperature-mapped rendering. 6 presets from Campfire to Smoke Stack.
+
+### Enhanced: Abelian Sandpile — Identity Element & Random Fill
+
+Two new presets: Identity Element (computes the sandpile group identity using the formula identity = topple(2·max_stable − topple(2·max_stable)), producing a striking fractal pattern) and Random Fill (fills every cell randomly then perturbs the center to trigger cascading avalanches).
+
+### Added: Terrain Generation & Erosion Landscape
+
+Geological terrain formation through four combined processes: tectonic uplift, thermal erosion (rockslides), hydraulic erosion (rain-driven flow), and vegetation dynamics that stabilize soil. 6 presets with 4 visualization views (topographic, elevation, vegetation, erosion).
+
+### Enhanced: Falling Sand — Oil and Steam Materials
+
+Two new materials: Oil (flammable liquid that floats above water) and Steam (gas that rises and condenses back to water). Three new presets: Forest Fire, Oil Refinery, Waterfall. Updated brush system to support all 7 materials.
+
+### Added: Quantum Cellular Automaton (Quantum Walk)
+
+Discrete-time quantum walk with interference patterns. Features 3 coin operators (Hadamard, Grover diffusion, DFT), 8 presets with various source configurations and boundary conditions, and 4 visualization views (probability magnitude, phase, real part, imaginary part).
+
+### Added: Strange Attractor Visualization
+
+Six chaotic dynamical systems (Lorenz, Rössler, Thomas, Aizawa, Halvorsen, Chen) with interactive 3D-to-2D projection and density heatmap rendering. 200 particles integrated via RK2 with log-scaled density coloring and interactive rotation/zoom/parameter controls.
+
+### Added: Magnetohydrodynamics (MHD) Plasma
+
+Resistive MHD equations (continuity, momentum with Lorentz force, induction with resistive diffusion) solved using finite differences with periodic boundaries. 8 presets (Harris Current Sheet, Orszag-Tang Vortex, Magnetic Island, etc.) with 4 visualization modes.
+
+### Added: Chemotaxis & Bacterial Colony Growth
+
+3-field PDE system modeling bacteria (logistic growth + motility + chemotaxis), nutrients (diffusion − consumption), and chemoattractant signal (production + diffusion − decay). Chemotactic flux via upwind scheme. 8 presets from Eden Cluster to Quorum Sensing.
+
+### Added: Belousov-Zhabotinsky (BZ) Reaction
+
+3-variable Oregonator-inspired chemical reaction model producing characteristic spiral wavefronts and target patterns. Features activator, inhibitor, and recovery species. 8 presets with 5 initialization types and interactive parameter controls.
+
+### Added: Spiking Neural Network (Izhikevich)
+
+2D grid of Izhikevich spiking neurons with full neuron dynamics (v' = 0.04v² + 5v + 140 − u + I), synaptic coupling, and excitatory/inhibitory types. 10 presets from sparse firing to cortical column with visual glow trails and firing rate display.
+
+### Added: Kuramoto Coupled Oscillators
+
+Phase synchronization model where each cell's phase evolves via dθ/dt = ωᵢ + (K/4)Σsin(θⱼ − θᵢ) + noise with 4-neighbor coupling. 12 presets covering different dynamical regimes. Order parameter visualization shows global synchronization level.
+
+### Added: 2D Wave Equation
+
+Full 2D wave equation simulator with finite-difference physics, per-step damping, and three boundary conditions (reflect, absorb, wrap). 12 presets including Double Slit diffraction and Rain Drops with interactive wave speed, damping, and manual plucking controls.
+
+### Enhanced: Snowflake Crystal Growth — Six-Fold Symmetry
+
+Added six-fold symmetry enforcement using hex coordinate transforms (6 rotations × 2 reflections) for realistic snowflake patterns. Added diffusion rate parameter controlling branching vs plate morphology. Expanded presets from 8 to 12 with improved 3-tier crystal coloring.
+
+### Added: Spatial Rock-Paper-Scissors
+
+Cyclic dominance simulation where random cells attack von Neumann neighbors using cyclic dominance (species i beats species (i−1) % N). 6 presets including classic spiral waves, five-species (RPS-Lizard-Spock), and seeded spirals with population percentage tracking.
+
+### Added: Voronoi Crystal Growth
+
+Polycrystalline growth simulation where seeds expand via frontier-based growth with anisotropic probability — each grain has a preferred crystallographic angle, and growth is faster along that direction. 8 presets with 15 distinct grain colors and adjustable anisotropy.
+
+### Added: Hydraulic Erosion
+
+Shallow-water erosion model with terrain heightmap, rainfall, gravity-driven water flow, sediment erosion/transport/deposition, and evaporation physics. 8 presets (River Valley, Mountain Gorge, Badlands, etc.) with height-based color gradient and blue water overlay showing river networks.
+
+### Added: Lightning / Dielectric Breakdown
+
+Electrical discharge patterns using the Dielectric Breakdown Model (DBM). Gauss-Seidel solver for Laplace's equation with growth candidates weighted by potential^eta for realistic branching. 8 presets from Classic Lightning to Ball Lightning with age-based channel coloring.
+
+### Added: Spatial Prisoner's Dilemma (Evolutionary Game Theory)
+
+Spatial Prisoner's Dilemma on a 2D grid where cells play against 8 Moore neighbors and adopt the strategy of the highest-scoring neighbor (imitation dynamics). 8 presets covering classic dilemma, snowdrift, and stag hunt variants with cooperation percentage tracking.
+
+### Added: Snowflake Growth (Reiter Crystal)
+
+Reiter's crystal growth model on a hexagonal lattice. Receptive cells accumulate vapor at configurable rate, non-receptive cells diffuse, and cells freeze at vapor ≥ 1.0. 8 presets covering dendrite, needle, plate, fernlike, and stellar morphologies.
+
+### Added: Traffic Flow (Nagel-Schreckenberg)
+
+Nagel-Schreckenberg cellular automaton for traffic flow with acceleration, braking, random slowdown, and simultaneous movement updates. 8 presets (Light/Moderate/Heavy/Congested traffic, Highway with 8 lanes) with speed-dependent car glyphs and real-time flow metrics.
+
+### Added: Ising Model (Magnetic Spin)
+
+2D Ising model with Metropolis single-spin-flip dynamics. Full sweep per generation with periodic boundaries. 8 presets (Critical Point T≈2.27, Quench to Cold, External Field, Domain Wall) with interactive temperature and field controls, real-time magnetization and energy stats.
+
+### Added: Hodgepodge Machine (BZ Reaction)
+
+Gerhardt-Schuster BZ reaction model where healthy cells become infected based on neighbor counts, infected cells advance toward illness, and ill cells reset. 8 presets (Classic Spirals, Target Waves, Chaotic Mix, Crystal Growth) with interactive parameter tuning.
+
+### Added: Turmites (2D Turing Machine)
+
+Generalization of Langton's Ant where ants carry internal state and follow transition tables for color writes, turns, and state changes. 10 presets (Fibonacci Spiral, Square Builder, Snowflake, Highway Builder, Diamond, 3-Color Spiral) with adjustable steps/frame.
+
+### Added: Schelling Segregation Model
+
+Agents on a toroidal grid check Moore neighbors for similarity and relocate to random empty cells if below tolerance threshold. 8 presets varying tolerance, density, and number of groups (2-4), demonstrating how mild individual preferences produce strong macro-level segregation.
+
+### Added: Predator-Prey (Lotka-Volterra) Ecosystem
+
+Three cell types — grass, prey, and predators — with emergent Lotka-Volterra population oscillations. Prey eat grass and gain energy, predators hunt prey, grass regrows on timers. 8 presets from Classic Oscillation to Extinction Edge.
+
+### Added: Cyclic Cellular Automaton
+
+Cells advance to (s+1) % N when ≥ threshold neighbors are already in the successor state. 8 presets varying state count (4-16), neighborhood type (Moore/Von Neumann), and threshold to produce spirals, waves, and crystalline patterns.
+
+### Added: Forest Fire Cellular Automaton
+
+Classic Forest Fire CA where burning cells become empty, adjacent trees catch fire, trees grow from empty cells with probability p, and lightning strikes ignite with probability f. 8 presets from Dense Forest to Firestorm with tunable growth and lightning rates.
+
+### Added: Abelian Sandpile
+
+Abelian Sandpile model with parallel toppling and open boundary conditions. 7 presets (Single Tower, Big Pile, Random Rain, Four Corners, Diamond Seed, Checkerboard, Max Stable) with cursor-based grain dropping and configurable drop modes.
+
+### Added: Epidemic / SIR Disease Spread
+
+SIR (Susceptible-Infected-Recovered-Dead) disease spread dynamics with distance-weighted transmission, recovery timers, configurable mortality, and optional reinfection. 8 presets (Seasonal Flu, COVID-like, Deadly Plague, Measles, Superspreader) with runtime parameter controls.
+
+### Added: Diffusion-Limited Aggregation (DLA)
+
+Random walkers diffuse and stick to a growing crystal aggregate with configurable stickiness, drift bias, and rotational symmetry. 6 presets (Crystal Growth, Snowflake with 6-fold symmetry, Electrodeposition, Line Seed, Ring Seed) with age-based crystal coloring.
+
+### Added: N-Body Gravity (Orbital Simulation)
+
+Gravitational N-body physics with Velocity Verlet integration. Features O(N²) force computation with softened gravity, body merging on collision with momentum conservation, and optional orbital trails. 6 presets (Solar System, Binary Star, Galaxy Collision, Figure-Eight, Lagrange Points).
+
+### Added: Maze Generation & Pathfinding
+
+Animated maze generation and solving with 3 generation algorithms (Recursive Backtracker, Prim's, Kruskal's) and 4 solving algorithms (A*, Dijkstra, BFS, DFS). Real-time visualization with color-coded walls, explored cells, and solution path.
+
+### Added: Ant Colony Optimization (ACO)
+
+Pheromone-based ant foraging simulation where ants search for food, deposit pheromone trails, and navigate using directional pheromone sensing. Features pheromone evaporation and diffusion mechanics. 6 presets with tuned parameters for different foraging dynamics.
+
+### Added: Wave Function Collapse (WFC)
+
+WFC simulation with 6 presets (Island, Coastline, Village, Maze, Terrain, Dungeon) using 10 tile types with adjacency constraints. Core algorithm uses entropy-based cell selection, random collapse, and BFS constraint propagation.
+
+### Added: Fluid Dynamics (Lattice Boltzmann)
+
+Full D2Q9 Lattice Boltzmann Method fluid simulation with BGK collision operator, streaming with bounce-back boundaries, and Zou-He style inflow/outflow. 6 presets (wind tunnel, von Kármán vortex street, lid-driven cavity) with 3 visualization modes (speed, vorticity, density).
+
+### Added: Particle Life
+
+Colored particle types interact via a randomized N×N attraction/repulsion matrix creating emergent self-organizing behaviors. Features toroidal physics with short-range repulsion and tunable mid-range forces. 6 presets (Primordial Soup, Symbiosis, Clusters, Predator-Prey, Galaxy, Chaos).
+
+### Added: Boids Flocking Simulation
+
+Craig Reynolds' Boids algorithm with separation, alignment, and cohesion behaviors using toroidal distance. 6 presets (Murmuration, Fish School, Swarm, Migration, Dense Flock, Chaos) with directional Unicode arrow rendering and interactive radius/weight controls.
+
+### Added: Physarum Slime Mold Simulation
+
+Particle-based Physarum polycephalum simulation where agents sense chemical trails, steer toward the strongest signal, deposit chemical, and move forward. Box-blur diffusion with configurable decay produces emergent vein-like transport networks. 6 presets from Explorer to Galaxy.
+
+### Added: Lenia Continuous Cellular Automaton
+
+Continuous-state CA with smooth ring-shaped kernel convolution and Gaussian growth dynamics. Growth function G(u) maps potential to [-1,1] for smooth state transitions. 6 preset species (Orbium, Geminium, Scutium, etc.) with interactive parameter tuning.
+
+### Added: Reaction-Diffusion (Gray-Scott)
+
+Gray-Scott reaction-diffusion system with two-chemical (U/V) continuous concentration grids and Laplacian diffusion. 6 parameter presets (spots, stripes, coral growth, mitosis, worms, waves) with live feed/kill rate adjustment and Unicode density rendering.
+
+### Added: Falling Sand Particle Simulation
+
+Falling-sand style particle physics with five element types: Sand (piles up, sinks through water), Water (flows sideways to fill containers), Fire (rises, ignites plants), Stone (static boundaries), Plant (grows near water, burns near fire). 5 presets including Hourglass and Lava Lamp.
+
+### Added: Wireworld Cellular Automaton
+
+4-state cellular automaton (empty, conductor, electron head, electron tail) designed for simulating digital logic circuits. 7 preset circuits (Diode, Clock, OR/AND/XOR gates, Loop) with interactive drawing mode and color-coded rendering.
+
+### Added: Hexagonal Grid Mode
+
+Offset-row hex coordinate system with parity-dependent 6-neighbor adjacency tables. Default hex rule B2/S34 produces interesting emergent patterns. Hex tiling rendering uses ⬡ for alive and · for dead cells.
+
+### Added: Langton's Ant Turmite
+
+Langton's Ant simulation with core turmite logic, toroidal wrapping, and sparse cell storage. 8 preset rules (RL, RLR, LLRR, etc.) plus custom rule input, multi-ant support (1-4 ants), and configurable steps-per-frame (up to 500) for fast-forwarding to highway emergence.
+
+### Added: Wolfram 1D Elementary Cellular Automaton
+
+Full Wolfram elementary CA viewer with rule selection menu, 12 notable presets (rules 30, 90, 110, 184, etc.), custom rule entry (0-255), and three seed modes (center cell, GoL middle row, random). Renders top-to-bottom cascade with the 8-bit rule table displayed.
+
+---
+
+## 2026-03-14
+
+### Added: Genetic Algorithm Evolution Mode
+
+Genetic algorithms to evolve Conway's Game of Life rulesets. Configurable population size, mutation rate, elite count, and simulation generations. GA evaluates fitness across four criteria (longevity, stability, diversity, population) with selectable weighting modes. Features tiled multi-grid visualization, fitness scoreboard with sparklines, and best-ever tracking.
+
+### Added: Puzzle/Challenge Mode
+
+10 challenges across 6 types: still life construction, oscillator building, population growth, spaceship escape, extinction, and survival. Three-phase gameplay loop (planning, running, result) with cell placement limits, efficiency-based scoring, and contextual hints.
+
+### Added: 3D Isometric View Mode
+
+Pseudo-3D isometric cityscape rendering of the Game of Life grid. Living cells appear as vertical pillars using Unicode block/shade characters with height reflecting cell age (1-5 rows). Uses oblique projection with back-to-front painter's algorithm for correct occlusion.
+
+### Added: Zoom/Scale Mode
+
+Multi-level zoom (1x, 2x, 4x, 8x) that aggregates grid cells into density glyphs (░▒▓█) for zoomed-out views of large patterns. Each screen cell represents a zoom×zoom block with glyph chosen by alive-cell density.
+
+### Added: Multiplayer Mode (TCP Networking)
+
+~1,100 lines of multiplayer functionality using only Python built-in modules (socket, threading, queue, json). Two players connect via TCP, place cells during a 30-second planning phase, then watch an authoritative simulation with ownership tracking and territory scoring.
+
+### Added: Race Mode
+
+Head-to-head rule comparison pitting 2-4 CA rule sets against each other on cloned grids. Features tiled side-by-side rendering, per-grid tracking of population/extinction/oscillation, live scoreboard with progress bar, and composite scoring for winner determination.
+
+### Added: Sound/Music Mode
+
+Generative music engine mapping active cells to a pentatonic scale (C-D-E-G-A) across multiple octaves. Features SoundEngine class with sine wave synthesis, auto-detected audio player, 12-voice polyphony, attack/release envelopes, and tempo-locked playback.
+
+### Added: GIF Recording and Export
+
+Animated GIF recording using a zero-dependency GIF89a encoder built on the struct module. LZW compression, 8-color age-tier palette, and speed-aware frame delay. Recording captures grid snapshots on each step and exports to ~/.life_saves/.
+
+### Added: Blueprint Mode
+
+Blueprint system for selecting rectangular grid regions, capturing alive cells as named patterns, and saving to a persistent library (~/.life_saves/blueprints.json). Blueprints appear alongside built-in patterns with [BP] prefix and can be stamped onto the grid.
+
+### Added: Pattern Recognition Engine
+
+Real-time pattern detection identifying known Game of Life structures (still lifes, oscillators, spaceships) in any orientation. Rotation/reflection-agnostic matching across all 8 orientations for 12 patterns (block, beehive, blinker, glider, etc.) with color-coded highlighting.
+
+### Added: Heatmap Visualization Mode
+
+Toggleable heatmap overlay tracking how often each cell has been alive across all generations. Cool-to-hot color gradient (dim blue → cyan → yellow → red → white) with 256-color support and 8-color fallback. Currently-alive cells render bold.
+
+### Added: Time-Travel Timeline Bar with Bookmarks
+
+Non-destructive timeline scrubbing replacing the destructive rewind system. Timeline bar UI with filled/empty block characters and bookmark markers. Bracket keys scrub ±10 steps, 'b' bookmarks generations, and 'B' opens a bookmark list with jump-to and delete support.
+
+### Added: Multi-Grid Side-by-Side Comparison
+
+Split-screen comparison mode running two grids simultaneously with different rule sets from the same initial configuration. Includes rule picker for the second grid, split rendering with vertical divider, independent population tracking with sparklines.
+
+### Added: RLE Pattern File Import
+
+Parser for standard .rle files used by the Game of Life community (e.g., LifeWiki). Supports RLE metadata (#N, #C, #O), B3/S23 and legacy S/B rule formats, and auto-applies embedded rules. Imported patterns are centered on the grid.
+
+### Added: Rule Editor for Life-Like Cellular Automata
+
+9 rule presets (Conway's, HighLife, Day & Night, Seeds, etc.) with birth/survival set definitions. Rule string parser and formatter (B.../S... notation). Configurable birth/survival rules replace hardcoded Conway's rules, persisted in save/load data.
+
+### Added: Stamp Mode
+
+Stamp pattern selector ('t' key) that overlays the chosen pattern centered on the current cursor without clearing the grid. Complements the existing 'p' pattern loader which clears the grid before placing.
+
+### Added: Generation Rewind/Undo
+
+Step backwards through simulation history using 'u' key. A deque-based history buffer (capped at 500 generations) stores grid snapshots before each step. Rewinding pauses the simulation and restores the most recent snapshot.
+
+### Added: Draw/Erase Mode
+
+Toggle-able draw ('d') and erase ('x') modes for continuous cell painting while moving the cursor, replacing the one-cell-at-a-time toggle. Esc exits either mode.
+
+### Added: Cycle Detection
+
+Auto-pause on repeating states by hashing grid states (MD5 of alive cell positions) and comparing against history. Displays extinction (all dead), still life (period 1), or oscillator (period N) messages. Resets on grid modification.
+
+### Added: Population Sparkline Display
+
+Unicode sparkline chart (▁▂▃▄▅▆▇█) visualizing population history over time, rendered above the status bar. Auto-scales to min/max range and adapts width to terminal size. Resets on grid operations.
+
+### Added: Save/Load Feature
+
+Save and load Game of Life grid states to JSON files stored in ~/.life_saves/. 's' opens a text prompt to name and save; 'o' opens an interactive selection menu to browse and load saved states with arrow/vim-key navigation.
+
+### Added: Terminal-Based Conway's Game of Life Simulator
+
+Single-file curses implementation (life.py) with 12 preset patterns (glider, glider gun, pulsar, R-pentomino, etc.), interactive controls (play/pause, step, speed, cursor, cell editing, random fill, clear), age-based colored cells (green → cyan → yellow → magenta → red), toroidal grid, CLI flags, and help screen.
+
+### Initial Commit
+
+Empty initial project commit.
