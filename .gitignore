@@ -1,2 +1,21 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+
+# uv
+uv.lock
+
+# OS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
