@@ -298,4 +298,7 @@ MODE_REGISTRY = [
     # ── Immune System ──
     {"name": "Immune System Simulation", "key": "Ctrl+Shift+I", "category": "Chemical & Biological",
      "desc": "Adaptive immune response — pathogens invade, innate & adaptive cells coordinate, memory forms, antigens mutate", "attr": "immune_mode", "enter": "_enter_immune_mode", "exit": "_exit_immune_mode"},
+    # ── Coral Reef Ecosystem ──
+    {"name": "Coral Reef Ecosystem", "key": "Ctrl+Shift+R", "category": "Chemical & Biological",
+     "desc": "Multi-species marine ecosystem with coral growth, bleaching cascades, trophic interactions & recovery dynamics", "attr": "reef_mode", "enter": "_enter_reef_mode", "exit": "_exit_reef_mode"},
 ]

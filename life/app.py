@@ -352,6 +352,17 @@ class App:
         self.immune_cols = 0
         self.immune_steps_per_frame = 1
         self.immune_grid = []
+        # ── Coral Reef Ecosystem mode state ──
+        self.reef_mode = False
+        self.reef_menu = False
+        self.reef_menu_sel = 0
+        self.reef_running = False
+        self.reef_generation = 0
+        self.reef_rows = 0
+        self.reef_cols = 0
+        self.reef_steps_per_frame = 1
+        self.reef_grid = []
+        self.reef_entities = []
         self.immune_cytokine = []
         self.immune_antigen_map = []
         self.immune_receptor_map = []
@@ -3611,6 +3622,18 @@ class App:
                             self._immune_step()
                     continue
 
+            if self.reef_menu:
+                if self._handle_reef_menu_key(key):
+                    continue
+            elif self.reef_mode:
+                if self._handle_reef_key(key):
+                    if self.reef_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        for _ in range(self.reef_steps_per_frame):
+                            self._reef_step()
+                    continue
+
             if self.hyp_menu:
                 if self._handle_hyp_menu_key(key):
                     continue
@@ -6036,6 +6059,16 @@ class App:
 
         if self.immune_mode:
             self._draw_immune(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.reef_menu:
+            self._draw_reef_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.reef_mode:
+            self._draw_reef(max_y, max_x)
             self.stdscr.refresh()
             return
 

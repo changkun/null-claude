@@ -4,6 +4,53 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Coral Reef Ecosystem — Multi-Species Marine Ecosystem with Bleaching Cascades
+
+Simulates a coral reef with multi-trophic interactions, habitat engineering, and environmental
+stressors. Coral polyps grow branching and massive structures powered by symbiotic zooxanthellae
+photosynthesis, herbivorous fish and sea urchins graze competing algae, predators patrol, and
+crown-of-thorns starfish outbreaks can devastate the reef. Ocean warming triggers thermal
+bleaching cascades (zooxanthellae expulsion), while acidification dissolves coral skeletons.
+Recovery dynamics emerge from coralline algae facilitating coral recruitment and larval
+settlement events. This fills a clear ecological niche — the project had single-organism
+biology (morphogenesis, immune system) and simple predator-prey (Lotka-Volterra), but no
+rich multi-trophic ecosystem with habitat engineering and environmental forcing.
+
+**New file:** `life/modes/coral_reef.py` (~580 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Cell types | 12 types: branching coral, massive coral, bleached coral, dead coral skeleton, turf algae, macroalgae, coralline algae (CCA), sand, rock, sponge, anemone, water |
+| Mobile entities | 7 types: herbivorous fish, predators, cleaner wrasse, crown-of-thorns starfish (COTS), sea urchins, sea turtles, plankton |
+| Zooxanthellae symbiosis | Per-cell symbiont density drives photosynthetic energy gain; thermal stress expels symbionts, triggering bleaching |
+| Light zonation | Depth-dependent light attenuation — branching coral dominates shallow zones, massive coral in deeper areas |
+| Algae-coral competition | Turf and macroalgae spread on dead coral and smother live coral; herbivore grazing keeps algae in check |
+| COTS outbreaks | Crown-of-thorns starfish consume live coral; reproduce faster in high-nutrient conditions |
+| Ocean acidification | Low pH dissolves coral skeletons and inhibits calcification, compounding thermal stress |
+| Coral recruitment | Coralline algae (CCA) facilitates new coral settlement; periodic larval recruitment events |
+
+**6 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Healthy Reef | Thriving coral with balanced trophic levels and clear water |
+| Bleaching Event | Rising ocean temperatures trigger mass coral bleaching |
+| Algal Takeover | Overfishing removes herbivores — algae smother the reef |
+| Recovery | A damaged reef slowly recovering via coral recruitment |
+| Crown-of-Thorns Outbreak | Coral-eating starfish population explosion devastates the reef |
+| Acidification Crisis | Falling pH dissolves coral skeletons and inhibits calcification |
+
+**3 view modes:** reef (normal ecosystem view with depth-tinted water), light (depth zonation showing photosynthetically available radiation), health (coral vitality heatmap showing health and zooxanthellae density).
+
+**Controls:** `Space` play/pause, `n` step, `v` cycle views, `h` heat wave, `c` cooling,
+`f` release herbivorous fish, `N` nutrient pulse, `+`/`-` steps per frame, `r` reset,
+`R` preset menu, `q` quit. Accessible via `Ctrl+Shift+R` from the main menu under
+"Chemical & Biological."
+
+---
+
 ### Added: Agent-Based Stock Market — Emergent Bubbles, Crashes & Price Discovery
 
 Simulates a financial market populated by heterogeneous trader agents competing on a
