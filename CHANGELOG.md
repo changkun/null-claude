@@ -4,6 +4,68 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Hyperbolic Cellular Automata — Game of Life on the Poincaré Disk
+
+Runs cellular automata on hyperbolic tilings rendered as a Poincaré disk in the terminal.
+While the project already supports non-Euclidean topologies (torus, Klein bottle, Möbius strip,
+projective plane), those are all fundamentally flat grids with edge identifications. Hyperbolic
+geometry is genuinely curved — cells tile with exponentially growing neighborhoods, producing
+emergent behavior impossible on Euclidean grids. Gliders curve, still lifes contend with more
+neighbors, and the infinite branching structure creates visually striking ASCII art.
+
+**New file:** `life/modes/hyperbolic_ca.py` (~640 lines)
+
+**Hyperbolic geometry engine:**
+
+| Component | Description |
+|-----------|-------------|
+| **Möbius transformations** | Translate points within the Poincaré disk model using `(z + a) / (1 + conj(a) * z)` |
+| **Hyperbolic distance** | Correct center-to-center distance for `{p,q}` Schläfli symbol tilings via `acosh(1 + 2r²/(1-r²))` |
+| **BFS tiling generator** | `_build_tiling(p, q, max_layers)` with spatial grid proximity deduplication to handle floating-point imprecision when cells are reached from different parent polygons |
+| **Boundary clipping** | Cells beyond disk radius 0.96 are discarded to keep rendering clean |
+
+**6 tiling presets ({p,q} Schläfli symbols):**
+
+| Tiling | Description |
+|--------|-------------|
+| `{5,4}` Pentagonal | Order-4 — 4 pentagons meet at each vertex |
+| `{7,3}` Heptagonal | Order-3 — 3 heptagons per vertex |
+| `{4,5}` Square | Order-5 — 5 squares per vertex |
+| `{3,7}` Triangular | Order-7 — 7 triangles per vertex |
+| `{6,4}` Hexagonal | Order-4 — 4 hexagons per vertex |
+| `{8,3}` Octagonal | Order-3 — 3 octagons per vertex |
+
+**8 rule presets (tuned for higher neighbor counts):**
+
+| Rule | Description |
+|------|-------------|
+| B3/S23 (Life) | Classic Life — sparse in hyperbolic space |
+| B2/S34 (Pulse) | Pulsing growth adapted to high-neighbor tilings |
+| B3/S234 (Coral) | Slow coral growth — stable structures |
+| B35/S2345 (Bloom) | Lush expansion — fills the disk |
+| B2/S23 (Spread) | Fast-spreading with classic survival |
+| B3/S345 (Hardy) | Tough survivors — high-neighbor adapted |
+| B23/S34 (Wave) | Wave-like expansion and contraction |
+| B2/S (Seeds) | Explosive chaotic growth, no survival |
+
+**Poincaré disk ASCII renderer:**
+- Maps complex-plane cell positions to terminal coordinates with aspect ratio correction
+- Conformal size scaling — cells shrink toward the disk boundary (`@` → `#` → `*` → `.`)
+- Age-based coloring (6 color tiers)
+- Disk border rendered with `·` characters
+
+**Interactive controls:**
+- Two-phase menu: tiling selection → rule selection, with mini Poincaré disk preview
+- Simulation: `space` pause, `s` single-step, `r` randomize, `c` clear, `n` cycle rules, `t` cycle tilings, `+`/`-` speed
+- Registered under "Classic CA" category with `Ctrl+H` hotkey
+
+**Modified files:**
+- `life/app.py` — 22 state variables in `__init__`, key handler dispatch (menu + simulation), draw dispatch
+- `life/modes/__init__.py` — import and register `hyperbolic_ca`
+- `life/registry.py` — registry entry under "Classic CA" with `Ctrl+H`
+
+---
+
 ### Added: Ancestor Search / Reverse-Engineering Mode — find predecessors of any pattern and detect Garden of Eden states
 
 Given any frozen grid state, this mode searches backwards through CA time to find predecessor

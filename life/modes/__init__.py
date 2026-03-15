@@ -226,6 +226,8 @@ def register_all_modes(App):
     reg_nca(App)
     from life.modes.ancestor_search import register as reg_anc
     reg_anc(App)
+    from life.modes.hyperbolic_ca import register as reg_hyp
+    reg_hyp(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

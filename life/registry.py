@@ -278,4 +278,7 @@ MODE_REGISTRY = [
     # ── Ancestor Search (Reverse-Engineering) ──
     {"name": "Ancestor Search", "key": "Ctrl+Shift+A", "category": "Meta Modes",
      "desc": "Reverse-engineer predecessors of any pattern; detect Garden of Eden states with no ancestor", "attr": "anc_mode", "enter": "_enter_ancestor_search", "exit": "_exit_ancestor_search"},
+    # ── Hyperbolic Cellular Automata ──
+    {"name": "Hyperbolic Cellular Automata", "key": "Ctrl+H", "category": "Classic CA",
+     "desc": "Game of Life on hyperbolic tilings ({5,4}, {7,3}, etc.) rendered as a Poincaré disk", "attr": "hyp_mode", "enter": "_enter_hyp_mode", "exit": "_exit_hyp_mode"},
 ]

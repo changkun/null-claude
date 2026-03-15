@@ -257,6 +257,28 @@ class App:
         self.anc_view_sel = 0
         self.anc_birth = {3}
         self.anc_survival = {2, 3}
+        # Hyperbolic CA mode state
+        self.hyp_mode = False
+        self.hyp_menu = False
+        self.hyp_menu_phase = "tiling"
+        self.hyp_menu_sel = 0
+        self.hyp_rule_sel = 0
+        self.hyp_running = False
+        self.hyp_generation = 0
+        self.hyp_population = 0
+        self.hyp_cells: list = []
+        self.hyp_adj: dict = {}
+        self.hyp_states: list = []
+        self.hyp_ages: list = []
+        self.hyp_tiling_name: str = ""
+        self.hyp_rule_name: str = ""
+        self.hyp_p: int = 5
+        self.hyp_q: int = 4
+        self.hyp_birth: set = {3}
+        self.hyp_survive: set = {2, 3}
+        self.hyp_view_cx: float = 0.0
+        self.hyp_view_cy: float = 0.0
+        self.hyp_speed_mult: int = 1
         self.anc_use_current = False
         # Neural CA mode state
         self.nca_mode = False
@@ -3395,6 +3417,18 @@ class App:
                         self._anc_step()
                     continue
 
+            if self.hyp_menu:
+                if self._handle_hyp_menu_key(key):
+                    continue
+            elif self.hyp_mode:
+                if self._handle_hyp_key(key):
+                    if self.hyp_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        for _ in range(self.hyp_speed_mult):
+                            self._hyp_step()
+                    continue
+
             if self.nca_menu:
                 if self._handle_nca_menu_key(key):
                     continue
@@ -5741,6 +5775,16 @@ class App:
 
         if self.anc_mode:
             self._draw_ancestor_search(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.hyp_menu:
+            self._draw_hyp_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.hyp_mode:
+            self._draw_hyp(max_y, max_x)
             self.stdscr.refresh()
             return
 
