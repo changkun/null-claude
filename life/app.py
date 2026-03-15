@@ -181,6 +181,23 @@ class App:
         self.evo_fitness_mode = "balanced" # balanced/longevity/diversity/population
         self.evo_best_ever: dict | None = None  # best fitness seen across all gens
         self.evo_history: list[dict] = []  # summary per generation
+        # Evolutionary Playground mode state
+        self.ep_mode = False
+        self.ep_menu = False
+        self.ep_menu_sel = 0
+        self.ep_mutation_rate = 0.15
+        self.ep_generation = 0
+        self.ep_sims: list = []
+        self.ep_genomes: list = []
+        self.ep_pop_histories: list = []
+        self.ep_selected: set = set()
+        self.ep_cursor = 0
+        self.ep_sim_generation = 0
+        self.ep_running = False
+        self.ep_grid_rows = 3
+        self.ep_grid_cols = 4
+        self.ep_tile_h = 6
+        self.ep_tile_w = 8
         # Wolfram 1D elementary cellular automaton mode
         self.wolfram_mode = False
         self.wolfram_rule = 30           # current rule number (0-255)
@@ -2032,7 +2049,7 @@ class App:
             'evo_menu', 'chladni_menu', 'cpm_menu', 'fdtd_menu',
             'magfield_menu', 'rbc_menu', 'sph_menu', 'tectonic_menu',
             'volcano_menu', 'ocean_menu', 'weather_menu', 'blackhole_menu',
-            'pexplorer_menu',
+            'pexplorer_menu', 'ep_menu',
         ]
         for attr in _menu_attrs:
             if getattr(self, attr, False):
@@ -2790,6 +2807,17 @@ class App:
             elif self.screensaver_mode and self.screensaver_running:
                 if self._handle_screensaver_key(key):
                     self._screensaver_step()
+                    continue
+
+            if self.ep_menu:
+                if self._handle_ep_menu_key(key):
+                    continue
+            elif self.ep_mode:
+                if self._handle_ep_key(key):
+                    if self.ep_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._ep_step()
                     continue
 
             if self.pexplorer_menu:
@@ -4994,6 +5022,16 @@ class App:
 
         if self.screensaver_menu:
             self._draw_screensaver_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.ep_menu:
+            self._draw_ep_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.ep_mode:
+            self._draw_ep(max_y, max_x)
             self.stdscr.refresh()
             return
 

@@ -4,6 +4,58 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Evolutionary Playground — breed novel CA rules through interactive natural selection
+
+A new meta-mode that lets users discover novel cellular automata rules through an interactive
+genetic algorithm. A grid of live-running simulations with randomly generated rules competes
+side-by-side. Users select the most visually interesting ones as "parents," breed them via
+crossover and mutation, and repeat — iteratively discovering emergent behaviors that no one
+designed by hand. The fitness function is human aesthetic judgment.
+
+**New file:** `life/modes/evo_playground.py` (~530 lines)
+
+**Genetics engine:**
+- **Genome**: birth set, survival set, neighborhood type (Moore/Von Neumann/Hex), state count (2–5)
+- **Crossover**: uniform — each rule digit independently inherited from either parent
+- **Mutation**: configurable rate (default 15%); each digit can flip; neighborhood and state count mutate at half rate
+- **Population**: dynamically sized grid (2–4 rows × 2–5 cols) of mini CA simulations
+
+**Features:**
+- Settings menu to configure mutation rate and choose starting population (random or from saved rules)
+- Live grid of independently running mini-simulations, each with a unique genome
+- Arrow-key navigation with cursor highlight and mouse support (double-click to select)
+- Select parents with Enter (star marker), breed next generation with `b`
+- Save interesting rules to `~/.life_saves/evolved_rules.json` with `S`
+- Adopt a rule into the main Game of Life grid with `a`
+- Randomize population with `r` to start fresh
+- Speed controls with `<`/`>`
+- Density-glyph rendering with 8-level color tiers per tile
+
+**Controls:**
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/pause all simulations |
+| `.` | Single step |
+| `←→↑↓` / `wasd` | Navigate tile selection |
+| `Enter` | Toggle parent selection on cursor tile |
+| `b` | Breed: crossover + mutate selected parents into next generation |
+| `S` | Save cursor rule to evolved_rules.json |
+| `a` | Adopt cursor rule into main grid |
+| `A` | Select/deselect all |
+| `r` | Randomize (new random population) |
+| `<`/`>` | Adjust global speed |
+| Mouse click | Select tile; double-click to toggle parent |
+
+**Integration:**
+- Registry: category "Meta Modes", hotkey `Ctrl+Shift+I`
+- App: 17 state variables, menu tracking, key dispatch, draw dispatch
+
+**Why:** This is the natural next step after the Parameter Space Explorer — moving from
+*exploring* known parameter spaces to *discovering* entirely new ones. It's also a content
+engine: rules bred here can be saved as presets or promoted into standalone modes, making
+every session a potential source of new simulation behaviors.
+
 ### Added: Parameter Space Explorer — visual navigation of simulation parameter landscapes
 
 A new meta-mode that displays a grid of live simulation thumbnails, each running the same

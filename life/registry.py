@@ -230,4 +230,7 @@ MODE_REGISTRY = [
     # ── Parameter Space Explorer ──
     {"name": "Parameter Space Explorer", "key": "Ctrl+Shift+E", "category": "Meta Modes",
      "desc": "Grid of live simulations with varied parameters for visual parameter space exploration", "attr": "pexplorer_mode", "enter": "_enter_param_explorer_mode", "exit": "_exit_param_explorer_mode"},
+    # ── Evolutionary Playground ──
+    {"name": "Evolutionary Playground", "key": "Ctrl+Shift+I", "category": "Meta Modes",
+     "desc": "Breed novel CA rules through interactive natural selection with crossover & mutation", "attr": "ep_mode", "enter": "_enter_evo_playground", "exit": "_exit_evo_playground"},
 ]

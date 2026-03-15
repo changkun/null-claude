@@ -50,6 +50,8 @@ def register_all_modes(App):
     reg_erosion(App)
     from life.modes.evolution import register as reg_evo
     reg_evo(App)
+    from life.modes.evo_playground import register as reg_ep
+    reg_ep(App)
     from life.modes.fdtd import register as reg_fdtd
     reg_fdtd(App)
     from life.modes.forest_fire import register as reg_fire
