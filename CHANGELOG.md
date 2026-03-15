@@ -4,6 +4,57 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Tierra Digital Organisms — Self-Replicating Assembly Programs in Shared Memory
+
+A new computational evolution mode inspired by Tom Ray's Tierra system (1990) — one
+of the most famous experiments in artificial life. Tiny programs written in a 16-instruction
+assembly language live in shared memory, copy themselves (with mutations), and evolve
+parasitism, immunity, and symbiosis through natural selection. This fills a clear gap:
+the project has biological evolution (`ecosystem_evolution.py`, `primordial_soup.py`),
+genetic algorithms (`evolution_lab.py`), and neural approaches (`neural_ca.py`) — but
+no **computational evolution** where the evolving entities are programs themselves. It
+bridges the CS modes (sorting visualizer, quantum circuit) with the artificial life modes.
+
+**New file:** `life/modes/tierra.py` (~580 lines)
+
+**Core mechanics:**
+
+| Concept | Implementation |
+|---------|---------------|
+| Instruction set | 16 opcodes: NOP0/1, FIND, MOV_H, COPY, INC, DEC, JMP, JMPZ, ALLOC, SPLIT, PUSH, POP, SWAP, CALL, RET |
+| Self-replicating ancestor | ~35-instruction genome that finds its own boundaries via template matching, allocates daughter memory, copies itself in a loop, then divides |
+| Template matching | Organisms locate code by searching for complement patterns (NOP0↔NOP1), enabling addressing without absolute jumps |
+| Mutation | Copy errors during replication (configurable rate) + cosmic ray background radiation (random memory bit-flips) |
+| Reaper queue | 3 strategies to reclaim memory when population limit is reached: oldest-first, largest-first, most-errors-first |
+| Memory ownership | Owner array tracks which organism owns each memory cell; contiguous free blocks are found via random probe + linear scan fallback |
+| Species identification | Genome hashing for automatic species classification and population tracking |
+
+**5 presets:**
+
+| Preset | Description |
+|--------|-------------|
+| Genesis | Single ancestor, low mutation — watch self-replicators fill memory |
+| Cambrian Burst | High mutation — rapid diversification and speciation |
+| Arms Race | Moderate mutation, reaper favors large genomes — size pressure |
+| Parasite World | Tiny ancestor + high copy-error — parasites emerge fast |
+| Symbiosis Lab | Two ancestor species seeded together — cooperation or war? |
+
+**3 view modes:**
+
+| View | What it shows |
+|------|---------------|
+| Memory grid | Colored character grid of shared memory — each organism's code in its species color, instruction pointers highlighted with reverse video, free memory shown as dim dots |
+| Stats | Population statistics, species breakdown with bar charts, population & diversity sparkline history |
+| Phylo | Genome length histogram + sample organisms showing age, error count, and decoded genome preview |
+
+**Interactive controls:** `Space` pause/resume, `n` single step, `+`/`-` speed, `v` cycle views, `m` mutation burst (20 cosmic rays), `r` manual reap, `↑`/`↓` scroll memory, `q` quit. Accessible via `Ctrl+Shift+T` from the mode browser under "Procedural & Computational."
+
+**Also changed:**
+- `life/modes/__init__.py`: Added import and registration call for tierra mode
+- `life/registry.py`: Added registry entry under "Procedural & Computational" category
+
+---
+
 ### Upgraded: L-System Fractal Garden — Botanical Morphogenesis with Seasons, Wind, Mutation & Light Competition
 
 Massive overhaul of the L-System mode from a basic plant grower into a full botanical

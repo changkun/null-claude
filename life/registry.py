@@ -319,4 +319,7 @@ MODE_REGISTRY = [
     # ── Quantum Circuit Simulator ──
     {"name": "Quantum Circuit Simulator", "key": "Ctrl+Q", "category": "Procedural & Computational",
      "desc": "Build & simulate quantum circuits with Bloch spheres, entanglement links & measurement histograms", "attr": "qcirc_mode", "enter": "_enter_qcirc_mode", "exit": "_exit_qcirc_mode"},
+    # ── Tierra Digital Organisms ──
+    {"name": "Tierra Digital Organisms", "key": "Ctrl+Shift+T", "category": "Procedural & Computational",
+     "desc": "Self-replicating assembly programs competing in shared memory — parasites, immunity & symbiosis evolve", "attr": "tierra_mode", "enter": "_enter_tierra_mode", "exit": "_exit_tierra_mode"},
 ]

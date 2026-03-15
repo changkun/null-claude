@@ -254,6 +254,8 @@ def register_all_modes(App):
     reg_psoup(App)
     from life.modes.quantum_circuit import register as reg_qcirc
     reg_qcirc(App)
+    from life.modes.tierra import register as reg_tierra
+    reg_tierra(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
