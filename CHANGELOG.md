@@ -4,6 +4,78 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Battle Royale Mode — 4 cellular automata factions compete for territory in real-time
+
+A new meta-mode where four different cellular automata rules spawn in corners of a shared grid
+and expand organically into neutral space. When factions collide at boundaries, cells fight
+based on local neighborhood density — the denser faction overwrites weaker neighbors. A live
+scoreboard tracks territory percentage per faction, and when a faction drops to zero cells it's
+eliminated. Last faction standing wins.
+
+**New file:** `life/modes/battle_royale.py` (~430 lines)
+
+**8 available CA factions**, each with unique birth/survival rules:
+
+| Faction | Rule (B/S) | Character |
+|---------|-----------|-----------|
+| Life | B3/S23 | Classic Conway |
+| HighLife | B36/S23 | Replicators |
+| Day & Night | B3678/S34678 | Symmetric |
+| Seeds | B2/S— | Explosive growth |
+| Morley | B368/S245 | Move rule |
+| Maze | B3/S12345 | Space-filler |
+| Amoeba | B357/S1358 | Organic |
+| Diamoeba | B35678/S5678 | Diamond shapes |
+
+**4 preset matchups** (Classic Showdown, Aggressive Mix, Territorial War, Survival of the
+Fittest) plus a custom faction picker for any combination of 4.
+
+**Combat system:** Each cell follows its faction's B/S rules for birth and survival. When enemy
+density around a cell exceeds own-faction neighbors by more than 1 and the dominant enemy has
+3+ neighbors, the cell is conquered and switches faction. Empty cells can be claimed by any
+faction whose birth condition is met by its neighbor count — ties broken randomly.
+
+**Corner spawning:** Each faction starts in a corner quadrant (~1/6 of grid dimensions) with
+45% random fill density, giving each rule a critical mass to grow from before encountering
+enemies.
+
+**Scoring and elimination:**
+- Real-time scoreboard shows cell count and territory percentage per faction
+- Visual territory bar using color-coded segments
+- Factions hitting 0 cells are marked eliminated (☠)
+- Last faction standing wins; simultaneous elimination results in a draw
+
+**Color-coded rendering:** 4 distinct color schemes (blue, red, green, yellow) with age-based
+shading — newer cells are brighter, older territory is darker. Uses 16 color pairs (indices
+140–155) with 256-color and 8-color fallback support.
+
+**Controls:**
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/pause |
+| `n` / `.` | Single step |
+| `r` | Rematch (same factions) |
+| `R` | Return to faction selection menu |
+| `<` / `>` | Adjust speed |
+| `q` / `Esc` | Exit battle royale |
+
+**Menu system:** Two-phase selection — preset list → (custom) pick 4 factions from the roster.
+Arrow keys + Enter to navigate; Esc to go back a phase.
+
+**Integration:**
+- Registry: category "Meta Modes", hotkey `Ctrl+Shift+U`
+- App: 17 state variables, menu/battle key dispatch, draw dispatch
+- Modes `__init__.py`: registered via `battle_royale.register(App)`
+
+**Why:** The project already has a Simulation Mashup mode for layering two simulations with
+coupling, but Battle Royale turns multi-rule interaction into something dynamic and competitive.
+Instead of passive overlay, factions actively fight for territory with emergent frontlines,
+flanking maneuvers, and elimination cascades. Different CA rules have inherent strategic
+advantages — Seeds explodes fast but dies easily, Maze fills space relentlessly, Life is
+balanced — making faction selection a genuine strategic choice. It's a spectator sport for
+cellular automata.
+
 ### Added: Simulation Mashup Mode — layer two simulations on the same grid for emergent cross-simulation behavior
 
 A new meta-mode that lets users pick any two of 8 built-in simulation engines and run them

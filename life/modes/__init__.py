@@ -190,6 +190,8 @@ def register_all_modes(App):
     reg_wolfram(App)
     from life.modes.wireworld import register as reg_ww
     reg_ww(App)
+    from life.modes.battle_royale import register as reg_br
+    reg_br(App)
     from life.modes.mashup import register as reg_mashup
     reg_mashup(App)
     from life.modes.time_travel import register as reg_tt

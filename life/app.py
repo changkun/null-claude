@@ -203,6 +203,23 @@ class App:
         self.ep_grid_cols = 4
         self.ep_tile_h = 6
         self.ep_tile_w = 8
+        # Battle Royale mode state
+        self.br_mode = False
+        self.br_menu = False
+        self.br_menu_sel = 0
+        self.br_menu_phase = 0
+        self.br_custom_picks: list[str] = []
+        self.br_running = False
+        self.br_generation = 0
+        self.br_rows = 0
+        self.br_cols = 0
+        self.br_owner: list[list[int]] = []
+        self.br_age: list[list[int]] = []
+        self.br_factions: list[dict] = []
+        self.br_faction_ids: list[str] = []
+        self.br_scores: list[int] = [0, 0, 0, 0]
+        self.br_eliminated: list[bool] = [False] * 4
+        self.br_winner = -1
         # Mashup mode state
         self.mashup_mode = False
         self.mashup_menu = False
@@ -2866,6 +2883,17 @@ class App:
                         self._pexplorer_step()
                     continue
 
+            if self.br_menu:
+                if self._handle_br_menu_key(key):
+                    continue
+            elif self.br_mode:
+                if self._handle_br_key(key):
+                    if self.br_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._br_do_step()
+                    continue
+
             if self.mashup_menu:
                 if self._handle_mashup_menu_key(key):
                     continue
@@ -5092,6 +5120,16 @@ class App:
 
         if self.pexplorer_mode:
             self._draw_pexplorer(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.br_menu:
+            self._draw_br_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.br_mode:
+            self._draw_battle_royale(max_y, max_x)
             self.stdscr.refresh()
             return
 

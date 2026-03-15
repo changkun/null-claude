@@ -236,4 +236,7 @@ MODE_REGISTRY = [
     # ── Simulation Mashup ──
     {"name": "Simulation Mashup", "key": "Ctrl+M", "category": "Meta Modes",
      "desc": "Layer two simulations on the same grid with coupling for emergent behavior", "attr": "mashup_mode", "enter": "_enter_mashup_mode", "exit": "_exit_mashup_mode"},
+    # ── Battle Royale ──
+    {"name": "Battle Royale", "key": "Ctrl+Shift+U", "category": "Meta Modes",
+     "desc": "4 CA factions fight for territory — last faction standing wins", "attr": "br_mode", "enter": "_enter_battle_royale", "exit": "_exit_battle_royale"},
 ]
