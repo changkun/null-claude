@@ -254,6 +254,8 @@ def register_all_modes(App):
     reg_psoup(App)
     from life.modes.quantum_circuit import register as reg_qcirc
     reg_qcirc(App)
+    from life.modes.electric_circuit import register as reg_circuit
+    reg_circuit(App)
     from life.modes.molecular_dynamics import register as reg_moldyn
     reg_moldyn(App)
     from life.modes.spin_glass import register as reg_spinglass

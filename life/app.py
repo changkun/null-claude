@@ -365,6 +365,14 @@ class App:
         self.reef_steps_per_frame = 1
         self.reef_grid = []
         self.reef_entities = []
+        # ── Electric Circuit Simulator mode state ──
+        self.circuit_mode = False
+        self.circuit_menu = False
+        self.circuit_menu_sel = 0
+        self.circuit_sim = None
+        self.circuit_running = False
+        self.circuit_view = 0
+        self.circuit_preset_name = ""
         # ── Molecular Dynamics / Phase Transitions mode state ──
         self.moldyn_mode = False
         self.moldyn_menu = False
@@ -2746,7 +2754,7 @@ class App:
             'magfield_menu', 'rbc_menu', 'sph_menu', 'tectonic_menu',
             'volcano_menu', 'ocean_menu', 'weather_menu', 'blackhole_menu',
             'pexplorer_menu', 'ep_menu', 'cast_export_menu', 'script_menu',
-            'moldyn_menu',
+            'moldyn_menu', 'circuit_menu',
         ]
         for attr in _menu_attrs:
             if getattr(self, attr, False):
@@ -3718,6 +3726,17 @@ class App:
                         time.sleep(delay)
                         for _ in range(self.reef_steps_per_frame):
                             self._reef_step()
+                    continue
+
+            if self.circuit_menu:
+                if self._handle_circuit_menu_key(key):
+                    continue
+            elif self.circuit_mode:
+                if self._handle_circuit_key(key):
+                    if self.circuit_running:
+                        delay = SPEEDS[self.speed_idx]
+                        time.sleep(delay)
+                        self._circuit_step()
                     continue
 
             if self.moldyn_menu:
@@ -6221,6 +6240,16 @@ class App:
 
         if self.reef_mode:
             self._draw_reef(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.circuit_menu:
+            self._draw_circuit_menu(max_y, max_x)
+            self.stdscr.refresh()
+            return
+
+        if self.circuit_mode:
+            self._draw_circuit(max_y, max_x)
             self.stdscr.refresh()
             return
 

@@ -319,6 +319,9 @@ MODE_REGISTRY = [
     # ── Quantum Circuit Simulator ──
     {"name": "Quantum Circuit Simulator", "key": "Ctrl+Q", "category": "Procedural & Computational",
      "desc": "Build & simulate quantum circuits with Bloch spheres, entanglement links & measurement histograms", "attr": "qcirc_mode", "enter": "_enter_qcirc_mode", "exit": "_exit_qcirc_mode"},
+    # ── Electric Circuit Simulator ──
+    {"name": "Electric Circuit Simulator", "key": "Ctrl+Shift+E", "category": "Physics & Waves",
+     "desc": "Grid-based circuit builder — batteries, resistors, capacitors, inductors, LEDs & switches with real-time current flow, voltage heatmap & oscilloscope", "attr": "circuit_mode", "enter": "_enter_circuit_mode", "exit": "_exit_circuit_mode"},
     # ── Molecular Dynamics / Phase Transitions ──
     {"name": "Molecular Dynamics / Phase Transitions", "key": "Ctrl+Shift+M", "category": "Physics & Waves",
      "desc": "Lennard-Jones particles self-organize into crystals, melt into liquids & evaporate — real-time phase transitions", "attr": "moldyn_mode", "enter": "_enter_moldyn_mode", "exit": "_exit_moldyn_mode"},

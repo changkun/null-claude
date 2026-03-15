@@ -4,6 +4,60 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-15
 
+### Added: Electric Circuit Simulator — Grid-Based Circuit Builder with Real-Time Analysis
+
+A new physics mode implementing a continuous-value circuit simulator where users place
+components on a grid and watch real-time current flow as animated charges, voltage as a
+color heatmap, and waveforms on a built-in oscilloscope. Unlike Wireworld (a binary
+cellular automaton for logic gates), this is a scientifically accurate analog circuit
+simulator solving Kirchhoff's laws via Modified Nodal Analysis, with proper transient
+response for reactive components.
+
+**New file:** `life/modes/electric_circuit.py` (~750 lines)
+
+**Circuit solver — Modified Nodal Analysis (MNA):**
+
+| Concept | Implementation |
+|---------|---------------|
+| Linear system | MNA stamps for each component type; Gaussian elimination with partial pivoting |
+| Resistor | Conductance stamp G = 1/R between nodes |
+| Battery/voltage source | Extra MNA row enforcing V+ − V− = E |
+| Capacitor | Companion model: conductance G = C/Δt with history current source (trapezoidal integration) |
+| Inductor | Companion model: conductance G = Δt/L with history current source |
+| AC source | Sinusoidal voltage modulation V(t) = V₀·sin(2πft) with adjustable frequency |
+| Ground | Reference node fixed at 0V |
+
+**8 component types:** Wire, Battery, Resistor, Capacitor, Inductor, LED, Switch (interactive toggle), Ground
+
+**6 preset circuits:**
+
+| Preset | What it demonstrates |
+|--------|---------------------|
+| Simple DC Loop | Battery + resistor — Ohm's law (V = IR) |
+| Voltage Divider | Two resistors splitting voltage (V_out = V × R₂/(R₁+R₂)) |
+| RC Charging Curve | Capacitor charging through resistor (τ = RC exponential) |
+| LC Oscillator | Energy oscillating between inductor and capacitor (ω = 1/√LC) |
+| RLC Resonance | AC-driven damped sinusoidal oscillation with resonance peak |
+| Wheatstone Bridge | Balanced bridge circuit with galvanometer resistor |
+
+**3 visualization views (cycle with `v`):**
+
+| View | Description |
+|------|-------------|
+| Schematic | Components drawn with distinct Unicode symbols; animated charge particles flow along wires with speed/direction proportional to current; color-coded by current magnitude; node voltage labels at junctions |
+| Voltage Heatmap | Color gradient from blue (0V) to red (max V) showing voltage distribution across the circuit |
+| Oscilloscope | Dual-trace time-series plot showing voltage and current waveforms with axis labels and scaling |
+
+**Interactive controls:** Space (pause), `s` (toggle switches), ↑/↓ (AC frequency),
++/− (simulation speed), `v` (cycle view), `r` (reset), `R` (back to menu)
+
+**Integration points:**
+- `life/app.py`: Circuit mode state variables, menu detection, key dispatch, draw routing
+- `life/registry.py`: Registered under "Physics & Waves" category with `Ctrl+Shift+E` shortcut
+- `life/modes/__init__.py`: Registration import
+
+---
+
 ### Enhanced: Generative Soundscape — Multi-Voice Procedural Music Engine
 
 Complete rewrite of the sonification layer (`life/modes/sonification.py`) from a basic
