@@ -53,121 +53,22 @@ python life.py
 
 ## Simulation Modes
 
-Press `m` at any time to open the mode browser. Modes are organized into
-categories:
+Press `m` at any time to open the mode browser. Modes span:
 
-### Classic CA
+- **Classic CA** — Game of Life, Wolfram 1D, Langton's Ant, Lenia, Wireworld, Turmites, and more
+- **Particle & Swarm** — Boids, Physarum, N-Body gravity, falling sand, DLA
+- **Physics & Waves** — Wave equation, Ising model, double pendulum, FDTD, black holes, orrery
+- **Fluid Dynamics** — Lattice Boltzmann, Navier-Stokes, SPH, MHD plasma, weather, ocean currents
+- **Chemical & Biological** — Reaction-diffusion, epidemics, neural networks, ecosystems, abiogenesis
+- **Game Theory & Social** — Prisoner's dilemma, Schelling segregation, stock market, civilization
+- **Fractals & Chaos** — Mandelbrot/Julia, strange attractors, L-systems, sandpiles, IFS
+- **Procedural & Computational** — WFC, ray marching, sorting visualizer, Tierra, quantum circuits
+- **Complex & Audio-Visual** — Galaxy formation, traffic flow, fireworks, music visualizer, aquarium
+- **Meta Modes** — Screensaver, mashup, portal, layer compositing, evolution lab, neural CA
 
-| Mode | Key | Description |
-|------|-----|-------------|
-| Game of Life | *(default)* | Conway's classic with pattern library, rule editor, heatmap, cycle detection |
-| Wolfram 1D | `1` | All 256 elementary 1D cellular automata |
-| Langton's Ant | `2` | Turmite with emergent highway behavior |
-| Hexagonal Grid | `3` | 6-neighbor topology with B2/S34 rule |
-| Wireworld | `4` | 4-state circuit simulation (electron heads/tails) |
-| Cyclic CA | `U` | N-state cyclic automaton with spiral waves |
-| Hodgepodge Machine | `~` | BZ-like excitable medium |
-| Lenia | `7` | Continuous smooth-kernel cellular automaton |
-| Turmites | `Q` | Generalized 2D Turing machines |
-| 3D Game of Life | `Ctrl+Shift+L` | 20^3 voxel grid with volumetric ray casting |
+For formulations and references, see the **[Scientific Guide](docs/README.md)**.
 
-### Particle & Swarm
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Falling Sand | `5` | Multi-material particle physics sandbox |
-| Boids Flocking | `9` | Reynolds separation/alignment/cohesion |
-| Particle Life | `0` | N-body attraction/repulsion matrix |
-| Physarum Slime Mold | `8` | Agent-based trail-following network |
-| Ant Colony | `A` | Pheromone-based foraging |
-| N-Body Gravity | `Y` | Velocity Verlet orbital mechanics |
-
-### Physics & Waves
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| 2D Wave Equation | `!` | Finite-difference membrane with reflection/absorption/wrap |
-| Ising Model | `#` | Metropolis spin dynamics with phase transition |
-| Kuramoto Oscillators | `(` | Phase synchronization on a lattice |
-| Spiking Neural Net | `` ` `` | Izhikevich neuron grid with synaptic coupling |
-| Double Pendulum | `Ctrl+P` | RK4 integration with trajectory trails |
-| Pendulum Wave | `Ctrl+Shift+P` | SHM with analytically computed realignment |
-
-### Fluid Dynamics
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Lattice Boltzmann | `F` | D2Q9 LBM with BGK collision |
-| Navier-Stokes | `Ctrl+D` | Stable fluids with semi-Lagrangian advection |
-| SPH Fluid | `Ctrl+A` | Particle-based Lagrangian hydrodynamics |
-| Rayleigh-Benard | `Ctrl+R` | Buoyancy-driven convection rolls |
-| Smoke & Fire | `\` | Combustion with advection and turbulence |
-| Cloth Simulation | `'` | Verlet integration with spring constraints |
-
-### Chemical & Biological
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Reaction-Diffusion | `6` | Gray-Scott two-chemical pattern formation |
-| BZ Reaction | `` ` `` | 3-variable Oregonator spiral waves |
-| Chemotaxis | `{` | Bacterial colony morphogenesis |
-| Epidemic SIR | `E` | Distance-weighted disease spread |
-| Forest Fire | `O` | Drossel-Schwabl self-organized criticality |
-| Predator-Prey | `J` | Lotka-Volterra population dynamics |
-
-### Game Theory & Social
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Prisoner's Dilemma | `@` | Spatial imitation dynamics |
-| Schelling Segregation | `K` | Preference-driven macro-segregation |
-| Rock-Paper-Scissors | `&` | Cyclic dominance with spiral waves |
-
-### Fractals & Chaos
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Mandelbrot/Julia | `Ctrl+B` | Interactive fractal explorer with zoom |
-| Strange Attractors | `\|` | 6 chaotic 3D ODE systems with density heatmap |
-| L-System Plants | `/` | Lindenmayer grammar with turtle graphics |
-| IFS Fractals | `Ctrl+G` | Iterated function system chaos game |
-
-### Procedural & Computational
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Sorting Visualizer | `Ctrl+Shift+X` | 6 algorithms with animated bar charts |
-| Quantum Circuit | `Ctrl+Q` | State vector simulator with Bloch spheres |
-| Tierra | `Ctrl+Shift+T` | Self-replicating assembly programs in shared memory |
-| Wave Function Collapse | `X` | Entropy-driven procedural generation |
-| Maze Generation | `L` | 3 generators + 4 solvers animated step-by-step |
-| Fourier Epicycles | `Ctrl+Shift+F` | DFT decomposition into spinning circles |
-
-### Complex Simulations
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Ecosystem Evolution | — | Landscape-scale macro-evolution with speciation |
-| Civilization | — | Macro-historical simulation with emergent cultures |
-| Coral Reef | — | Multi-species marine ecosystem with bleaching |
-| Stock Market | — | Agent-based bubbles, crashes, and price discovery |
-| Immune System | — | Adaptive immune response with pathogen arms race |
-| Primordial Soup | — | Abiogenesis from chemistry to biology |
-
-### Meta Modes
-
-| Mode | Key | Description |
-|------|-----|-------------|
-| Screensaver | `Ctrl+Shift+D` | Auto-cycling demo reel with crossfade transitions |
-| Layer Compositing | — | Stack 2-4 simulations with blend modes |
-| Simulation Portal | — | Spatial gateways connecting two simulations |
-| Genome Sharing | — | Encode/decode simulation configs as shareable seeds |
-| Mashup Mode | — | Layer two simulations on the same grid |
-| Recording & Export | `G` | Capture as animated GIF or text flipbook |
-
-## Game of Life Controls
-
-These controls apply in the default Game of Life mode:
+## Controls
 
 | Key | Action |
 |-----|--------|
@@ -188,8 +89,6 @@ These controls apply in the default Game of Life mode:
 | `[` / `]` | Scrub timeline +-10 steps |
 | `b` / `B` | Bookmark / bookmark list |
 | `H` | Heatmap overlay |
-| `F` | Pattern recognition |
-| `V` | Split-screen comparison |
 | `I` | 3D isometric view |
 | `G` | GIF recording |
 | `m` | Mode browser |
@@ -199,11 +98,9 @@ These controls apply in the default Game of Life mode:
 ## Project Structure
 
 ```
-life.py            # Convenience entry point
-life/              # Main package
-  __init__.py      # Package init and main() export
-  __main__.py      # python -m life support
-  app.py           # Core application class
+life.py            # Entry point
+life/
+  app.py           # Core application
   grid.py          # Grid / world management
   colors.py        # Terminal color definitions
   constants.py     # Shared constants
@@ -212,12 +109,8 @@ life/              # Main package
   rules.py         # CA rule engine
   sound.py         # Audio synthesis
   multiplayer.py   # TCP multiplayer
-  utils.py         # Shared utilities
   modes/           # Simulation mode modules
-    __init__.py
-    boids.py
-    quantum_circuit.py
-    ...
+docs/              # Scientific guide
 ```
 
 ## License
