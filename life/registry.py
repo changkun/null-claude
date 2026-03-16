@@ -484,6 +484,9 @@ MODE_REGISTRY = [
     # ── Ocean Thermohaline Circulation & Global Current System ──
     {"name": "Ocean Thermohaline Circulation & Global Current System", "key": "—", "category": "Fluid Dynamics",
      "desc": "Global ocean conveyor belt — thermohaline density-driven deep circulation (NADW/AABW sinking), wind-driven Ekman transport & western boundary currents (Gulf Stream), subtropical gyres, ENSO oscillation, freshwater hosing AMOC shutdown, upwelling/downwelling nutrient cycling, ice-brine rejection feedback", "attr": "thermohaline_mode", "enter": "_enter_thermohaline_mode", "exit": "_exit_thermohaline_mode"},
+    # ── Glacier Dynamics & Ice Age Cycles ──
+    {"name": "Glacier Dynamics & Ice Age Cycles", "key": "—", "category": "Complex Simulations",
+     "desc": "Milankovitch orbital forcing (eccentricity/obliquity/precession), ice-albedo feedback, CO2 greenhouse coupling (volcanic outgassing vs weathering vs ocean sink), ice sheet advance/retreat, sea level change, isostatic crustal rebound, Heinrich events, Dansgaard-Oeschger oscillations, glacial/interglacial transitions", "attr": "glacier_mode", "enter": "_enter_glacier_mode", "exit": "_exit_glacier_mode"},
     # ── Nuclear Reactor Physics & Meltdown Dynamics ──
     {"name": "Nuclear Reactor Physics & Meltdown Dynamics", "key": "—", "category": "Physics & Waves",
      "desc": "PWR cross-section with neutron transport & fission chain reaction, control rod insertion/withdrawal, Xe-135 poisoning dynamics, thermal hydraulics with void coefficient feedback, LOCA/meltdown failure cascades, hydrogen generation & corium pooling", "attr": "nuclear_reactor_mode", "enter": "_enter_nuclear_reactor_mode", "exit": "_exit_nuclear_reactor_mode"},
@@ -615,6 +618,7 @@ _DISPATCH_OVERRIDES = {
     'spacetime_mode': {'running_check': '_is_spacetime_auto_stepping', 'use_delay': False},
     'planetary_atmos_mode': {'use_delay': False},
     'thermohaline_mode': {'use_delay': False},
+    'glacier_mode': {'use_delay': False},
     'nuclear_reactor_mode': {'use_delay': False},
 }
 

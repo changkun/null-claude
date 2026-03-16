@@ -380,6 +380,8 @@ def register_all_modes(App):
     reg_planetary_atmos(App)
     from life.modes.thermohaline import register as reg_thermohaline
     reg_thermohaline(App)
+    from life.modes.glacier import register as reg_glacier
+    reg_glacier(App)
     from life.modes.nuclear_reactor import register as reg_nuclear_reactor
     reg_nuclear_reactor(App)
     from life.modes.mitosis import register as reg_mitosis
