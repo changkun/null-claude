@@ -7,6 +7,7 @@ import time
 
 from life.constants import SPEEDS, SPEED_LABELS
 from life.grid import Grid
+from life.colors import colormap_addstr
 
 def _enter_lenia_mode(self):
     """Enter Lenia mode — show preset menu."""
@@ -361,6 +362,10 @@ def _draw_lenia(self, max_y: int, max_x: int):
     # Colour pair lookup: 8 tiers (pairs 70-77)
     color_tiers = [70, 71, 72, 73, 74, 75, 76, 77]
 
+    # Truecolor path: continuous magma gradient
+    tc_buf = getattr(self, 'tc_buf', None)
+    use_tc = tc_buf is not None and tc_buf.enabled
+
     for y in range(draw_rows):
         screen_y = draw_start + y
         if screen_y >= max_y - 2:
@@ -380,17 +385,22 @@ def _draw_lenia(self, max_y: int, max_x: int):
             elif di > 4:
                 di = 4
             ch = density[di]
-            # Map value to colour tier (0-7)
-            ci = int(v * 7.99)
-            if ci > 7:
-                ci = 7
-            attr = curses.color_pair(color_tiers[ci])
-            if v > 0.5:
-                attr |= curses.A_BOLD
-            try:
-                self.stdscr.addstr(screen_y, sx, ch, attr)
-            except curses.error:
-                pass
+
+            if use_tc:
+                colormap_addstr(self.stdscr, screen_y, sx, ch,
+                                'magma', v, bold=(v > 0.5), tc_buf=tc_buf)
+            else:
+                # Map value to colour tier (0-7)
+                ci = int(v * 7.99)
+                if ci > 7:
+                    ci = 7
+                attr = curses.color_pair(color_tiers[ci])
+                if v > 0.5:
+                    attr |= curses.A_BOLD
+                try:
+                    self.stdscr.addstr(screen_y, sx, ch, attr)
+                except curses.error:
+                    pass
 
     # Status bar
     status_y = max_y - 2

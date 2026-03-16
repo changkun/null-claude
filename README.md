@@ -49,6 +49,7 @@ behind each simulation mode, see the **[Scientific Guide](docs/README.md)**.
   - [Rule Editor](#rule-editor)
   - [Timeline & Branching](#timeline--branching)
   - [Heatmap & Overlays](#heatmap--overlays)
+  - [Truecolor & Colormaps](#truecolor--colormaps)
   - [3D Isometric View](#3d-isometric-view)
   - [Multiplayer](#multiplayer)
   - [Screensaver / Demo Reel](#screensaver--demo-reel)
@@ -72,7 +73,7 @@ Press `m` to open the mode browser, `?` for help, `q` to quit.
 ## Requirements
 
 - Python 3.10+
-- A terminal with color support (256-color recommended)
+- A terminal with color support (256-color recommended; 24-bit truecolor for best visuals)
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ## Installation
@@ -286,6 +287,16 @@ Every generation is recorded into a ring buffer. Rewind with `u`, scrub with
 
 Press `H` for a heatmap that colors cells by age (blue → cyan → green → yellow →
 red → white). Ghost trails mark recently dead cells with a fading glow.
+
+### Truecolor & Colormaps
+
+On terminals that support 24-bit color (iTerm2, Kitty, Alacritty, Windows Terminal,
+GNOME Terminal), the simulator automatically uses continuous RGB gradients instead of
+the 256-color palette. Press `K` to cycle through 8 perceptually uniform colormaps:
+viridis, magma, inferno, plasma, ocean, thermal, terrain, and amber. Five modes
+(Reaction-Diffusion, Lenia, Fluid LBM, Physarum, Wave Equation) have dedicated
+truecolor rendering paths; all other modes benefit from enhanced `init_color()`
+redefinitions. Falls back gracefully to 256-color → 8-color on older terminals.
 
 ### 3D Isometric View
 

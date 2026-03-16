@@ -4,6 +4,8 @@ import math
 import random
 import time
 
+from life.colors import colormap_addstr, colormap_rgb
+
 
 def _enter_wave_mode(self):
     """Enter 2D Wave Equation mode — show preset menu."""
@@ -341,6 +343,9 @@ def _draw_wave(self, max_y: int, max_x: int):
 
     # Height-to-character mapping for the membrane
     # Use blue for troughs, cyan for flat, white/yellow for crests
+    tc_buf = getattr(self, 'tc_buf', None)
+    use_tc = tc_buf is not None and tc_buf.enabled
+
     for r in range(view_rows):
         for c in range(view_cols):
             sy = 1 + r
@@ -350,43 +355,61 @@ def _draw_wave(self, max_y: int, max_x: int):
             av = abs(v)
 
             if av < 0.02:
-                # Nearly flat — dark
                 continue
-            elif av < 0.1:
+
+            # Pick density glyph by amplitude
+            if av < 0.1:
                 ch = "··"
-                if v > 0:
-                    attr = curses.color_pair(4) | curses.A_DIM  # cyan dim
-                else:
-                    attr = curses.color_pair(5) | curses.A_DIM  # blue/magenta dim
             elif av < 0.3:
                 ch = "░░"
-                if v > 0:
-                    attr = curses.color_pair(4)  # cyan
-                else:
-                    attr = curses.color_pair(5)  # blue/magenta
             elif av < 0.6:
                 ch = "▒▒"
-                if v > 0:
-                    attr = curses.color_pair(6) | curses.A_BOLD  # cyan bold
-                else:
-                    attr = curses.color_pair(4) | curses.A_BOLD
             elif av < 0.85:
                 ch = "▓▓"
-                if v > 0:
-                    attr = curses.color_pair(3) | curses.A_BOLD  # yellow
-                else:
-                    attr = curses.color_pair(2) | curses.A_BOLD  # green
             else:
                 ch = "██"
-                if v > 0:
-                    attr = curses.color_pair(7) | curses.A_BOLD  # white
-                else:
-                    attr = curses.color_pair(5) | curses.A_BOLD  # red/magenta
 
-            try:
-                self.stdscr.addstr(sy, sx, ch, attr)
-            except curses.error:
-                pass
+            if use_tc:
+                # Map signed wave value to diverging colour:
+                # negative (troughs) → ocean, positive (crests) → inferno
+                if v > 0:
+                    colormap_addstr(self.stdscr, sy, sx, ch,
+                                    'inferno', min(1.0, av),
+                                    bold=(av > 0.5), tc_buf=tc_buf)
+                else:
+                    colormap_addstr(self.stdscr, sy, sx, ch,
+                                    'ocean', min(1.0, av),
+                                    bold=(av > 0.5), tc_buf=tc_buf)
+            else:
+                if av < 0.1:
+                    if v > 0:
+                        attr = curses.color_pair(4) | curses.A_DIM
+                    else:
+                        attr = curses.color_pair(5) | curses.A_DIM
+                elif av < 0.3:
+                    if v > 0:
+                        attr = curses.color_pair(4)
+                    else:
+                        attr = curses.color_pair(5)
+                elif av < 0.6:
+                    if v > 0:
+                        attr = curses.color_pair(6) | curses.A_BOLD
+                    else:
+                        attr = curses.color_pair(4) | curses.A_BOLD
+                elif av < 0.85:
+                    if v > 0:
+                        attr = curses.color_pair(3) | curses.A_BOLD
+                    else:
+                        attr = curses.color_pair(2) | curses.A_BOLD
+                else:
+                    if v > 0:
+                        attr = curses.color_pair(7) | curses.A_BOLD
+                    else:
+                        attr = curses.color_pair(5) | curses.A_BOLD
+                try:
+                    self.stdscr.addstr(sy, sx, ch, attr)
+                except curses.error:
+                    pass
 
     # For double-slit: draw the barrier wall
     if getattr(self, 'wave_init_type', '') == 'double_slit':

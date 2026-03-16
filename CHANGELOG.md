@@ -4,6 +4,35 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Rendering: Add 24-bit truecolor support with perceptually uniform colormaps
+
+Added a three-tier color rendering pipeline (truecolor → redefined 256-color → 8-color ANSI) that dramatically improves visual fidelity on modern terminals without breaking compatibility on older ones.
+
+**`life/colors.py`** (rewritten, +430 lines):
+- 8 perceptually uniform colormaps built from control points with linear interpolation: viridis, magma, inferno, plasma, ocean, thermal, terrain, amber
+- `truecolor_available()`: detects 24-bit support via `$COLORTERM`
+- `TrueColorBuffer`: collects 24-bit cell writes during a frame, batch-renders them after `curses.refresh()` using `\033[38;2;R;G;Bm` escape sequences to avoid curses buffer conflicts
+- `tc_addstr()` / `colormap_addstr()`: convenience functions with automatic truecolor→256-color fallback via `_nearest_256()` (xterm cube + grayscale ramp)
+- Enhanced `_init_colors()`: when `can_change_color()` is True, redefines color indices with precise RGB samples from colormaps — transparently upgrades all 132 modes
+
+**`life/app.py`**:
+- Added `TrueColorBuffer`, colormap state, and `_tc_refresh()` method
+- Replaced all 35 `stdscr.refresh()` calls with `_tc_refresh()` for buffer overlay
+- Added `K` key to cycle through 8 colormaps; updated hint bar
+
+**5 modes with dedicated truecolor rendering paths:**
+- `reaction_diffusion.py`: maps each color scheme to a colormap (ocean/thermal/viridis/plasma/inferno)
+- `lenia.py`: continuous magma gradient for organic patterns
+- `fluid_lbm.py`: inferno (speed), plasma (vorticity), viridis (density)
+- `physarum.py`: amber gradient for bio-network trails
+- `wave_equation.py`: diverging scheme — inferno for crests, ocean for troughs
+
+**Design:** Non-breaking — all existing color pair references work unchanged. Every truecolor path has a `use_tc` guard with the original discrete-tier logic preserved in the else branch.
+
+**Files added:** `.ralph/round-367-thinker.json`, `.ralph/round-367-worker.json`
+
+---
+
 ### Architecture: Replace manual key/draw dispatch chains with data-driven mode routing table
 
 Replaced the ~2,200 lines of `if/elif` dispatch chains in `app.py` with a declarative `MODE_DISPATCH` table built automatically from `MODE_REGISTRY`. This is the single largest structural improvement to the codebase to date.

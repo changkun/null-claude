@@ -6,6 +6,7 @@ import time
 
 
 from life.constants import SPEEDS
+from life.colors import colormap_addstr
 
 # ══════════════════════════════════════════════════════════════════════
 #  Fluid Dynamics (Lattice Boltzmann Method) — Mode F
@@ -457,6 +458,12 @@ def _draw_fluid(self, max_y: int, max_x: int):
     vort_neg = self.FLUID_VORT_NEG
     n_levels = len(speed_chars)
 
+    # Truecolor path
+    tc_buf = getattr(self, 'tc_buf', None)
+    use_tc = tc_buf is not None and tc_buf.enabled
+    # Colormaps: speed=inferno, vorticity=plasma, density=viridis
+    _fluid_cmaps = ['inferno', 'plasma', 'viridis']
+
     for r in range(view_rows):
         for c in range(view_cols):
             if obstacle[r][c]:
@@ -473,45 +480,46 @@ def _draw_fluid(self, max_y: int, max_x: int):
                 norm = min(1.0, val / max_val)
                 lvl = int(norm * (n_levels - 1))
                 ch = speed_chars[lvl]
-                if norm > 0.7:
-                    attr = curses.color_pair(1) | curses.A_BOLD  # red = fast
-                elif norm > 0.4:
-                    attr = curses.color_pair(3)  # yellow = medium
-                elif norm > 0.15:
-                    attr = curses.color_pair(4)  # blue = slow
-                else:
-                    attr = curses.color_pair(6) | curses.A_DIM  # dim = near-still
             elif viz == 1:  # Vorticity
                 norm = min(1.0, abs(val) / max_val)
                 lvl = int(norm * (n_levels - 1))
-                if val >= 0:
-                    ch = vort_pos[lvl]
-                    if norm > 0.5:
-                        attr = curses.color_pair(1) | curses.A_BOLD  # red CCW
-                    else:
-                        attr = curses.color_pair(1)
-                else:
-                    ch = vort_neg[lvl]
-                    if norm > 0.5:
-                        attr = curses.color_pair(4) | curses.A_BOLD  # blue CW
-                    else:
-                        attr = curses.color_pair(4)
+                ch = vort_pos[lvl] if val >= 0 else vort_neg[lvl]
             else:  # Density
                 norm = min(1.0, max(0.0, (val - rho_offset) / max_val))
                 lvl = int(norm * (n_levels - 1))
                 ch = speed_chars[lvl]
-                if norm > 0.65:
-                    attr = curses.color_pair(5) | curses.A_BOLD  # magenta = high
-                elif norm > 0.35:
-                    attr = curses.color_pair(2)  # green = mid
-                else:
-                    attr = curses.color_pair(6) | curses.A_DIM
 
             if ch != " ":
-                try:
-                    self.stdscr.addstr(1 + r, c * 2, ch + " ", attr)
-                except curses.error:
-                    pass
+                if use_tc:
+                    colormap_addstr(self.stdscr, 1 + r, c * 2, ch + " ",
+                                    _fluid_cmaps[viz], norm,
+                                    bold=(norm > 0.6), tc_buf=tc_buf)
+                else:
+                    if viz == 0:
+                        if norm > 0.7:
+                            attr = curses.color_pair(1) | curses.A_BOLD
+                        elif norm > 0.4:
+                            attr = curses.color_pair(3)
+                        elif norm > 0.15:
+                            attr = curses.color_pair(4)
+                        else:
+                            attr = curses.color_pair(6) | curses.A_DIM
+                    elif viz == 1:
+                        if val >= 0:
+                            attr = curses.color_pair(1) | (curses.A_BOLD if norm > 0.5 else 0)
+                        else:
+                            attr = curses.color_pair(4) | (curses.A_BOLD if norm > 0.5 else 0)
+                    else:
+                        if norm > 0.65:
+                            attr = curses.color_pair(5) | curses.A_BOLD
+                        elif norm > 0.35:
+                            attr = curses.color_pair(2)
+                        else:
+                            attr = curses.color_pair(6) | curses.A_DIM
+                    try:
+                        self.stdscr.addstr(1 + r, c * 2, ch + " ", attr)
+                    except curses.error:
+                        pass
 
     # Status bar
     status_y = max_y - 2

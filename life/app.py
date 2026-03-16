@@ -23,7 +23,8 @@ from life.patterns import PATTERNS, PUZZLES
 from life.rules import RULE_PRESETS, rule_string, parse_rule_string
 from life.colors import (
     AGE_COLORS, _init_colors, color_for_age, color_for_mp, color_for_heat,
-    _GIF_PALETTE,
+    _GIF_PALETTE, TrueColorBuffer, truecolor_available, colormap_addstr,
+    tc_addstr, colormap_rgb, COLORMAP_NAMES, COLORMAPS,
 )
 from life.utils import (
     _load_blueprints, _save_blueprints, scan_patterns, parse_rle,
@@ -50,6 +51,10 @@ class App:
         self.show_help = False
         self.message = ""
         self.message_time = 0.0
+        # Truecolor rendering
+        self.tc_buf = TrueColorBuffer()
+        self.tc_colormap = 'viridis'  # active colormap name
+        self.tc_colormap_idx = 0      # index into COLORMAP_NAMES
         self.pattern_menu = False
         self.stamp_menu = False  # stamp mode: overlay pattern at cursor
         # Dashboard state (initialized later by _dashboard_init)
@@ -2841,14 +2846,14 @@ class App:
                 draw_fn = getattr(self, md['menu_draw'], None)
                 if draw_fn:
                     draw_fn(max_y, max_x)
-                    self.stdscr.refresh()
+                    self._tc_refresh()
                     return True
             # Check mode
             if getattr(self, md['attr'], False):
                 draw_fn = getattr(self, md['draw'], None)
                 if draw_fn:
                     draw_fn(max_y, max_x)
-                    self.stdscr.refresh()
+                    self._tc_refresh()
                     return True
         return False
 
@@ -3581,31 +3586,31 @@ class App:
             if self.screensaver_mode and self.screensaver_running and not self.screensaver_menu:
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_screensaver(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
             # ── Minimap overlay (drawn after mode-specific content, before next input) ──
             if self.show_minimap and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_minimap(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
 
             # ── Time-travel scrubber overlay ──
             if self.tt_history and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_tt_scrubber(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
 
             # ── Sonification indicator overlay ──
             if self.sonify_enabled and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_sonify_indicator(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
 
             # ── Topology indicator and edge overlays ──
             if self.grid.topology != "torus" and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_topology_indicator(_my, _mx)
                 self._draw_topology_edges(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
 
             # ── Cast recording: capture frame after all drawing ──
             if self.cast_recording and not self.cast_export_menu:
@@ -3614,12 +3619,12 @@ class App:
             if self.cast_recording and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_cast_indicator(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
             # ── Analytics overlay (drawn after all other overlays) ──
             if self.analytics.enabled and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_analytics_overlay(_my, _mx)
-                self.stdscr.refresh()
+                self._tc_refresh()
             # ── Cast export menu ──
             if self.cast_export_menu:
                 _my, _mx = self.stdscr.getmaxyx()
@@ -3967,6 +3972,13 @@ class App:
                 self._flash("Heatmap ON (shows cumulative cell activity)")
             else:
                 self._flash("Heatmap OFF")
+            return True
+        if key == ord("K"):
+            # Cycle through colormaps
+            self.tc_colormap_idx = (self.tc_colormap_idx + 1) % len(COLORMAP_NAMES)
+            self.tc_colormap = COLORMAP_NAMES[self.tc_colormap_idx]
+            tc_label = "truecolor" if self.tc_buf.enabled else "256-color"
+            self._flash(f"Colormap: {self.tc_colormap} ({tc_label})")
             return True
         if key == ord("I"):
             self.iso_mode = not self.iso_mode
@@ -4988,7 +5000,7 @@ class App:
                 self.stdscr.addstr(y, 0, display[:max_x - 1], curses.color_pair(7) | curses.A_BOLD)
             except curses.error:
                 pass
-            self.stdscr.refresh()
+            self._tc_refresh()
             ch = self.stdscr.getch()
             if ch == 27:  # ESC
                 self.stdscr.nodelay(True)
@@ -5063,7 +5075,7 @@ class App:
                     self.stdscr.addstr(y, 2, line, attr)
                 except curses.error:
                     pass
-            self.stdscr.refresh()
+            self._tc_refresh()
             key = self.stdscr.getch()
             if key == 27 or key == ord("q"):
                 break
@@ -5136,38 +5148,45 @@ class App:
     # ── Drawing ──
 
 
+    def _tc_refresh(self):
+        """Refresh curses screen then overlay any buffered truecolor cells."""
+        self.stdscr.refresh()
+        if self.tc_buf.enabled and self.tc_buf.cells:
+            self.tc_buf.render()
+
     def _draw(self):
         self.stdscr.erase()
+        self.tc_buf.clear()
         max_y, max_x = self.stdscr.getmaxyx()
 
         # ── Script mode: has extra overlay, handled explicitly ──
         if self.script_menu:
             self._draw_script_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.script_mode:
             self._draw_scripting(max_y, max_x)
             if self.script_show_source:
                 self._draw_script_source(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         # ── Screensaver menu (screensaver_mode itself draws as overlay) ──
         if self.screensaver_menu:
             self._draw_screensaver_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         # ── Evolution mode (explicit — uses evo_menu pattern) ──
         if self.evo_menu:
             self._draw_evo_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.evo_mode:
             self._draw_evo(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         # ── Table-driven mode draw dispatch (handles ~100 modes) ──
@@ -5177,87 +5196,87 @@ class App:
         # ── UI overlays and special-condition modes ──
         if self.dashboard:
             self._draw_dashboard(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.mode_browser:
             self._draw_mode_browser(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.puzzle_menu:
             self._draw_puzzle_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.puzzle_mode and self.puzzle_current:
             self._draw_puzzle(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.blueprint_menu:
             self._draw_blueprint_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.tbranch_fork_menu:
             self._tbranch_draw_fork_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.bookmark_menu:
             self._draw_bookmark_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.show_help:
             self._draw_help(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.race_rule_menu:
             self._draw_race_rule_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.compare_rule_menu:
             self._draw_compare_rule_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.rule_menu:
             self._draw_rule_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.pattern_menu or self.stamp_menu:
             self._draw_pattern_menu(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.mp_mode:
             self._draw_multiplayer(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.race_mode and self.race_grids:
             self._draw_race(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.tbranch_mode and self.tbranch_grid:
             self._tbranch_draw_split(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.compare_mode and self.grid2:
             self._draw_compare(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         if self.iso_mode:
             self._draw_iso(max_y, max_x)
-            self.stdscr.refresh()
+            self._tc_refresh()
             return
 
         # Compute viewport
@@ -5575,14 +5594,14 @@ class App:
             if self.message and now - self.message_time < 3.0:
                 hint = f" {self.message}"
             else:
-                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [I]=3D [Tab]=minimap [1]=wolfram [2]=ant [3]=hex [M]=sound [R]=rules [V]=compare [Z]=race [C]=puzzles [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=zoom [0]=reset zoom [</>]=speed [?]=help [q]=quit"
+                hint = " [Space]=play [n]=step [u]=rewind [/]=scrub10 [b]=bookmark [B]=bookmarks [p]=patterns [t]=stamp [W]=blueprint [T]=blueprints [e]=edit [d]=draw [F]=search [H]=heatmap [K]=colormap [I]=3D [Tab]=minimap [1]=wolfram [2]=ant [3]=hex [M]=sound [R]=rules [V]=compare [Z]=race [C]=puzzles [N]=multiplayer [G]=record GIF [s]=save [o]=load [+/-]=zoom [0]=reset zoom [</>]=speed [?]=help [q]=quit"
             hint = hint[:max_x - 1]
             try:
                 self.stdscr.addstr(hint_y, 0, hint, curses.color_pair(6) | curses.A_DIM)
             except curses.error:
                 pass
 
-        self.stdscr.refresh()
+        self._tc_refresh()
 
 
     def _draw_multiplayer(self, max_y: int, max_x: int):

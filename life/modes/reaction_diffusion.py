@@ -15,6 +15,7 @@ import random
 import time
 
 from life.constants import SPEEDS, SPEED_LABELS
+from life.colors import colormap_addstr, colormap_rgb
 
 
 # ── Color scheme names for cycling ──────────────────────────────────────
@@ -25,6 +26,15 @@ _COLOR_SCHEMES = [
     "purple",      # magenta-violet
     "monochrome",  # grayscale intensity
 ]
+
+# Map color scheme names to colormaps for truecolor rendering
+_SCHEME_COLORMAPS = {
+    "ocean": "ocean",
+    "thermal": "thermal",
+    "organic": "viridis",
+    "purple": "plasma",
+    "monochrome": "inferno",
+}
 
 # Map scheme name -> list of (curses color_pair idx, bold flag) for 8 tiers
 # We reuse existing pairs and standard pairs with style flags
@@ -409,6 +419,13 @@ def _draw_rd(self, max_y: int, max_x: int):
     scheme_idx = getattr(self, 'rd_color_scheme', 0)
     tiers = _get_color_tiers(scheme_idx)
 
+    # Truecolor path: use continuous colormap gradient
+    tc_buf = getattr(self, 'tc_buf', None)
+    use_tc = tc_buf is not None and tc_buf.enabled
+    if use_tc:
+        scheme_name = _COLOR_SCHEMES[scheme_idx % len(_COLOR_SCHEMES)]
+        cmap_name = _SCHEME_COLORMAPS.get(scheme_name, 'ocean')
+
     for y in range(draw_rows):
         screen_y = draw_start + y
         if screen_y >= max_y - 2:
@@ -430,16 +447,21 @@ def _draw_rd(self, max_y: int, max_x: int):
                 di = 4
             ch = density[di]
 
-            # Map V to colour tier (0-7)
-            ci = int(v * 7.99)
-            if ci > 7:
-                ci = 7
-            pair_idx, extra = tiers[ci]
-            attr = curses.color_pair(pair_idx) | extra
-            try:
-                self.stdscr.addstr(screen_y, sx, ch, attr)
-            except curses.error:
-                pass
+            if use_tc:
+                # Continuous 24-bit colour from colormap
+                colormap_addstr(self.stdscr, screen_y, sx, ch,
+                                cmap_name, v, bold=(v > 0.5), tc_buf=tc_buf)
+            else:
+                # Discrete 8-tier fallback
+                ci = int(v * 7.99)
+                if ci > 7:
+                    ci = 7
+                pair_idx, extra = tiers[ci]
+                attr = curses.color_pair(pair_idx) | extra
+                try:
+                    self.stdscr.addstr(screen_y, sx, ch, attr)
+                except curses.error:
+                    pass
 
     # Status bar
     status_y = max_y - 2

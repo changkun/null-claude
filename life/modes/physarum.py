@@ -7,6 +7,7 @@ import time
 
 from life.constants import SPEEDS
 from life.grid import Grid
+from life.colors import colormap_addstr
 
 def _enter_physarum_mode(self):
     """Enter Physarum mode — show preset menu."""
@@ -266,6 +267,10 @@ def _draw_physarum(self, max_y: int, max_x: int):
     # Grid area
     view_rows = min(rows, max_y - 3)
     view_cols = min(cols, (max_x - 1) // 2)
+    # Truecolor path
+    tc_buf = getattr(self, 'tc_buf', None)
+    use_tc = tc_buf is not None and tc_buf.enabled
+
     for r in range(view_rows):
         for c in range(view_cols):
             v = trail[r][c]
@@ -276,19 +281,25 @@ def _draw_physarum(self, max_y: int, max_x: int):
             elif di > 4:
                 di = 4
             ch = density[di]
-            # Colour tier (0-7)
-            ci = int(v * 7.99)
-            if ci < 0:
-                ci = 0
-            elif ci > 7:
-                ci = 7
-            attr = curses.color_pair(80 + ci)
-            if v > 0.5:
-                attr |= curses.A_BOLD
-            try:
-                self.stdscr.addstr(1 + r, c * 2, ch, attr)
-            except curses.error:
-                pass
+
+            if use_tc:
+                if v > 0.005:
+                    colormap_addstr(self.stdscr, 1 + r, c * 2, ch,
+                                    'amber', v, bold=(v > 0.5), tc_buf=tc_buf)
+            else:
+                # Colour tier (0-7)
+                ci = int(v * 7.99)
+                if ci < 0:
+                    ci = 0
+                elif ci > 7:
+                    ci = 7
+                attr = curses.color_pair(80 + ci)
+                if v > 0.5:
+                    attr |= curses.A_BOLD
+                try:
+                    self.stdscr.addstr(1 + r, c * 2, ch, attr)
+                except curses.error:
+                    pass
 
     # Status bar
     status_y = max_y - 2
