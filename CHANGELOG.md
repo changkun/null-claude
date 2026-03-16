@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add CRISPR-Cas9 Gene Editing & Repair — guide RNA/Cas9 scanning for PAM sequences, R-loop formation, DSB cutting, NHEJ/HDR repair pathway competition with indel mutations, off-target cleavage at partial-match sites, base editing (nCas9 C→T without DSB), prime editing (nCas9-RT), and gene drive super-Mendelian population spread
+
+Bridges the gap between the existing DNA helix visualization and protein folding modes by simulating the molecular mechanics of the most consequential biotech tool of the decade.
+
+**`life/modes/crispr.py`** (new, ~1608 lines):
+
+- **Guide RNA + Cas9 scanning**: Complexes traverse the DNA strand at configurable speed (3 bases/tick default), searching for NGG PAM motifs and scoring 20bp guide-target Hamming distance. On-target binding at ≥18/20 match, off-target at ≥14/20 with reduced probability (0.4 × score/20).
+- **Cas9 state machine**: scanning → PAM found → R-loop formation (5 ticks) → DSB cutting (3 ticks) → released (respawn after 10 ticks). Nickase, base editor, and prime editor variants follow distinct pathways.
+- **NHEJ repair**: Error-prone non-homologous end joining (8-tick duration, 85% indel probability). Indels of ±1-3bp modify the DNA sequence in-place — insertions overwrite, deletions mark with '-'.
+- **HDR repair**: Homology-directed repair using donor template (18-tick duration, 80% success rate). Precise knock-in of modified sequence at target locus.
+- **Base editing (nCas9)**: Nickase Cas9 + cytidine deaminase performs C→T conversion in editing window (positions -8 to -4 from PAM) without double-strand break. 6-tick editing duration.
+- **Prime editing (nCas9-RT)**: Nickase + reverse transcriptase writes new sequence via pegRNA. 10-tick editing duration, ~50% per-base modification rate.
+- **Gene drive population dynamics**: 2D grid of diploid organisms with 6 genotypes (WT/WT, WT/Ed, Ed/Ed, WT/Dis, Dis/Dis, Resistant). Mendelian breeding with super-Mendelian drive conversion (P=0.95 heterozygote→homozygote). Fitness costs (0.02 for drive allele, 0.15-0.30 for disrupted) and resistance emergence (P=0.005/generation).
+- **3 visualization views**: DNA Strand Map (sense/antisense strands with base-pair coloring, gRNA alignment row, PAM highlights, Cas9 position glyphs →/←/◆/◈/✂/✎, DSB repair indicators ✂/⚡/⚙, edit annotations ×/✓/β/π, scrolling event log), Population Grid (diploid organisms colored by genotype with allele frequency bar and drive statistics), Time-Series Sparklines (10 metrics: total cuts, on/off-target, NHEJ/HDR repairs, indels, edit fraction, drive allele frequency, WT frequency, average fitness).
+- **6 presets**: Precise Gene Knockout (NHEJ-dominant frameshift), HDR Knock-In (template-directed precise insertion), Off-Target Mutagenesis (promiscuous guide with 6 off-target sites), Gene Drive Spread (super-Mendelian population propagation), Base Editing nCas9 (C→T without DSB), Prime Editing (nCas9-RT precise edits).
+- **Controls**: Space (play/pause), v (cycle views), ←/→ (scroll DNA), r (reset), q (quit).
+
+**`life/registry.py`**: Added "CRISPR-Cas9 Gene Editing & Repair" entry in Chemical & Biological category.
+
+**`life/modes/__init__.py`**: Added registration import for the crispr module.
+
+**`docs/chemical-and-biological.md`**: Added full scientific documentation — CRISPR biology background, Cas9 state machine formulation, repair pathway mechanics, gene drive population model, preset table, observation guide, and 5 references (Jinek 2012, Ran 2013, Komor 2016, Anzalone 2019, Kyrou 2018).
+
+---
+
 ### Feature: Add Protein Folding & Misfolding — 2D lattice HP model with Monte Carlo energy minimization, prion-like templated misfolding, amyloid fibril aggregation, GroEL/GroES chaperone rescue, heat shock response & conformational energy landscape
 
 First molecular-scale biophysics mode — complements the existing cellular/tissue-level biological modes (immune system, cardiac, embryogenesis, biofilm) by modeling protein structure and disease at the amino acid level.

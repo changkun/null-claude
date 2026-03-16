@@ -368,6 +368,8 @@ def register_all_modes(App):
     reg_cardiac(App)
     from life.modes.protein_folding import register as reg_protfold
     reg_protfold(App)
+    from life.modes.crispr import register as reg_crispr
+    reg_crispr(App)
     from life.modes.tokamak import register as reg_tokamak
     reg_tokamak(App)
     from life.dashboard import register as reg_dashboard

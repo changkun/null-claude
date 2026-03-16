@@ -1234,3 +1234,62 @@ Metrics:
 - Lau, K. F. and Dill, K. A. "A lattice statistical mechanics model of the conformational and sequence spaces of proteins." *Macromolecules* 22 (1989): 3986-3997. https://doi.org/10.1021/ma00200a030
 - Dobson, C. M. "Protein folding and misfolding." *Nature* 426 (2003): 884-890. https://doi.org/10.1038/nature02261
 - Hartl, F. U. and Hayer-Hartl, M. "Molecular chaperones in the cytosol: from nascent chain to folded protein." *Science* 295 (2002): 1852-1858. https://doi.org/10.1126/science.1068408
+
+---
+
+## CRISPR-Cas9 Gene Editing & Repair
+
+**Background** — CRISPR-Cas9 (Clustered Regularly Interspaced Short Palindromic Repeats) is the most transformative genome editing technology of the 21st century. Discovered as a bacterial adaptive immune system, it was repurposed by Doudna and Charpentier (2012) into a programmable DNA scissors. The system uses a guide RNA (gRNA) to direct the Cas9 endonuclease to a specific genomic locus adjacent to a protospacer adjacent motif (PAM, typically NGG for *S. pyogenes* Cas9). Upon binding, Cas9 forms an R-loop structure and introduces a double-strand break (DSB). The cell repairs the break through one of two competing pathways: error-prone non-homologous end joining (NHEJ), which often introduces insertion/deletion mutations (indels) causing gene knockouts, or homology-directed repair (HDR), which can incorporate a donor template for precise gene insertion. Variants include base editors (nCas9-deaminase fusions for C→T conversion without DSB) and prime editors (nCas9-reverse transcriptase fusions for arbitrary small edits). At the population level, CRISPR gene drives exploit super-Mendelian inheritance to spread engineered alleles through wild populations.
+
+**Formulation** — The simulation models both molecular-level editing mechanics and population-level gene drive dynamics:
+
+```
+DNA strand:
+  Random sequence of length max(80, terminal_width - 10)
+  PAM sites: positions where seq[i+1]='G' and seq[i+2]='G' (NGG motif)
+  Guide RNA: 20bp sequence matching upstream of target PAM
+
+Cas9 state machine:
+  scanning → PAM_found → R-loop (5 ticks) → cutting (3 ticks) → released (10 ticks → rescan)
+  Nickase variant: scanning → PAM → R-loop → nick (single-strand, no DSB)
+  Base editor: scanning → PAM → R-loop → base_edit (6 ticks, C→T in window pos -8 to -4) → nick → released
+  Prime editor: scanning → PAM → R-loop → prime_edit (10 ticks, RT writes new seq) → nick → released
+
+Target matching:
+  match_score = Hamming similarity of guide vs 20bp upstream of PAM (0 to 20)
+  On-target binding: score ≥ 18/20
+  Off-target binding: score ≥ 14/20, reduced probability = 0.4 × (score/20)
+  Scan speed: 3 bases/tick (configurable), with 5% random direction reversal
+
+DSB repair pathway competition:
+  Unrepaired DSB waits 3 ticks, then:
+    NHEJ (probability 0.70 default): 8-tick repair, 85% chance of indel (±1-3bp insertion/deletion)
+    HDR (if template present): 18-tick repair, 80% success rate for template knock-in
+  NHEJ indels modify the DNA sequence in-place (insertions overwrite, deletions mark with '-')
+
+Gene drive population dynamics:
+  Grid of diploid organisms with genotypes: WT/WT, WT/Ed, Ed/Ed, WT/Dis, Dis/Dis, Resistant
+  Breeding probability: 0.06/tick × fitness, Mendelian allele segregation
+  Super-Mendelian drive: heterozygote WT/Ed → Ed/Ed with P=0.95 (drive conversion)
+  Resistance mutations: P=0.005/generation at drive locus
+  Fitness cost of drive allele: 0.02
+  Age-dependent death: base P=0.002 + 0.001×max(0, age-50), modulated by fitness
+```
+
+| Preset | Configuration | What to watch |
+|--------|--------------|---------------|
+| Precise Gene Knockout | 3 Cas9, NHEJ P=0.85, no template | Cas9 finds target PAM, DSB → NHEJ introduces frameshifting indels |
+| HDR Knock-In | 3 Cas9, NHEJ P=0.45, HDR template on | DSB triggers repair pathway competition — watch HDR template insertion succeed (green ✓) vs NHEJ indels (red ×) |
+| Off-Target Mutagenesis | 5 Cas9, 6 off-target sites, 3 guide mismatches | Promiscuous guide creates collateral DSBs at partial-match sites — off-target markers (▼ red) light up |
+| Gene Drive Spread | 2 Cas9, drive enabled, NHEJ P=0.15 | Switch to population view — watch edited allele (green) sweep through WT population via super-Mendelian conversion |
+| Base Editing (nCas9) | 3 nCas9-deaminase, base edit mode | C→T conversions in editing window without DSB — clean single-base changes marked with β |
+| Prime Editing | 3 nCas9-RT, prime edit mode | Reverse transcriptase writes new sequence — precise edits marked with π, minimal indels |
+
+**What to look for** — In the DNA Strand Map, watch Cas9 complexes (arrows →/←) scan along the double helix. When one finds a PAM (◆ yellow), it forms an R-loop (◈ blue), then cuts (✂ red). The bond row between sense and antisense strands shows repair activity: unrepaired breaks (✂ red), NHEJ in progress (⚡ yellow), HDR in progress (⚙ green). Edited bases appear bold on the strand. The guide RNA row shows match quality (green = match, red = mismatch) and PAM annotation. In the Population view for Gene Drive, watch the frequency bar at bottom shift from white (WT) to green (edited) as the drive allele sweeps — resistance alleles (magenta ▪▪) may emerge to slow the spread. Use `v` to cycle views, arrow keys to scroll the DNA, and `r` to reset.
+
+**References**
+- Jinek, M. et al. "A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity." *Science* 337 (2012): 816-821. https://doi.org/10.1126/science.1225829
+- Ran, F. A. et al. "Genome engineering using the CRISPR-Cas9 system." *Nature Protocols* 8 (2013): 2281-2308. https://doi.org/10.1038/nprot.2013.143
+- Komor, A. C. et al. "Programmable editing of a target base in genomic DNA without double-stranded DNA cleavage." *Nature* 533 (2016): 420-424. https://doi.org/10.1038/nature17946
+- Anzalone, A. V. et al. "Search-and-replace genome editing without double-strand breaks or donor DNA." *Nature* 576 (2019): 149-157. https://doi.org/10.1038/s41586-019-1711-4
+- Kyrou, K. et al. "A CRISPR-Cas9 gene drive targeting doublesex causes complete population suppression in caged Anopheles gambiae mosquitoes." *Nature Biotechnology* 36 (2018): 1062-1066. https://doi.org/10.1038/nbt.4245

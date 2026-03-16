@@ -466,6 +466,9 @@ MODE_REGISTRY = [
     # ── Protein Folding & Misfolding ──
     {"name": "Protein Folding & Misfolding", "key": "—", "category": "Chemical & Biological",
      "desc": "2D lattice HP protein folding via Monte Carlo — hydrophobic collapse, prion-like templated misfolding, amyloid fibril aggregation, GroEL/GroES chaperone rescue, heat shock response & conformational energy landscape", "attr": "protfold_mode", "enter": "_enter_protein_folding_mode", "exit": "_exit_protein_folding_mode"},
+    # ── CRISPR-Cas9 Gene Editing & Repair ──
+    {"name": "CRISPR-Cas9 Gene Editing & Repair", "key": "—", "category": "Chemical & Biological",
+     "desc": "Guide RNA scanning for PAM sequences, Cas9 DSB cutting, NHEJ/HDR repair pathway competition with indel mutations, off-target cleavage, base editing (nCas9 C→T), prime editing (nCas9-RT), and gene drive super-Mendelian population spread", "attr": "crispr_mode", "enter": "_enter_crispr_mode", "exit": "_exit_crispr_mode"},
     # ── Tokamak Fusion Plasma Confinement ──
     {"name": "Tokamak Fusion Plasma Confinement", "key": "—", "category": "Physics & Waves",
      "desc": "Magnetically confined hydrogen plasma — toroidal cross-section with nested flux surfaces, ohmic/NBI/alpha heating, Lawson criterion tracking, sawtooth crashes, ELMs, H-mode transition, disruptions & runaway electrons", "attr": "tokamak_mode", "enter": "_enter_tokamak_mode", "exit": "_exit_tokamak_mode"},
