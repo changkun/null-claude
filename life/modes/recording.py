@@ -135,7 +135,7 @@ def _export_cast(frames, timestamps, width, height, filepath):
         "height": height,
         "timestamp": int(timestamps[0]) if timestamps else int(time.time()),
         "env": {"TERM": os.environ.get("TERM", "xterm-256color")},
-        "title": "null-claude simulation recording",
+        "title": "life-simulator simulation recording",
     }
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(json.dumps(header) + "\n")

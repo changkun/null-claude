@@ -78,8 +78,8 @@ Press `m` to open the mode browser, `?` for help, `q` to quit.
 ## Installation
 
 ```bash
-git clone https://github.com/changkun/null-claude.git
-cd null-claude
+git clone https://github.com/changkun/life-simulator.git
+cd life-simulator
 
 # Using uv (recommended)
 uv sync
