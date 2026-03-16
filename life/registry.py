@@ -358,6 +358,9 @@ MODE_REGISTRY = [
     # ── Genesis Protocol ──
     {"name": "Genesis Protocol", "key": "—", "category": "Meta Modes",
      "desc": "Autonomous evolution engine — seeds random rule combinations, scores by information-theoretic complexity, curates a ranked Hall of Fame of discovered universes", "attr": "genesis_mode", "enter": "_enter_genesis_mode", "exit": "_exit_genesis_mode"},
+    # ── Phase Space Navigator ──
+    {"name": "Phase Space Navigator", "key": "—", "category": "Meta Modes",
+     "desc": "Interactive bifurcation explorer — maps the behavioral landscape of CA rule-space as a live 2D heatmap, teleport into any universe", "attr": "phasespace_mode", "enter": "_enter_phasespace_mode", "exit": "_exit_phasespace_mode"},
 ]
 
 
@@ -428,6 +431,7 @@ _DISPATCH_OVERRIDES = {
     'elab_mode': {'running_check': '_is_elab_auto_stepping'},
     'adisco_mode': {'running_check': '_is_adisco_auto_stepping'},
     'genesis_mode': {'running_check': '_is_genesis_auto_stepping'},
+    'phasespace_mode': {'running_check': '_is_phasespace_auto_stepping', 'use_delay': False},
     'nca_mode': {'running_check': '_is_nca_auto_stepping'},
     'nntrain_mode': {'running_check': '_is_nntrain_auto_stepping'},
     'wfc_mode': {'running_check': '_is_wfc_auto_stepping'},

@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Phase Space Navigator for interactive CA rule-space exploration
+
+Added a new Meta Mode that maps the behavioral landscape of cellular automaton rule-space as a live 2D heatmap. Runs hundreds of micro-simulations in parallel, classifying each parameter-space point by emergent behavior (dead/static/oscillating/complex/chaotic/explosive/growing/dying). Users can sweep across rule parameters and teleport into any point's simulation.
+
+**`life/modes/phase_space.py`** (new, ~1200 lines):
+
+- **4 axis sweep modes**: Birth vs Survival (single thresholds), Birth Range vs Survival Range (centered ranges with configurable width), Density vs Birth Threshold, Lambda vs Mu (Langton-style fractional parameters).
+- **Micro-simulation engine**: Runs 16×16 cell simulations for 80 steps each, evaluated center-outward via spiral scan for visual effect during loading.
+- **Behavioral classifier**: Categorizes each point into 8 classes (dead, static, oscillating, complex, chaotic, explosive, growing, dying) based on population dynamics, variance, and trends.
+- **Three visualization views**: Classification (colored by behavior type), Complexity heatmap (0–1 weighted score), Entropy heatmap (Shannon entropy of final pattern).
+- **Teleport mode**: Enter on any point launches a full-screen simulation with that rule; Backspace returns to the map.
+- **Adopt**: Press `a` to apply the cursor's rule to the main simulation for further analysis with other modes.
+- **Settings menu**: Configurable grid resolution, simulation steps, initial density, and axis mode before scanning begins.
+
+**`life/registry.py`**: Added "Phase Space Navigator" entry in Meta Modes category with `phasespace_mode` dispatch override (auto-stepping, no delay).
+
+**`life/modes/__init__.py`**: Added registration call for the phase_space module.
+
+**`life/app.py`** (~6 lines added): Initialize phase space state variables (mode flags, menu state, running state) and call `_phasespace_init()`.
+
+---
+
 ### Feature: Add Genesis Protocol — autonomous open-ended evolution engine
 
 Added a new Meta Mode that autonomously explores cellular automata rule-space, scoring discovered universes for emergent complexity and curating a persistent Hall of Fame of the most interesting finds. The system generates, simulates, measures, ranks, and breeds rule combinations in a continuous loop — turning the simulator from a tool you operate into one that explores on its own.

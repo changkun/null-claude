@@ -2659,6 +2659,12 @@ class App:
         self.genesis_best_ever_rule = ""
         self.genesis_hall_threshold = 80.0
 
+        # ── Phase Space Navigator mode state ──
+        self.phasespace_mode = False
+        self.phasespace_menu = False
+        self.phasespace_running = False
+        self._phasespace_init()
+
         self._rebuild_pattern_list()
 
         if pattern:

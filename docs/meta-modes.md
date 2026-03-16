@@ -1148,3 +1148,60 @@ The next round breeds from the best: crossover between hall-of-fame members and 
 - Compare the information-theoretic profiles of different structural classes: oscillators tend to have high periodicity but moderate entropy, while chaotic patterns have high entropy but low periodicity.
 - Adopt an interesting discovered rule into your main simulation to explore it in detail with other modes (computation detector, butterfly effect, etc.).
 - Browse the Hall of Fame across sessions — the persistent gallery accumulates discoveries over multiple runs, building a long-term catalog of interesting CA rule-space regions.
+
+---
+
+## Phase Space Navigator
+
+**Source:** `life/modes/phase_space.py`
+
+### Background
+
+Phase Space Navigator maps the entire behavioral landscape of cellular automaton rule-space as an interactive 2D heatmap. Where Genesis Protocol explores rule-space one universe at a time, and Butterfly Effect examines causal sensitivity within a single simulation, the Phase Space Navigator gives a **global view** — showing where complexity, chaos, oscillation, and death occur across all possible rule parameterizations simultaneously. It is the natural culmination of the project's analytical trajectory: a "map of all possible universes."
+
+The mode runs hundreds of micro-simulations in parallel behind the scenes, classifying each point in a 2D parameter space by its emergent behavior. The user can sweep across rule parameters (birth vs. survival thresholds, density vs. birth, Langton-style lambda/mu fractions) and instantly see the narrow edge-of-chaos regions where interesting dynamics live. Clicking any point teleports into a full-screen simulation of that rule.
+
+### How it works
+
+The navigator spans a configurable 2D parameter space. Four axis modes are available:
+
+- **Birth vs Survival** — single birth/survival neighbor thresholds (B{x}/S{y}), producing a 9×9 grid of all simple threshold rules.
+- **Birth Range vs Survival Range** — centered ranges with configurable width, exploring rules with multiple birth/survival values at once.
+- **Density vs Birth Threshold** — how initial cell density affects outcomes across different birth rules (with fixed Conway survival).
+- **Lambda vs Mu** — Langton's lambda-like fractional parameters controlling the probability of each neighbor count appearing in birth/survival sets.
+
+For each grid point, a micro-simulation (16×16 cells, 80 steps by default) is seeded with random initial conditions and run to completion. Simulations are evaluated using a center-outward spiral scan for visual effect during the loading phase.
+
+Each point is classified into one of eight behavioral categories based on population dynamics, variance, and trends: **dead**, **static**, **oscillating**, **complex** (edge of chaos), **chaotic**, **explosive**, **growing**, or **dying**. These classifications drive three visualization views:
+
+- **Classification view** — colored by behavior type using Unicode block characters (cyan=static, white=oscillating, yellow=complex, red=chaotic, magenta=explosive, green=growing, blue=dying).
+- **Complexity heatmap** — 0–1 intensity score combining entropy, population variability, and behavioral classification weights.
+- **Entropy heatmap** — raw Shannon entropy of the final spatial pattern.
+
+The teleport feature launches a full-size simulation with the selected point's rule, allowing detailed observation before returning to the map. The adopt feature applies the selected rule to the main simulation.
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **Arrows / hjkl** | Move cursor on the heatmap |
+| **Shift+H/J/K/L** | Fast cursor movement (5 cells) |
+| **Enter** | Teleport into selected point's simulation (full-screen preview) |
+| **a** | Adopt the cursor's rule into the main simulation |
+| **v** | Cycle view: Classification → Complexity → Entropy |
+| **t** | Toggle axis labels |
+| **r** | Rescan with new random seeds |
+| **m** | Cycle axis mode (Birth/Survival, Range, Density, Lambda/Mu) |
+| **Space** | Play/pause scanning |
+| **R** | Return to settings menu |
+| **Backspace / b** | Return from teleport preview to heatmap |
+| **Esc / q** | Exit Phase Space Navigator |
+
+### What to explore
+
+- Start with Birth vs Survival mode to see the full 9×9 landscape of simple threshold rules. The yellow "complex" points reveal the narrow edge-of-chaos corridor — rules like B3/S23 (Conway's Life) that balance growth and death.
+- Switch to Lambda vs Mu mode to see Langton's classic result: a phase transition from death (low lambda) through a narrow band of complexity to chaos (high lambda). The heatmap makes this transition visible as a diagonal ridge.
+- Use Density vs Birth Threshold to understand why some rules are sensitive to initial conditions while others converge to the same behavior regardless of starting density.
+- Teleport into points near the boundary between two behavioral regions — these transition zones often produce the most surprising dynamics.
+- Rescan with `r` to see how stochastic effects change the map — regions that remain stable across rescans are genuinely robust, while flickering regions indicate sensitivity to initial conditions.
+- Combine with other modes: find an interesting rule in Phase Space, adopt it with `a`, then analyze it with Butterfly Effect or the Computation Detector to understand its internal structure.
