@@ -463,6 +463,9 @@ MODE_REGISTRY = [
     # ── Cardiac Electrophysiology & Arrhythmia ──
     {"name": "Cardiac Electrophysiology & Arrhythmia", "key": "—", "category": "Chemical & Biological",
      "desc": "Heart electrical conduction — SA/AV nodes, His bundle, Purkinje fibers, FitzHugh-Nagumo action potentials with Na⁺/Ca²⁺/K⁺ ion channels, re-entry spiral waves, real-time ECG trace & defibrillation", "attr": "cardiac_mode", "enter": "_enter_cardiac_mode", "exit": "_exit_cardiac_mode"},
+    # ── Protein Folding & Misfolding ──
+    {"name": "Protein Folding & Misfolding", "key": "—", "category": "Chemical & Biological",
+     "desc": "2D lattice HP protein folding via Monte Carlo — hydrophobic collapse, prion-like templated misfolding, amyloid fibril aggregation, GroEL/GroES chaperone rescue, heat shock response & conformational energy landscape", "attr": "protfold_mode", "enter": "_enter_protein_folding_mode", "exit": "_exit_protein_folding_mode"},
     # ── Tokamak Fusion Plasma Confinement ──
     {"name": "Tokamak Fusion Plasma Confinement", "key": "—", "category": "Physics & Waves",
      "desc": "Magnetically confined hydrogen plasma — toroidal cross-section with nested flux surfaces, ohmic/NBI/alpha heating, Lawson criterion tracking, sawtooth crashes, ELMs, H-mode transition, disruptions & runaway electrons", "attr": "tokamak_mode", "enter": "_enter_tokamak_mode", "exit": "_exit_tokamak_mode"},

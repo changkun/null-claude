@@ -1150,3 +1150,87 @@ Defibrillation:
 - Winfree, A. T. "Spiral waves of chemical activity." *Science* 175 (1972): 634-636. https://doi.org/10.1126/science.175.4022.634
 - Jalife, J. "Ventricular fibrillation: mechanisms of initiation and maintenance." *Annual Review of Physiology* 62 (2000): 25-50. https://doi.org/10.1146/annurev.physiol.62.1.25
 - Klabunde, R. E. *Cardiovascular Physiology Concepts*. 3rd ed. Wolters Kluwer, 2021.
+
+---
+
+## Protein Folding & Misfolding
+
+**Background** — Protein folding is the physical process by which a polypeptide chain acquires its functional three-dimensional structure. Anfinsen's thermodynamic hypothesis (1973) posits that the native fold corresponds to the global free energy minimum, while Levinthal's paradox (1969) notes that random conformational search would take astronomical time — implying that proteins fold along guided pathways through a funnel-shaped energy landscape. The simplified HP (hydrophobic-polar) lattice model, introduced by Dill (1985), captures the essential driving force: hydrophobic collapse, where nonpolar residues bury themselves in the protein core to minimize contact with solvent. When folding goes wrong, misfolded proteins can aggregate into amyloid fibrils — ordered cross-β-sheet structures implicated in Alzheimer's, Parkinson's, and prion diseases. Cells defend against misfolding with molecular chaperones like the GroEL/GroES complex in bacteria, which provides an isolated folding chamber, and the heat shock response, which upregulates chaperone production under thermal stress.
+
+**Formulation** — The simulation places amino acid chains on a 2D square lattice, with each residue occupying one lattice site and consecutive residues connected by unit-length backbone bonds. The chain evolves via Monte Carlo sampling with Metropolis acceptance:
+
+```
+HP Lattice Model:
+  Sequence: string of H (hydrophobic) and P (polar) residues, length 20
+  Chain: self-avoiding walk on 2D lattice (no two residues share a site)
+  Backbone: consecutive residues at Manhattan distance 1
+
+Energy function (non-bonded contacts only, |i-j| > 1):
+  E = Σ_{i<j, |i-j|>1, adjacent} ε(type_i, type_j)
+
+  Contact energies:
+    ε(H,H) = -1.0   (hydrophobic contact — stabilizing)
+    ε(H,P) = -0.1   (weak interaction)
+    ε(P,P) =  0.0   (no contribution)
+    H-bond  = -0.3   (backbone hydrogen bond contribution)
+
+Monte Carlo moves (8 attempts per tick):
+  Pivot move:  select random residue i, rotate tail (i+1..N) by ±90°
+  Crankshaft:  select i, rotate residues i and i+1 as rigid unit
+  Acceptance:  Metropolis criterion
+    if ΔE < 0:  accept
+    if ΔE ≥ 0:  accept with probability exp(-ΔE / (k_B × T))
+    k_B = 1.0 (arbitrary units), T = simulation temperature
+
+  Reject move if new configuration has self-intersection
+
+Protein states:
+  folding   — actively sampling conformations via MC
+  native    — energy ≤ 0.85 × native_energy (near global minimum)
+  misfolded — spontaneous (P = 0.003/tick) or prion-recruited
+  captured  — inside chaperone folding chamber
+
+Misfolding & aggregation:
+  Spontaneous misfolding:  P = 0.003 per protein per tick
+  Templated recruitment:   misfolded protein recruits native/folding
+                           within radius 4, P = 0.05 per contact per tick
+  Fibril nucleation:       2+ misfolded proteins within radius 3
+  Fibril elongation:       misfolded proteins join existing fibrils
+                           within radius 3, P = 0.08 per tick
+
+Chaperone dynamics (GroEL/GroES analog):
+  Free chaperones chemotax toward nearest misfolded protein
+  Capture: within radius 3, P = 0.12 per tick
+  Refolding: 15-tick isolation cycle, then release as folding state
+  Spawn rate: 0.01 base, ×3.0 under heat shock stress
+
+Heat shock response:
+  Heat shock field: diffusible (D = 0.10), decay 0.008/tick
+  Temperature-dependent denaturation: P = 0.02/tick at elevated T
+  Chaperone upregulation: 3× spawn rate when HSF active
+
+Metrics:
+  Radius of gyration: R_g = √(Σ(r_i - r_cm)² / N)
+  Conformational entropy: S = -Σ p_i × ln(p_i)  (binned energy states)
+  Folding rate: fraction of proteins reaching native state per tick
+```
+
+**Presets** — Six scenarios spanning normal folding, disease states, and stress responses:
+
+| Preset | Configuration | What to watch |
+|--------|--------------|---------------|
+| Normal Folding | Standard HP sequence, T=1.0, 3 chaperones | Single chain collapses hydrophobic core first, then fine-tunes contacts toward native state |
+| Prion Propagation | High-H sequence, 1 pre-misfolded seed, recruitment P=0.08 | Misfolded seed converts native proteins one by one — exponential cascade into fibril network |
+| Heat Shock Stress | T=2.5, elevated denaturation rate | Temperature spike denatures proteins en masse; watch HSF field trigger chaperone upregulation wave |
+| Chaperone Deficiency | Normal sequence, max 1 chaperone | Misfolding accumulates unchecked — aggregation dominates without rescue capacity |
+| Amyloid Cascade (Alzheimer's) | Amyloidogenic HHHP-rich sequence, enhanced fibril rates | β-sheet-prone sequence nucleates fibrils rapidly; elongation creates extended ordered aggregates |
+| Intrinsically Disordered Protein | Low-H sequence (85% polar), T=1.5 | No stable fold — protein samples broad conformational ensemble, high R_g, flat energy landscape |
+
+**What to look for** — In the Spatial Fold Map, watch hydrophobic residues (● green) cluster into a compact core while polar residues (○ cyan) remain exposed on the surface — this is the hydrophobic collapse that drives folding. Toggle the contact map overlay with `c` to see non-bonded H-H contacts highlighted. In the Prion preset, watch the misfolded protein (red) approach native ones and convert them — the cascade accelerates as more misfolded proteins recruit. Chaperones (◎ yellow) chemotax toward misfolded proteins, capture them (◉), and release them after refolding. In the Energy Landscape view, proteins appear on a folding funnel — lower energy and smaller R_g toward the bottom, with the native state at the funnel's minimum. The contact map matrix shows which residue pairs are in spatial proximity. Adjust temperature with `t`/`T` to see the competition between thermal unfolding and energetic stabilization.
+
+**References**
+- Anfinsen, C. B. "Principles that govern the folding of protein chains." *Science* 181 (1973): 223-230. https://doi.org/10.1126/science.181.4096.223
+- Dill, K. A. "Theory for the folding and stability of globular proteins." *Biochemistry* 24 (1985): 1501-1509. https://doi.org/10.1021/bi00327a032
+- Lau, K. F. and Dill, K. A. "A lattice statistical mechanics model of the conformational and sequence spaces of proteins." *Macromolecules* 22 (1989): 3986-3997. https://doi.org/10.1021/ma00200a030
+- Dobson, C. M. "Protein folding and misfolding." *Nature* 426 (2003): 884-890. https://doi.org/10.1038/nature02261
+- Hartl, F. U. and Hayer-Hartl, M. "Molecular chaperones in the cytosol: from nascent chain to folded protein." *Science* 295 (2002): 1852-1858. https://doi.org/10.1126/science.1068408

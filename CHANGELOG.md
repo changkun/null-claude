@@ -4,6 +4,32 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Protein Folding & Misfolding — 2D lattice HP model with Monte Carlo energy minimization, prion-like templated misfolding, amyloid fibril aggregation, GroEL/GroES chaperone rescue, heat shock response & conformational energy landscape
+
+First molecular-scale biophysics mode — complements the existing cellular/tissue-level biological modes (immune system, cardiac, embryogenesis, biofilm) by modeling protein structure and disease at the amino acid level.
+
+**`life/modes/protein_folding.py`** (new, ~1287 lines):
+
+- **HP lattice model**: Amino acid chain with H (hydrophobic) and P (polar) residues folding on a 2D self-avoiding lattice walk. Sequences defined per preset (20 residues each).
+- **Monte Carlo energy minimization**: 8 pivot/crankshaft move attempts per tick with Metropolis acceptance criterion (Boltzmann weighting at simulation temperature). H-H contact energy -1.0, H-P -0.1, hydrogen bond -0.3.
+- **Protein states**: folding → native (energy ≤ 0.85 × native minimum) or misfolded (spontaneous P=0.003/tick, or prion-recruited).
+- **Misfolding & aggregation**: Prion-like templated recruitment within radius 4 (P=0.05/contact/tick). Amyloid fibril nucleation from 2+ misfolded proteins, elongation within radius 3 (P=0.08/tick).
+- **Chaperone proteins**: GroEL/GroES analog — free chaperones chemotax toward misfolded proteins, capture within radius 3 (P=0.12/tick), refold in isolated chamber over 15-tick cycle, release as folding state.
+- **Heat shock response**: Diffusible heat shock field (D=0.10, decay 0.008/tick), temperature-dependent denaturation (P=0.02/tick), chaperone spawn rate boosted 3× under stress.
+- **3 visualization views**: Spatial fold map (chain topology with ● hydrophobic/○ polar residues, backbone bonds, contact map overlay toggle, chaperones ◎/◉, fibrils ▓, HSF background), Energy landscape (folding funnel with proteins placed by energy/Rg, contact map matrix), Time-series sparklines (10 metrics: native contacts, free energy, Rg, aggregation, chaperone activity, temperature, misfolded fraction, fibril length, entropy, folding rate).
+- **6 presets**: Normal Folding, Prion Propagation, Heat Shock Stress, Chaperone Deficiency, Amyloid Cascade (Alzheimer's analog), Intrinsically Disordered Protein.
+- **Controls**: Space (play/pause), v (cycle views), c (contact overlay), t/T (temperature ±), +/- (speed), r (reset), m (menu).
+
+**`life/registry.py`**: Added "Protein Folding & Misfolding" entry in Chemical & Biological category.
+
+**`life/modes/__init__.py`**: Added registration import for the protein_folding module.
+
+**`tests/test_protein_folding.py`** (new, 85 lines): 9 tests covering chain validity, energy computation, MC moves, misfolding/aggregation, chaperone rescue, preset loading, state initialization, and history recording.
+
+**`docs/chemical-and-biological.md`**: Added full scientific documentation — HP model background, energy formulation, Monte Carlo mechanics, misfolding/aggregation/chaperone dynamics, preset table, observation guide, and 5 references (Anfinsen 1973, Dill 1985, Lau & Dill 1989, Dobson 2003, Hartl & Hayer-Hartl 2002).
+
+---
+
 ### Feature: Rewrite Immune System as full Immune System Response & Pathogen Defense — wound breach invasion, T-cell activation cascade (naive→helper/killer), dendritic antigen presentation, B-cell antibody fields, complement membrane attack, TNF-α/IL-6 dual cytokine signaling, fever mechanic, mast cells, memory cell secondary response
 
 Complete rewrite of the immune system simulation mode from a basic pathogen-vs-immune-cell model into a comprehensive innate + adaptive immunity simulation with 15 entity types, 4 diffusible fields, and realistic immunological cascades.
