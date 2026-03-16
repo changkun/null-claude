@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Cortical Neural Dynamics & Seizure Propagation — Wilson-Cowan E/I population model with STDP plasticity, emergent theta/alpha/beta/gamma oscillations, focal seizure onset & wavefront propagation, generalized tonic-clonic phase transitions, spreading cortical depression, and GABAergic anticonvulsant intervention
+
+Brain electrophysiology counterpart to the existing Cardiac Electrophysiology mode — models the cortex rather than the heart, filling the gap between the basic spiking neural network and detailed tissue-level electrophysiology.
+
+**`life/modes/cortical.py`** (new, ~1085 lines):
+
+- **Wilson-Cowan dynamics**: Excitatory/inhibitory population model with sigmoid transfer function (gain a=4.0, threshold θ=0.25), time constants τ_E=1.0, τ_I=1.5, and synaptic weights w_EE=10, w_IE=12, w_EI=8, w_II=3. Lateral coupling via 4-neighbor Laplacian diffusion (D_E=0.12, D_I=0.05).
+- **STDP plasticity**: Spike-timing dependent potentiation/depression of w_EE weights. Pre-before-post → potentiation, post-before-pre → depression, with exponential window (τ=10 ticks) and learning rate 0.001. Weights clamped to [2.0, 16.0].
+- **Emergent oscillations**: Frequency band power estimated via lag-based variance analysis of EEG signal — delta (lag 8-16), theta (5-8), alpha (3-5), beta (2-3), gamma (1-2 tick lags).
+- **Focal seizure**: Local GABA failure (w_IE×0.25) creates E/I imbalance. Seizure detection at E>0.7, I<0.3 with probabilistic wavefront recruitment (P=0.008/neighbor/tick).
+- **Generalized tonic-clonic**: Whole-cortex hypersynchrony with phase state machine — tonic (80 ticks sustained depolarization) → clonic (sinusoidal burst-suppression at 0.3 rad/tick) → post-ictal (30% activity suppression).
+- **Spreading cortical depression**: CSD wave propagation via diffusion (coefficient 0.04), 60-tick suppression on arrival, 120-tick full recovery. Seeded at cortex edge.
+- **GABAergic anticonvulsant**: Diffusible drug field (D=0.08, decay 0.005/tick) that multiplies local w_IE by (1 + drug×2.5). Applied with 'g' key — radiates from center with distance-attenuated concentration.
+- **3 visualization views**: Cortical activation map (E/I coloring with #/E/I/+/. glyphs, seizure !/*, CSD ~/., drug green overlay, electrode 'o' markers), multi-channel EEG strip (8 channels with LFP traces and frequency band power bars), time-series sparklines (10 metrics: mean E, mean I, E/I ratio, synchrony, seizure area%, alpha power, gamma power, drug concentration, CSD area%, mean w_EE).
+- **6 presets**: Normal Resting State (alpha-dominant idle), Gamma Burst Working Memory (focal high-frequency), Focal Seizure Onset (local GABA failure spreading), Generalized Tonic-Clonic (tonic→clonic→postictal), Spreading Depression (slow CSD wave), Drug Intervention (seizure + GABAergic rescue with 'g').
+- **Controls**: Space (play/pause), v (cycle views), g (apply anticonvulsant), +/- (speed), n (single step), r (reset), R (menu), q (quit).
+
+**`life/registry.py`**: Added "Cortical Neural Dynamics & Seizure Propagation" entry in Chemical & Biological category, adjacent to Cardiac Electrophysiology.
+
+**`life/modes/__init__.py`**: Added registration import for the cortical module.
+
+**`docs/chemical-and-biological.md`**: Added full scientific documentation — Wilson-Cowan formulation, STDP equations, seizure/CSD/drug mechanics, preset table, observation guide, and 5 references (Wilson & Cowan 1972, Leão 1944, Markram 1997, Jirsa 2014, Deco 2008).
+
+---
+
 ### Feature: Add CRISPR-Cas9 Gene Editing & Repair — guide RNA/Cas9 scanning for PAM sequences, R-loop formation, DSB cutting, NHEJ/HDR repair pathway competition with indel mutations, off-target cleavage at partial-match sites, base editing (nCas9 C→T without DSB), prime editing (nCas9-RT), and gene drive super-Mendelian population spread
 
 Bridges the gap between the existing DNA helix visualization and protein folding modes by simulating the molecular mechanics of the most consequential biotech tool of the decade.

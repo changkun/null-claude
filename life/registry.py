@@ -463,6 +463,9 @@ MODE_REGISTRY = [
     # ── Cardiac Electrophysiology & Arrhythmia ──
     {"name": "Cardiac Electrophysiology & Arrhythmia", "key": "—", "category": "Chemical & Biological",
      "desc": "Heart electrical conduction — SA/AV nodes, His bundle, Purkinje fibers, FitzHugh-Nagumo action potentials with Na⁺/Ca²⁺/K⁺ ion channels, re-entry spiral waves, real-time ECG trace & defibrillation", "attr": "cardiac_mode", "enter": "_enter_cardiac_mode", "exit": "_exit_cardiac_mode"},
+    # ── Cortical Neural Dynamics & Seizure Propagation ──
+    {"name": "Cortical Neural Dynamics & Seizure Propagation", "key": "—", "category": "Chemical & Biological",
+     "desc": "2D cortical sheet with Wilson-Cowan E/I dynamics — STDP plasticity, theta/alpha/beta/gamma oscillations, focal seizure onset & propagation, spreading cortical depression, GABAergic anticonvulsant intervention & multi-channel EEG", "attr": "cortical_mode", "enter": "_enter_cortical_mode", "exit": "_exit_cortical_mode"},
     # ── Protein Folding & Misfolding ──
     {"name": "Protein Folding & Misfolding", "key": "—", "category": "Chemical & Biological",
      "desc": "2D lattice HP protein folding via Monte Carlo — hydrophobic collapse, prion-like templated misfolding, amyloid fibril aggregation, GroEL/GroES chaperone rescue, heat shock response & conformational energy landscape", "attr": "protfold_mode", "enter": "_enter_protein_folding_mode", "exit": "_exit_protein_folding_mode"},

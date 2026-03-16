@@ -1153,6 +1153,77 @@ Defibrillation:
 
 ---
 
+## Cortical Neural Dynamics & Seizure Propagation
+
+**Background** — The cerebral cortex operates through a delicate balance of excitatory (glutamatergic, ~80% of neurons) and inhibitory (GABAergic, ~20%) populations. Wilson and Cowan (1972) introduced a mean-field model describing the interaction of these populations through coupled differential equations with sigmoid transfer functions, capturing how bulk neural activity self-organizes into oscillatory rhythms. Different frequency bands — delta (1-4 Hz), theta (4-8 Hz), alpha (8-13 Hz), beta (13-30 Hz), gamma (30-80 Hz) — emerge from the E/I balance and reflect distinct cognitive states: alpha dominates relaxed wakefulness, gamma appears during focused attention and working memory. When GABAergic inhibition fails locally (due to receptor downregulation, ion channel mutations, or structural lesions), excitation escapes control and a focal seizure initiates. The ictal wavefront propagates through lateral synaptic connections, recruiting surrounding cortex into hypersynchronous firing. Generalized tonic-clonic seizures exhibit distinct phases: sustained depolarization (tonic) followed by rhythmic burst-suppression (clonic) and eventual post-ictal depression. Spreading cortical depression (CSD), first described by Leão (1944), is a slow (~3 mm/min) depolarization wave that silences neural activity in its wake — the electrophysiological basis of migraine aura. Anticonvulsant drugs (benzodiazepines, barbiturates, valproate) primarily work by enhancing GABAergic inhibition to restore E/I balance.
+
+**Formulation** — The simulation uses Wilson-Cowan population dynamics on a 2D cortical sheet with lateral diffusive coupling and STDP plasticity:
+
+```
+Wilson-Cowan equations (per cell):
+    tau_E × dE/dt = -E + S(w_EE×E - w_IE×I + I_ext + noise_E)
+    tau_I × dI/dt = -I + S(w_EI×E - w_II×I + noise_I)
+
+Where:
+    E, I      = excitatory and inhibitory population activity [0, 1]
+    tau_E     = 1.0 (excitatory time constant)
+    tau_I     = 1.5 (inhibitory time constant — slower)
+    S(x)      = 1/(1 + exp(-a×(x - θ))), a=4.0, θ=0.25 (sigmoid transfer)
+    w_EE      = 10.0 (recurrent excitation, modifiable by STDP)
+    w_IE      = 12.0 (inhibition onto excitatory — GABA strength)
+    w_EI      = 8.0  (excitation of inhibitory)
+    w_II      = 3.0  (mutual inhibition)
+    dt        = 0.25 (integration timestep)
+
+Lateral coupling (4-neighbor Laplacian diffusion):
+    dE/dt += D_E × Σ(E_neighbor - E_local), D_E = 0.12
+    dI/dt += D_I × Σ(I_neighbor - I_local), D_I = 0.05
+
+STDP plasticity (every 5 ticks, sampled every 3rd cell):
+    If pre-before-post (0 < Δt < 10): dw_EE = +0.001 × exp(-Δt/10)  (potentiation)
+    If post-before-pre (-10 < Δt < 0): dw_EE = -0.001 × exp(Δt/10)  (depression)
+    w_EE clamped to [2.0, 16.0]
+
+Seizure wavefront propagation:
+    Cell with E > 0.7 and I < 0.3 → seizure state
+    Neighbors recruited with P = 0.008 per tick: w_IE × 0.7, w_EE × 1.15
+
+Spreading cortical depression:
+    CSD wave propagation: dW/dt = 0.04 × Laplacian(W)
+    When W crosses 0.5: cell enters suppression for 60 ticks
+    Full recovery: 120 ticks
+
+GABAergic drug field:
+    Diffusion D = 0.08, decay 0.005/tick
+    Effect: w_IE_local × (1 + drug_level × 2.5)
+
+EEG derivation (8-channel local field potential):
+    LFP_ch = mean(E - 0.5×I) over radius-3 neighborhood around electrode
+    Band power: variance-based lag analysis proxy for delta/theta/alpha/beta/gamma
+```
+
+**Presets** — Six scenarios spanning normal brain rhythms to pathological seizure states:
+
+| Preset | Configuration | What to watch |
+|--------|--------------|---------------|
+| Normal Resting State | Balanced E/I, I_ext=0.15, standard weights | Alpha-dominant (8-13 Hz) oscillations emerge — watch E/I populations rhythmically alternate in activation map, clean sinusoidal EEG |
+| Gamma Burst Working Memory | Focal high-drive patch (I_ext=0.45, w_EE×1.3) in center | Central patch sustains fast 30-80 Hz gamma oscillations while surround stays in alpha — visible as high-frequency flicker in EEG |
+| Focal Seizure Onset | Focus zone with w_IE×0.25, w_EE×1.6, E=0.6 | GABA failure → local hypersynchrony → watch the ictal wavefront slowly recruit neighbors as seizure spreads outward |
+| Generalized Tonic-Clonic | Whole-cortex w_IE×0.35, w_EE×1.5, I_ext=0.4 | Tonic phase (80 ticks sustained high E) → clonic phase (rhythmic burst-suppression) → post-ictal depression — classic GTC arc |
+| Spreading Depression | CSD wave seeded at left edge, normal E/I | Slow depolarization wave crosses cortex left→right — bright wavefront (~) followed by dark suppressed zone (.) trailing behind |
+| Drug Intervention | Focal seizure in progress, press 'g' to apply drug | Watch seizure spreading, then apply GABAergic anticonvulsant — green drug field diffuses outward, restoring inhibition and suppressing seizure |
+
+**What to look for** — In the Cortical Activation Map, excitatory-dominant regions show as red (#/E/!), balanced activity as yellow (+), inhibitory-dominant as blue (I), and resting cortex as dim dots. EEG electrode positions are marked with 'o'. In the EEG view, 8 channels show scrolling LFP traces with frequency band power bars at the bottom — watch alpha power dominate in resting state vs gamma in the working memory preset. During seizure presets, observe the transition from organized oscillation to hypersynchronous high-amplitude discharge. The drug intervention preset is particularly dramatic: let the seizure spread for ~100 ticks, then press 'g' to inject the GABAergic drug and watch the green wave chase down and suppress the red seizure zone. The Spreading Depression preset shows CSD's distinctive slow march — a phenomenon invisible on standard EEG but central to migraine pathophysiology.
+
+**References**
+- Wilson, H. R. and Cowan, J. D. "Excitatory and inhibitory interactions in localized populations of model neurons." *Biophysical Journal* 12 (1972): 1-24. https://doi.org/10.1016/S0006-3495(72)86068-5
+- Leão, A. A. P. "Spreading depression of activity in the cerebral cortex." *Journal of Neurophysiology* 7 (1944): 359-390. https://doi.org/10.1152/jn.1944.7.6.359
+- Markram, H., Lübke, J., Frotscher, M., and Sakmann, B. "Regulation of synaptic efficacy by coincidence of postsynaptic APs and EPSPs." *Science* 275 (1997): 213-215. https://doi.org/10.1126/science.275.5297.213
+- Jirsa, V. K., Stacey, W. C., Quilichini, P. P., Ivanov, A. I., and Bernard, C. "On the nature of seizure dynamics." *Brain* 137 (2014): 2210-2230. https://doi.org/10.1093/brain/awu133
+- Deco, G., Jirsa, V. K., Robinson, P. A., Breakspear, M., and Friston, K. "The dynamic brain: from spiking neurons to neural masses and cortical fields." *PLoS Computational Biology* 4 (2008): e1000092. https://doi.org/10.1371/journal.pcbi.1000092
+
+---
+
 ## Protein Folding & Misfolding
 
 **Background** — Protein folding is the physical process by which a polypeptide chain acquires its functional three-dimensional structure. Anfinsen's thermodynamic hypothesis (1973) posits that the native fold corresponds to the global free energy minimum, while Levinthal's paradox (1969) notes that random conformational search would take astronomical time — implying that proteins fold along guided pathways through a funnel-shaped energy landscape. The simplified HP (hydrophobic-polar) lattice model, introduced by Dill (1985), captures the essential driving force: hydrophobic collapse, where nonpolar residues bury themselves in the protein core to minimize contact with solvent. When folding goes wrong, misfolded proteins can aggregate into amyloid fibrils — ordered cross-β-sheet structures implicated in Alzheimer's, Parkinson's, and prion diseases. Cells defend against misfolding with molecular chaperones like the GroEL/GroES complex in bacteria, which provides an isolated folding chamber, and the heat shock response, which upregulates chaperone production under thermal stress.
