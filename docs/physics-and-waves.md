@@ -362,39 +362,63 @@ Presets include hanging cloth (top row pinned), curtain (two corners), flag (lef
 
 ---
 
-## Tectonic Plates
+## Plate Tectonics & Mantle Convection
 
-**Background** — Plate tectonics is the unifying theory of geology, explaining earthquakes, volcanism, mountain building, and ocean basin formation through the motion and interaction of rigid lithospheric plates over the asthenosphere. This simulation models Voronoi-tessellated plates with distinct velocities, reproducing convergent (subduction, mountain building), divergent (rifting, mid-ocean ridges), and transform boundaries over geological timescales.
+**Background** — Plate tectonics is the unifying theory of geology, explaining earthquakes, volcanism, mountain building, and ocean basin formation through the motion and interaction of rigid lithospheric plates driven by mantle convection. This simulation couples Rayleigh-Bénard thermal convection in the mantle with rigid plate dynamics on the surface, reproducing the full spectrum of plate boundary interactions — divergent ridges, convergent subduction/collision zones, and transform faults — along with hotspot volcanism, oceanic crust aging, and the Wilson Cycle of supercontinent assembly and breakup. It pairs with the Planetary Atmosphere & Weather System mode to provide complementary solid-Earth and atmospheric perspectives on planetary dynamics.
 
-**Formulation** — The simulation operates on a wrapped 2D grid with Voronoi-based plates:
+**Formulation** — The simulation operates on a wrapped 2D grid with mantle convection driving plate motion:
 
 ```
-Plate assignment: Voronoi tessellation from seed points
-Each plate has: velocity (vr, vc), continental/oceanic flag
+Mantle convection (Rayleigh-Bénard analog):
+  T_core = 1.0 (normalized), T_surface = 0.1
+  Thermal diffusion: D = 0.06, 4-neighbor Laplacian
+  Buoyancy-driven flow: velocity ∝ 0.12 × dT/dr (hot rises, cold sinks)
+  Viscous drag on flow: 0.03
+  Bottom heating: cells at base → T_core, top cooling: cells at surface → T_surface
+  Plume detection threshold: T > 0.75
 
-Per time step (1 MY):
-  1. Shift plate cells by velocity (fractional accumulator)
-  2. At boundaries, compute convergence = dot(relative_velocity, boundary_normal)
-  3. Apply geological processes:
-     Convergent (convergence > 0.1):
-       Continental-continental: uplift += convergence * rand(40,120)  [capped at 9000m]
-       Oceanic under continental: volcanic arc, random volcano spawning
-       Oceanic-oceanic: trench deepening, island arc behind
-     Divergent (convergence < -0.1):
-       Continental rift or mid-ocean ridge (new crust at -2500 to -1500m)
-     Transform: minor random elevation changes
-  4. Volcanic eruptions at hotspots and active vents
-  5. Erosion: blend 3% toward neighbor average, extra erosion above 5000m
-  6. Isostatic rebound for trenches below -9000m
+Plate mechanics:
+  Mantle drag coefficient: 0.04 (couples plate velocity to underlying flow)
+  Ridge push: 0.02, Slab pull: 0.06 (dominant driving force)
+  Oceanic crust aging: density += 0.005/tick from base 0.3
+  Continental density: 0.15 (buoyant, resists subduction)
+
+Boundary processes:
+  Convergent (relative velocity > 0.08):
+    Continental-continental: orogenesis at 120 m/tick [capped 9000m]
+    Oceanic-continental: subduction → volcanic arc (P=0.025/tick) + trench
+    Oceanic-oceanic: island arc formation
+  Divergent (relative velocity < -0.05):
+    Mid-ocean ridge: new crust at -1800m elevation
+    Continental rifting
+  Transform:
+    Stress accumulation: 0.02/tick
+    Earthquake rupture at stress > 0.8, releases 60% of accumulated stress
+
+Hotspot volcanism:
+  Deep plume detection from mantle T > 0.75
+  Eruption probability: 0.008/tick, adds 200m elevation
+  Plate moves over fixed plume → volcanic chain (Hawaiian analog)
+
+Wilson Cycle:
+  Continental clustering detection → supercontinent state
+  Mantle insulation heating beneath supercontinent
+  Thermal repulsion force: 0.003 drives breakup
+
+Erosion & isostasy:
+  Smoothing: 0.025 blend toward neighbor average
+  Peak erosion: 15 m/tick for high mountains
+  Isostatic rebound: 30 m/tick for deep trenches
 
 Elevation range: -11000m (Mariana Trench analog) to 9000m (Himalaya analog)
 ```
 
-**What to look for** — "Pangaea Breakup" shows a supercontinent fragmenting as plates radiate outward, creating rift valleys that become oceans. "Continental Collision" produces a growing mountain range at the convergence zone. Toggle plate view with "p" to see the distinct Voronoi plates colored by identity. Volcanic activity (marked with "^") clusters along convergent boundaries.
+**What to look for** — Switch between the three views with `v`: the **tectonic map** shows elevation-colored topography with `^` volcanoes, `*`/`+` earthquakes, `@` hotspots, `v` trenches, and `|` ridges. The **mantle cross-section** reveals convection cells as temperature heatmaps (blue→green→red) with flow vector arrows showing hot material rising and cold material sinking. The **sparkline view** tracks 10 metrics over time. "Supercontinent Breakup Pangaea" demonstrates the Wilson Cycle as mantle heat trapped beneath a supercontinent drives rifting. "Subduction Zone Cascade" shows an oceanic plate diving beneath a continent, generating a volcanic arc and deep trench. "Yellowstone Hotspot Plume" traces a volcanic chain as the plate drifts over a fixed deep plume.
 
 **References**
-- Vine, F.J. and Matthews, D.H. "Magnetic anomalies over oceanic ridges," *Nature*, 1963. https://doi.org/10.1038/199947a0
 - Turcotte, D.L. and Schubert, G. *Geodynamics*, 3rd ed., Cambridge University Press, 2014. https://doi.org/10.1017/CBO9780511843877
+- Vine, F.J. and Matthews, D.H. "Magnetic anomalies over oceanic ridges," *Nature*, 1963. https://doi.org/10.1038/199947a0
+- Wilson, J.T. "Did the Atlantic close and then re-open?" *Nature*, 1966. https://doi.org/10.1038/211676a0
 
 
 ---

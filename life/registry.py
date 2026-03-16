@@ -179,9 +179,9 @@ MODE_REGISTRY = [
     # ── FPS Raycaster ──
     {"name": "Doom Raycaster", "key": "Ctrl+Shift+D", "category": "Procedural & Computational",
      "desc": "Walkable 3D maze with ASCII raycasting, WASD movement & minimap", "attr": "doomrc_mode", "enter": "_enter_doomrc_mode", "exit": "_exit_doomrc_mode"},
-    # ── Tectonic Plates ──
-    {"name": "Tectonic Plates", "key": "Ctrl+Shift+T", "category": "Physics & Waves",
-     "desc": "Continental drift with colliding plates, mountains, rifts & volcanoes", "attr": "tectonic_mode", "enter": "_enter_tectonic_mode", "exit": "_exit_tectonic_mode"},
+    # ── Plate Tectonics & Mantle Convection ──
+    {"name": "Plate Tectonics & Mantle Convection", "key": "Ctrl+Shift+T", "category": "Physics & Waves",
+     "desc": "Mantle convection cells driving plate drift, subduction, ridges, orogenesis, transform quakes, hotspot volcanism & Wilson Cycle", "attr": "tectonic_mode", "enter": "_enter_tectonic_mode", "exit": "_exit_tectonic_mode"},
     # ── Atmospheric Weather ──
     {"name": "Atmospheric Weather", "key": "Ctrl+Shift+W", "category": "Fluid Dynamics",
      "desc": "Dynamic weather with pressure systems, wind, clouds, rain & fronts", "attr": "weather_mode", "enter": "_enter_weather_mode", "exit": "_exit_weather_mode"},

@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Rewrite Plate Tectonics & Mantle Convection — Rayleigh-Bénard mantle convection cells driving plate drift, divergent mid-ocean ridges, convergent subduction zones with volcanic arcs & orogenesis, transform fault earthquake stress/rupture, hotspot volcanism (Hawaiian chain analog), oceanic crust aging, Wilson Cycle supercontinent assembly & breakup
+
+Complete rewrite of the former basic "Tectonic Plates" mode (~560 lines) into a full Plate Tectonics & Mantle Convection simulation (~1200 lines) that couples mantle convection physics with surface plate dynamics. Pairs with the existing Planetary Atmosphere & Weather System mode to provide complementary solid-Earth and atmospheric views of planetary dynamics.
+
+**`life/modes/tectonic.py`** (rewritten, ~1200 lines):
+
+- **Mantle convection**: Rayleigh-Bénard thermal cells with diffusion (D=0.06), advection, buoyancy-driven flow (coefficient 0.12), bottom heating (T_core=1.0), top cooling (T_surface=0.1), viscous drag (0.03). Plume detection at T>0.75.
+- **Plate motion from mantle drag**: Plates coupled to underlying convection currents via drag coefficient 0.04, with ridge push (0.02) and slab pull (0.06) forces, velocity damping.
+- **Divergent boundaries**: Mid-ocean ridge spreading creates new oceanic crust at -1800m. Continental rifting at divergent continental boundaries.
+- **Convergent boundaries**: Continental-continental collision → orogenesis at 120 m/tick (capped 9000m). Oceanic-continental → volcanic arc (P=0.025/tick) + deep trench (80 m/tick deepening). Oceanic-oceanic → island arc formation.
+- **Transform faults**: Stress accumulation at 0.02/tick with sudden rupture earthquakes when stress exceeds 0.8 threshold, releasing 60% of stored stress.
+- **Hotspot volcanism**: Deep mantle plumes (T>0.75) produce eruptions (P=0.008/tick, 200m elevation) at fixed mantle positions — plate drifts over plume creating volcanic chain (Hawaiian analog).
+- **Oceanic crust aging**: Density increases at 0.005/tick from base 0.3, cooling and subsiding as crust moves from ridges. Continental crust density fixed at 0.15 (buoyant).
+- **Wilson Cycle**: Detects continental clustering (supercontinent), triggers mantle insulation heating beneath, thermal repulsion force (0.003) drives breakup and new ocean basin formation.
+- **Erosion & isostasy**: Smoothing (0.025), peak erosion (15 m/tick), trench isostatic rebound (30 m/tick).
+- **3 visualization views**: Tectonic map (elevation-colored topography with `^` volcanoes, `*`/`+` earthquakes, `@` hotspots, `v` trenches, `|` ridges, plate boundary coloring), mantle convection cross-section (temperature heatmap blue→green→red with flow vector arrows), 10-metric sparkline time series (plate velocity, volcanic activity, seismic energy, ocean/continental crust %, mean/max elevation, mantle heat flux, hotspot count, stress level).
+- **6 presets**: Stable Craton (ancient shield, slow drift), Mid-Ocean Ridge Spreading (active divergent boundary), Subduction Zone Cascade (oceanic plate diving under continent), Continental Collision Himalayas (two continents converging), Supercontinent Breakup Pangaea (plume-driven rifting), Yellowstone Hotspot Plume (deep plume under moving plate).
+- **Controls**: Space (play/pause), v (cycle views), n (single step), r (reset), R/m (menu), q (quit).
+
+**`life/registry.py`**: Updated mode name to "Plate Tectonics & Mantle Convection" with expanded description reflecting new physics systems.
+
+**`docs/physics-and-waves.md`**: Rewrote scientific documentation — mantle convection formulation, plate mechanics equations, boundary process physics, hotspot volcanism, Wilson Cycle, erosion/isostasy, preset descriptions, observation guide, and references (Turcotte & Schubert 2014, Vine & Matthews 1963, Wilson 1966).
+
+---
+
 ### Feature: Add Mitosis & Cell Division Cycle — eukaryotic cell cycle G1→S→G2→M with cyclin/CDK oscillators, spindle assembly checkpoint, DNA replication & chromosome condensation/separation, cytokinesis, contact inhibition, growth factor signaling, checkpoint bypass → aneuploidy & tumor growth, apoptosis cascade, spindle poison drug treatment
 
 Bridges the gap between the project's molecular-scale simulations (protein folding, CRISPR gene editing) and tissue/organ-scale ones (embryogenesis, cardiac electrophysiology), completing the biological hierarchy at the single-cell mechanics level — the most fundamental process in any "life simulator."
