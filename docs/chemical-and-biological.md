@@ -1053,3 +1053,75 @@ Stage progression:
 - Steinberg, M. S. "Reconstruction of tissues by dissociated cells." *Science* 141 (1963): 401-408. https://doi.org/10.1126/science.141.3579.401
 - Keller, R. "Mechanisms of elongation in embryogenesis." *Development* 133 (2006): 2291-2302. https://doi.org/10.1242/dev.02406
 - Gilbert, S. F. *Developmental Biology*. 12th ed. Sinauer Associates, 2019.
+
+---
+
+## Cardiac Electrophysiology & Arrhythmia
+
+**Background** — The heart's electrical conduction system orchestrates coordinated contraction through a precisely timed cascade: the sinoatrial (SA) node generates spontaneous action potentials at ~60 bpm, propagating through atrial myocytes to the atrioventricular (AV) node, which introduces a ~120 ms delay allowing atrial contraction to complete before ventricular activation. The impulse then races through the bundle of His and Purkinje fiber network (conduction velocity ~4 m/s, ~4× faster than normal myocardium) to synchronously depolarize the ventricles from apex to base. Each myocyte undergoes a stereotyped action potential: Phase 0 (Na⁺ fast inward — rapid depolarization), Phase 1 (transient repolarization), Phase 2 (Ca²⁺ plateau — sustains contraction), Phase 3 (K⁺ repolarization), Phase 4 (resting potential). The refractory period prevents re-excitation, normally ensuring orderly wavefront propagation. When this system fails — through ectopic foci, conduction blocks, or re-entry circuits — arrhythmias from benign (atrial fibrillation) to lethal (ventricular fibrillation) result.
+
+**Formulation** — The simulation uses simplified FitzHugh-Nagumo (FHN) kinetics on a 2D tissue grid, with ion channel dynamics layered on top:
+
+```
+FitzHugh-Nagumo equations:
+    dV/dt = V - V³/3 - W + I_ion
+    dW/dt = ε(V + a - bW)
+
+Where:
+    V       = membrane voltage (fast variable, representing Na⁺/Ca²⁺ depolarization)
+    W       = recovery variable (slow, representing K⁺ repolarization + refractoriness)
+    ε       = 0.08 (recovery timescale — slow relative to depolarization)
+    a       = 0.7, b = 0.8 (FHN shape parameters)
+    I_ion   = Na⁺_activation × 0.3 + Ca²⁺_activation × 0.15 - K⁺_activation × 0.12
+
+Ion channel gating (per cell):
+    Na⁺: activates rapidly when V > 0.3 and not refractory (+0.3/tick), inactivates at -0.15/tick
+    Ca²⁺: activates when Na⁺ > 0.5 (+0.08/tick), inactivates at -0.04/tick
+    K⁺:   activates when Ca²⁺ > 0.3 (+0.06 × k_modifier/tick), inactivates at -0.03/tick
+
+Spatial coupling (4-neighbor Laplacian diffusion):
+    V_new[r][c] += dt × Σ_neighbors(D_eff × (V[neighbor] - V[r][c]))
+    D_eff = √(D_local × D_neighbor)   (geometric mean)
+
+Tissue-specific diffusion coefficients:
+    Normal myocyte: 0.8    Purkinje fiber: 3.5    His bundle: 2.5
+    AV node: 0.08 (delay)  Scar tissue: 0.0 (block)
+
+SA node pacemaker:
+    Every 50 ticks: inject I_stim = 1.5 into SA node cells (if not refractory)
+
+AV node delay:
+    Atrial wavefront detected → queue His bundle activation with 8-tick delay
+
+Refractory period:
+    When cell depolarizes (V crosses 0.8 upward): enter refractory for 12 ticks
+    Long QT: refractory = 20 ticks (delayed K⁺ repolarization)
+
+ECG derivation (summed dipole vectors):
+    Lead I  = Σ(dV/dx) across all tissue         (horizontal axis)
+    Lead II = 0.5×Σ(dV/dx) + 0.866×Σ(dV/dy)     (60° axis)
+    V1      = -0.7×Σ(dV/dy) + 0.3×Σ(dV/dx)      (precordial)
+
+Defibrillation:
+    Delivers V = 3.0 to ALL cells for 3 ticks, then forces resting + 20-tick refractory
+```
+
+**Presets** — Six scenarios demonstrate normal and pathological cardiac rhythms:
+
+| Preset | Configuration | What to watch |
+|--------|--------------|---------------|
+| Normal Sinus Rhythm | Standard anatomy, SA fires at 50-tick intervals | Orderly wavefront: SA→atria→AV delay→His→Purkinje→ventricles, clean ECG with P-QRS-T |
+| Atrial Fibrillation | 6 ectopic atrial foci firing at 8%/tick | Chaotic atrial wavelets collide and fragment, AV node filters some — irregular ventricular response |
+| Ventricular Tachycardia | Scar tissue block + pre-excited wavefront | Spiral wave anchored to scar, self-sustaining re-entry at >150 bpm, wide bizarre QRS on ECG |
+| AV Block (2nd Degree) | Wenckebach: conduct 3 beats, drop 1 | Regular P waves but progressively delayed then missing QRS — watch the AV node fail periodically |
+| Long QT Syndrome | K⁺ modifier 0.4, refractory 20 ticks | Prolonged action potential visible as wide plateau, risk of wavefront catching its own refractory tail (torsades) |
+| Defibrillation Rescue | Starts in VFib — random chaotic activation | Complete electrical chaos → press `d` → massive reset → SA re-establishes sinus rhythm |
+
+**What to look for** — In the Tissue Activation Map, watch the wavefront (█ bright red) sweep from the SA node (♥) across both atria, pause at the AV node (◆), then flash down the His bundle (═) and Purkinje fibers (─) before flooding the ventricles. The plateau phase (▒ yellow) trails behind the wavefront, followed by the refractory period (▒ dim magenta) and finally resting tissue (░ cyan). In VTach, the spiral wave is mesmerizing — watch it spin around the scar tissue (░). Switch to ECG view to see familiar P-QRS-T waveform morphology emerge from the summed dipole vectors. In the Defibrillation Rescue preset, observe chaotic VFib degenerate into disorganized baseline, then deliver the shock with `d` to watch the dramatic reset and return of organized rhythm.
+
+**References**
+- FitzHugh, R. "Impulses and physiological states in theoretical models of nerve membrane." *Biophysical Journal* 1 (1961): 445-466. https://doi.org/10.1016/S0006-3495(61)86902-6
+- Nagumo, J., Arimoto, S., and Yoshizawa, S. "An active pulse transmission line simulating nerve axon." *Proceedings of the IRE* 50 (1962): 2061-2070. https://doi.org/10.1109/JRPROC.1962.288235
+- Winfree, A. T. "Spiral waves of chemical activity." *Science* 175 (1972): 634-636. https://doi.org/10.1126/science.175.4022.634
+- Jalife, J. "Ventricular fibrillation: mechanisms of initiation and maintenance." *Annual Review of Physiology* 62 (2000): 25-50. https://doi.org/10.1146/annurev.physiol.62.1.25
+- Klabunde, R. E. *Cardiovascular Physiology Concepts*. 3rd ed. Wolters Kluwer, 2021.

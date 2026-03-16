@@ -460,6 +460,9 @@ MODE_REGISTRY = [
     # ── Bacterial Quorum Sensing & Biofilm Formation ──
     {"name": "Bacterial Quorum Sensing & Biofilm Formation", "key": "—", "category": "Chemical & Biological",
      "desc": "Bacteria sense density via autoinducer signaling — cross threshold triggers collective biofilm phenotype switch with EPS matrix, water channels, nutrient/O₂ gradients, persister cells, antibiotic resistance & quorum quenching", "attr": "biofilm_mode", "enter": "_enter_biofilm_mode", "exit": "_exit_biofilm_mode"},
+    # ── Cardiac Electrophysiology & Arrhythmia ──
+    {"name": "Cardiac Electrophysiology & Arrhythmia", "key": "—", "category": "Chemical & Biological",
+     "desc": "Heart electrical conduction — SA/AV nodes, His bundle, Purkinje fibers, FitzHugh-Nagumo action potentials with Na⁺/Ca²⁺/K⁺ ion channels, re-entry spiral waves, real-time ECG trace & defibrillation", "attr": "cardiac_mode", "enter": "_enter_cardiac_mode", "exit": "_exit_cardiac_mode"},
 ]
 
 

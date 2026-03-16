@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Cardiac Electrophysiology & Arrhythmia — heart electrical conduction with SA/AV nodes, His bundle, Purkinje fibers, FitzHugh-Nagumo action potentials, Na⁺/Ca²⁺/K⁺ ion channels, re-entry spiral waves, real-time ECG trace & defibrillation
+
+A cardiac electrophysiology simulation modeling the heart's electrical conduction system as a 2D tissue slab. Complements the existing angiogenesis/blood vessel mode with the heart's *electrical* side — visually stunning spiral-wave terminal art and medically educational arrhythmia demonstrations.
+
+**`life/modes/cardiac.py`** (new, ~680 lines):
+
+- **Tissue anatomy**: 2D heart tissue slab with 8 tissue types — SA node (♥, pacemaker), AV node (◆, gating delay), bundle of His (═, fast conduction), Purkinje fibers (─, rapid distribution), atrial myocytes (upper chambers), ventricular myocytes (lower chambers), scar tissue (conduction block), and empty space. Anatomically arranged with atrial region (top 38%), AV junction (40%), His bundle (42-52% along septum), Purkinje branches (left/right bundle), and ventricles (bottom 55%).
+- **FitzHugh-Nagumo kinetics**: Simplified excitable membrane model — dV/dt = V - V³/3 - W + I_ion, dW/dt = ε(V + a - bW). Fast variable V represents membrane voltage, slow variable W represents recovery. Parameters: a=0.7, b=0.8, ε=0.08, dt=0.4.
+- **Ion channel dynamics**: Three channel populations modulate the FHN model — Na⁺ fast inward (rapid activation when V>0.3, boost 0.3 during depolarization), Ca²⁺ plateau (activates after Na⁺, sustains depolarization at 0.15), K⁺ repolarization (activates during plateau, drives recovery at 0.12). Each channel has independent gating kinetics.
+- **Conduction system**: Heterogeneous diffusion coupling — normal myocyte 0.8, Purkinje fibers 3.5 (4.4× faster), His bundle 2.5, AV node 0.08 (deliberate delay), scar 0.0 (block). Geometric mean coupling between neighbor cells. 4-neighbor Laplacian diffusion.
+- **SA node pacemaker**: Auto-fires every 50 ticks (~60 bpm equivalent), injecting stimulus current (1.5) into SA node cells when not refractory.
+- **AV node delay gating**: Detects atrial wavefront arrival, queues activation with 8-tick delay before stimulating His bundle. Supports Wenckebach block pattern (conduct N-1 beats, drop 1) for AV Block preset.
+- **Re-entry circuits**: Scar tissue creates conduction block zones. Wavefronts wrap around scar, re-entering previously refractory tissue to form self-sustaining spiral waves (ventricular tachycardia). Pre-excited wavefront in VTach preset seeds the initial spiral.
+- **Action potential phases**: Depolarization (Na⁺ activation → rapid voltage rise), plateau (Ca²⁺ sustains elevated voltage), repolarization (K⁺ drives voltage recovery), refractory period (12-20 tick lockout preventing re-excitation). Long QT preset reduces K⁺ modifier to 0.4, prolonging APD to 20 ticks.
+- **ECG derivation**: Summed spatial voltage gradients (dipole vectors) across all tissue. Lead I = horizontal component, Lead II = 60° axis (0.5×dx + 0.866×dy), V1 = precordial (-0.7×dy + 0.3×dx). 200-sample scrolling history.
+- **Defibrillation**: Press `d` to deliver massive current pulse (3.0) across all tissue for 3 ticks, then force all cells to resting state with full refractory — resets chaotic rhythms to allow SA node to re-establish normal sinus rhythm.
+- **Atrial fibrillation**: 6 random ectopic foci in atrial tissue, each firing at 8% probability per tick, overwhelming the SA node with chaotic rapid wavelets. AV node filters some beats through.
+- **3 visualization views** (cycle with `v`): Tissue Activation Map (voltage-colored tissue with anatomical glyphs — ♥ SA, ◆ AV, ═ His, ─ Purkinje, █/▓/▒/░ myocyte depolarization levels, ░ scar, status bar with heart rate and controls), ECG Strip (3 leads — Lead I, Lead II, V1 — with scrolling traces, amplitude-scaled glyphs █/▌/│, baseline markers, defibrillation flash overlay), Time-Series Graphs (10 sparklines: heart rate, conduction velocity, APD, refractory fraction, SA fires, AV conducted, mean voltage, max voltage, active cells, defib shocks).
+- **6 presets**: Normal Sinus Rhythm (healthy conduction, 60 bpm), Atrial Fibrillation (6 ectopic foci, chaotic atrial wavelets), Ventricular Tachycardia (scar tissue re-entry spiral, pre-excited wavefront), AV Block 2nd Degree (Wenckebach pattern, conduct 3 drop 1), Long QT Syndrome (K⁺ modifier 0.4, prolonged APD, risk of torsades), Defibrillation Rescue (starts in VFib with random ventricular/atrial activation, press `d` to shock).
+- **Controls**: Space=play/pause, v=cycle views, n=step, d=defibrillate, +/-=speed, r=restart, R=menu, q=exit.
+
+**`life/registry.py`**: Added "Cardiac Electrophysiology & Arrhythmia" entry in Chemical & Biological category.
+
+**`life/modes/__init__.py`**: Added registration import for the cardiac module.
+
+---
+
 ### Feature: Add Embryogenesis & Gastrulation — multicellular development from zygote through cleavage, blastula, gastrulation & neurulation with morphogen gradients, French Flag fate determination, differential adhesion sorting & convergent extension
 
 A developmental biology simulation modeling embryogenesis — the transformation of a single fertilized egg into a structured, multi-layered embryo through successive rounds of cell division, morphogen-mediated patterning, and coordinated cell movements. The natural sequel to the Primordial Soup mode: origin of life → development of complex multicellular organisms. Visually compelling: watch a single zygote cleave into a morula, hollow out into a blastula, then invaginate and fold as three germ layers self-organize under morphogen control.
