@@ -342,6 +342,8 @@ def register_all_modes(App):
     reg_city(App)
     from life.modes.optics import register as reg_optics
     reg_optics(App)
+    from life.modes.hydrothermal_vent import register as reg_hvent
+    reg_hvent(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

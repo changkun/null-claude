@@ -140,7 +140,7 @@ categories:
 - **Game Theory & Social** — Spatial Prisoner's Dilemma, Schelling Segregation, Rock-Paper-Scissors, Stock Market, Civilization & Cultural Evolution, Crowd Dynamics & Evacuation
 - **Fractals & Chaos** — Abelian Sandpile, Strange Attractors, Fractal Explorer, Snowflake Growth, Erosion Patterns, Chaos Game / IFS Fractals, L-System Fractal Garden, Lissajous / Harmonograph
 - **Procedural & Computational** — Wave Function Collapse, Maze Generation, Voronoi Diagram, Terrain Generation, 3D Terrain Flythrough, SDF Ray Marching, Shader Toy, Doom Raycaster, Sorting Visualizer, DNA Helix & GA, Fourier Epicycles, Maze Solver, Neural Network Training, Quantum Circuit Simulator, Tierra Digital Organisms
-- **Complex Simulations** — Traffic Flow, Galaxy Formation, Smoke & Fire, Fireworks, Wildfire Spread & Firefighting, City Growth & Urban Simulation, Termite Mound Construction & Stigmergy
+- **Complex Simulations** — Traffic Flow, Galaxy Formation, Smoke & Fire, Fireworks, Wildfire Spread & Firefighting, City Growth & Urban Simulation, Termite Mound Construction & Stigmergy, Deep Sea Hydrothermal Vent Ecosystem
 - **Audio & Visual** — Music Visualizer, Cellular Symphony, Snowfall & Blizzard, Matrix Digital Rain, Kaleidoscope, ASCII Aquarium
 - **Meta Modes** — Compare Rules, Multi-Rule Race, Puzzle / Challenge, Evolution / GA, Screensaver, Parameter Space Explorer, Evolution Lab, Evolutionary Playground, Live Rule Editor, Simulation Mashup, Battle Royale, Simulation Portal, Observatory, Layer Compositing, Cinematic Demo Reel, Topology Mode, Visual FX Pipeline, Recording & Export, Scripting & Choreography, Neural Cellular Automata, Timeline Branching, Ancestor Search, Self-Modifying Rules CA
 

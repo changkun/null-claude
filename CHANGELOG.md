@@ -4,6 +4,32 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Deep Sea Hydrothermal Vent Ecosystem — chemosynthetic food webs, mineral precipitation chimney growth, thermal plumes & tectonic dynamics in the deep ocean abyss
+
+A deep-sea hydrothermal vent simulation where black smoker chimneys eject superheated mineral-rich fluid into frigid ocean water, with chemosynthetic bacteria forming the base of a sunlight-free food web. The simulation couples thermal plume physics, mineral precipitation chemistry, and multi-species ecology in a visually dramatic dark-ocean setting with glowing plumes and bioluminescent creatures.
+
+**`life/modes/hydrothermal_vent.py`** (new, ~620 lines):
+
+- **Thermal plumes**: Buoyancy-driven rise with temperature diffusion — hot vent fluid (up to 350°C) rises through 2°C ambient water, advected by slowly rotating ocean currents.
+- **H₂S and mineral fields**: Continuous scalar fields with diffusion, decay, and vent injection. H₂S drives the chemosynthetic food web; dissolved minerals precipitate into solid chimney structures where steep temperature gradients exist.
+- **Chimney growth**: Mineral precipitation at hot/cold water interfaces builds chimney rock cells via positive feedback — chimney constrains flow, concentrating minerals, accelerating growth.
+- **6 fauna types**: Chemosynthetic microbes (primary producers metabolizing H₂S), tube worms (sessile symbionts), mussels (filter feeders), shrimp (mobile H₂S-chemotaxing grazers), crabs (scavengers), octopuses (rare apex predators). Each has energy budgets, reproduction thresholds, temperature tolerances, and type-specific movement/feeding behavior.
+- **Bioluminescence**: Some creatures rendered with flickering cyan glow against the dark ocean background.
+- **Tectonic activity**: New fissures open, chimneys collapse, vent activity waxes/wanes at configurable rates per preset.
+- **3 visualization views** (cycle with `v`): Ecosystem (terrain + fauna + plumes), Thermal heatmap (temperature field), Chemistry (H₂S + mineral concentration).
+- **6 presets**: Classic Black Smoker (350°C iron-sulfide chimneys), White Smoker Garden (lower-temp, lush fauna), Lost City (alkaline carbonate towers), Mid-Ocean Ridge (multiple vent fields with active tectonics), Vent Field Colonization (bare basalt, pioneer species via larval drift), Dying Vent Succession (waning activity, community collapse).
+- **Controls**: Space=play/pause, n=step, v=cycle views, +/-=speed, r=reset, R=menu, q=exit.
+
+**`life/registry.py`**: Added "Deep Sea Hydrothermal Vent Ecosystem" entry in Complex Simulations category.
+
+**`life/modes/__init__.py`**: Added registration import for the hydrothermal_vent module.
+
+**`README.md`**: Added Deep Sea Hydrothermal Vent Ecosystem to the Complex Simulations category list.
+
+**`docs/complex-simulations.md`**: Added comprehensive documentation covering thermal plume physics, H₂S/mineral field formulations, chimney precipitation mechanics, fauna behavior table, all six presets, three view modes, and references to Van Dover (2000), Kelley et al. (2001), Luther et al. (2001), and Corliss et al. (1979).
+
+---
+
 ### Feature: Add Termite Mound Construction & Stigmergy Simulation — pheromone-guided collective building by thousands of termite agents producing emergent mound architecture from purely local rules
 
 A stigmergic construction simulation where thousands of simple termite agents build complex mound structures through pheromone-mediated material placement. Each termite follows purely local rules — pick up soil if nearby, deposit where pheromone concentration is high — yet the colony produces emergent ventilation shafts, brood chambers, fungus gardens, royal chambers, and tunnel networks. Demonstrates one of nature's most striking examples of emergent collective intelligence.

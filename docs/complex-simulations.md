@@ -862,3 +862,73 @@ Builders deposit material (converting air → wall) when local build pheromone e
 - Camazine, S. et al. *Self-Organization in Biological Systems*. Princeton University Press, 2001.
 - Bonabeau, E., Dorigo, M. & Theraulaz, G. *Swarm Intelligence: From Natural to Artificial Systems*. Oxford University Press, 1999.
 - Turner, J. S. *The Extended Organism: The Physiology of Animal-Built Structures*. Harvard University Press, 2000.
+
+---
+
+
+## Deep Sea Hydrothermal Vent Ecosystem
+
+**Background.** Hydrothermal vents are fissures on the ocean floor where geothermally heated water erupts into near-freezing deep-ocean seawater. Discovered in 1977 along the Galápagos Rift, these systems host some of Earth's most extreme ecosystems — thriving without sunlight through chemosynthesis, where microbes oxidize hydrogen sulfide (H₂S) and other reduced chemicals as their primary energy source. "Black smokers" emit superheated fluid (up to 400°C) laden with metal sulfides that precipitate on contact with 2°C ambient water, gradually building towering chimney structures. The surrounding fauna — giant tube worms (*Riftia pachyptila*), vent shrimp (*Rimicaris exoculata*), mussels (*Bathymodiolus*), crabs, and octopuses — form a food web rooted entirely in chemosynthetic bacterial production. This simulation models the coupled thermal, chemical, geological, and ecological dynamics of a deep-sea vent field.
+
+**Formulation.** The simulation operates on a 2D grid representing a vertical cross-section of the ocean floor and water column. Three continuous scalar fields evolve each timestep:
+
+```
+Temperature field T(x,y):
+  T(t+1) = T(t) + D_T · ∇²T  +  buoyancy advection  +  vent injection
+  where D_T = thermal diffusion coefficient
+  Buoyancy: hot fluid rises at rate proportional to (T - T_ambient)
+  Vent sources inject T_vent at chimney positions each tick
+
+H₂S concentration field S(x,y):
+  S(t+1) = S(t) + D_S · ∇²S  -  λ_S · S  +  vent injection
+  where λ_S = decay/oxidation rate, D_S = diffusion coefficient
+
+Mineral concentration field M(x,y):
+  M(t+1) = M(t) + D_M · ∇²M  -  λ_M · M  +  vent injection
+  Minerals precipitate into solid chimney when M > threshold AND T gradient is steep
+```
+
+**Chimney growth.** When dissolved mineral concentration exceeds a precipitation threshold at a cell where hot vent fluid meets cold water (steep temperature gradient), mineral material solidifies — converting the cell to chimney rock. This positive feedback loop (chimney constrains flow → concentrates minerals → more precipitation) produces the characteristic tall, narrow chimney morphology of black smokers.
+
+**Ocean current drift.** A global current vector rotates slowly over time, advecting the temperature, H₂S, and mineral plume fields laterally. This disperses plume material downstream and transports larvae between vent sites.
+
+**Tectonic events.** At a configurable rate, the simulation generates tectonic disturbances: new fissures open (activating new vent sources), existing chimneys collapse (converting chimney cells back to water/rubble), and vent activity waxes or wanes (modulating injection temperature and chemical flux).
+
+**Fauna model.** Six organism types inhabit the vent field, each with type-specific behavior:
+
+| Organism | Role | Behavior |
+|----------|------|----------|
+| Chemosynthetic microbes | Primary producer | Reproduce in high-H₂S, high-temperature zones; metabolize H₂S for energy; thermophilic (prefer 40–120°C) |
+| Tube worms | Sessile symbiont | Anchor near vents; harbor internal chemosynthetic bacteria; grow/shrink based on local H₂S supply |
+| Mussels | Filter feeder | Cluster at vent bases; filter microbes from water; sessile once established |
+| Shrimp | Mobile grazer | Chemotax toward H₂S gradients; graze on microbe colonies; avoid extreme heat |
+| Crabs | Scavenger | Roam the seafloor; consume microbes, mussels, and detritus |
+| Octopuses | Apex predator | Rare; hunt crabs and shrimp; roam large territories |
+
+Organisms have energy budgets, reproduce when energy exceeds a threshold (with a carrying-capacity check), and die when energy reaches zero or temperature exceeds their tolerance. Some creatures exhibit bioluminescence — rendered as flickering cyan highlights.
+
+**Presets (6):**
+
+| Preset | Character | Initial Configuration |
+|--------|-----------|----------------------|
+| Classic Black Smoker | Tall iron-sulfide chimneys, 350°C fluid, dark mineral clouds | 2–3 chimneys, fast precipitation, full fauna suite |
+| White Smoker Garden | Lower temperature (150–250°C), barium/calcium deposits, lush fauna | Many small vents, slower chimney growth, dense tube worm colonies |
+| Lost City (Alkaline Vents) | Tall carbonate towers, warm (40–90°C), alkaline, hydrogen-rich | Tall initial structures, low H₂S, high mineral content, slow chemistry |
+| Mid-Ocean Ridge | Active spreading center, multiple vent fields | High tectonic rate, scattered vent clusters, frequent fissure events |
+| Vent Field Colonization | Pioneer species colonize newly opened vents | Bare basalt start, vents activate gradually, fauna arrives via larval drift |
+| Dying Vent Succession | Waning vent activity, community collapse | Initially active vents with established fauna; activity declines over time |
+
+**View modes (3, cycle with `v`):**
+1. **Ecosystem** — full terrain rendering with chimney structures, fauna icons, thermal plume coloring (red/yellow for hot fluid), and bioluminescent creature highlights against a dark ocean background
+2. **Thermal heatmap** — temperature field visualization from deep blue (2°C ambient) through cyan, green, yellow to bright red/white (350°C+ vent fluid)
+3. **Chemistry** — H₂S concentration (green) and dissolved mineral concentration (yellow/brown) overlaid, showing the chemical landscape that drives both chimney growth and the food web
+
+**Controls:** `Space`=play/pause, `n`=step, `v`=cycle views, `+/-`=simulation speed, `r`=reset, `R`=menu, `q`=exit.
+
+**What to look for.** In Classic Black Smoker, watch chimney structures grow upward from the seafloor as mineral precipitation builds layer by layer — the chimneys constrain the plume, concentrating minerals and accelerating their own growth. Tube worms cluster in the warm zone just outside the lethal-temperature boundary, while shrimp swarm through the H₂S gradient. Switch to the thermal view to see the buoyant plume billow upward and drift with the current. White Smoker Garden produces a gentler, more biologically productive scene — lower temperatures mean a wider habitable zone and denser fauna. Lost City is visually distinct: tall, pale carbonate towers with warm (not superheated) fluid and a different chemical regime. Mid-Ocean Ridge is the most dynamic — frequent tectonic events open new fissures and collapse existing chimneys, forcing fauna to migrate. Vent Field Colonization shows ecological succession in action: microbes arrive first, followed by tube worms, then grazers and predators. Dying Vent Succession is the inverse — watch the community unravel as chemical energy dwindles, with apex predators disappearing first and chemosynthetic microbes persisting longest.
+
+**References.**
+- Van Dover, C. L. *The Ecology of Deep-Sea Hydrothermal Vents*. Princeton University Press, 2000.
+- Kelley, D. S. et al. "An off-axis hydrothermal vent field near the Mid-Atlantic Ridge at 30°N." *Nature*, 412, 145–149, 2001. https://doi.org/10.1038/35084000
+- Luther, G. W. et al. "Chemical speciation drives hydrothermal vent ecology." *Nature*, 410, 813–816, 2001. https://doi.org/10.1038/35071069
+- Corliss, J. B. et al. "Submarine thermal springs on the Galápagos Rift." *Science*, 203(4385), 1073–1083, 1979. https://doi.org/10.1126/science.203.4385.1073

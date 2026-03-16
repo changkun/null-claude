@@ -427,6 +427,9 @@ MODE_REGISTRY = [
     # ── Geometric Optics & Light ──
     {"name": "Geometric Optics & Light", "key": "—", "category": "Physics & Waves",
      "desc": "Ray tracing through mirrors, lenses & prisms — Snell's law refraction, total internal reflection, chromatic dispersion, caustic focusing & interactive element placement", "attr": "optics_mode", "enter": "_enter_optics_mode", "exit": "_exit_optics_mode"},
+    # ── Deep Sea Hydrothermal Vent Ecosystem ──
+    {"name": "Deep Sea Hydrothermal Vent Ecosystem", "key": "—", "category": "Complex Simulations",
+     "desc": "Black smoker chimneys, chemosynthetic food webs, mineral precipitation, thermal plumes, tectonic activity & larval transport in the deep ocean abyss", "attr": "hvent_mode", "enter": "_enter_hvent_mode", "exit": "_exit_hvent_mode"},
 ]
 
 
