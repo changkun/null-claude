@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Spider Orb Web Construction & Prey Capture — orb-weaving spider builds radial/spiral silk network, vibration-based prey triangulation, wind deformation, thread repair & adaptive web geometry
+
+An orb-weaving spider builds its web in real time — laying radial frame threads from anchor points, then spiraling sticky capture silk — then prey insects blunder into the web, triggering vibration waves that propagate through the silk network. The spider detects vibration direction and intensity to locate and rush toward trapped prey. Wind gusts deform the elastic web structure, damaged sections get repaired, and web geometry adapts to repeated prey capture patterns. First arachnid simulation in the project; the thread network is well-suited for terminal line-drawing characters.
+
+**`life/modes/spider_web.py`** (new, ~1370 lines):
+
+- **Structural web construction**: Frame anchors (rectangular boundary) → radial threads from central hub → intermediate ring nodes along each radius → auxiliary spiral (inner, non-sticky scaffold) → sticky capture spiral (outer capture zone), using 4 silk types (`SILK_FRAME`, `SILK_RADIAL`, `SILK_AUX`, `SILK_STICKY`) with distinct strength/elasticity properties.
+- **Vibration propagation**: Trapped prey struggle generates vibration at capture nodes; waves propagate through adjacency graph with distance-based attenuation (×0.3 per hop, decay ×0.85/tick for nodes, ×0.80/tick for threads). Spider reads maximum vibrating node to triangulate prey location.
+- **Prey flight & capture**: 5 insect types (moth, fly, mosquito, beetle, butterfly) with weighted spawn rates, random flight paths with slight center attraction, and wind drift. Point-to-segment collision detection against sticky threads (distance < 0.8). Struggle intensity decays at ×0.995/tick; wrapping further suppresses struggle at ×0.9/tick.
+- **Wind deformation**: Elastic spring physics — sinusoidal base wind + random gusts (3% chance per tick, 10–40 tick duration, amplified ×2 in storm preset). Nodes have velocity with ×0.85 damping and ×0.05 spring restoration toward rest positions. Thread tension computed as stretch ratio relative to rest length.
+- **Thread degradation & breakage**: Threads accumulate tension stress; break probability scales with tension exceeding strength, plus age-based degradation (sticky silk after 500 ticks) and storm-mode baseline breakage. Broken threads removed from adjacency graph.
+- **Web repair & adaptation**: Spider detects broken threads, moves to repair them (consuming 3.0 silk per repair, restored at 70% original strength). Capture zone tracking records prey angles in 8 angular bins for adaptive behavior.
+- **Spider AI state machine**: BUILDING_FRAME → BUILDING_RADII → BUILDING_AUX → BUILDING_STICKY → WAITING → RUSHING → WRAPPING → REPAIRING → RESTING. Energy management (depletes during movement/wrapping, regenerates while waiting/resting). Low energy (< 0.1) forces rest state. Silk regeneration at +0.05/tick while waiting, +0.1/tick while resting.
+- **3 visualization views** (cycle with `v`): Web Structure (thread network drawn with line chars `─│╲╱·`, junction dots, vibration ripples `○∙`, prey glyphs by species, spider `◆` color-coded by state, wind direction/magnitude indicator), Vibration Heatmap (thread intensity colored `░▒▓█`, trapped prey as `◎`, spider as `◆`), Time-Series Graphs (sparklines for cumulative captures, web integrity %, silk reserves, trapped prey count — all last 200 ticks).
+- **6 presets**: Garden Orb Weaver (balanced defaults, 24 radii, moderate wind), Morning Dew Web (minimal wind 0.01, slow prey rate 0.01), Storm Damage & Repair (wind strength 0.5, gusts ×2, threads break frequently), Prey Bonanza (prey rate 0.08, low wind 0.05), Cobweb Tangle Weaver (40 radii, tight 0.8 spacing, extra random cross-threads), Golden Silk Orbweaver (large radius ×0.48, 32 radii, 150 silk reserve).
+- **Controls**: Space=play/pause, n/. =step, v=cycle views, +/-=speed, r=reset, R/m=menu, q=exit.
+
+**`life/registry.py`**: Added "Spider Orb Web Construction & Prey Capture" entry in Complex Simulations category.
+
+**`life/modes/__init__.py`**: Added registration import for the spider_web module.
+
+**`README.md`**: Added Spider Orb Web Construction & Prey Capture to the Complex Simulations category list.
+
+**`docs/complex-simulations.md`**: Added comprehensive documentation covering web construction phases, silk type properties, vibration propagation mechanics, prey collision/capture system, wind physics, thread degradation/repair, spider AI state machine, all six presets, three view modes, and references.
+
+---
+
 ### Feature: Add Tide Pool & Intertidal Ecosystem — sinusoidal tidal cycles drive vertical rocky-shore zonation with desiccation stress, predation fronts, algae grazing cycles & hermit crab vacancy-chain shell swaps
 
 An intertidal zone simulation where sinusoidal tidal cycles drive a vertical rocky-shore ecosystem — the rhythmic rise and fall of water creates alternating regimes of desiccation stress (at low tide) and predation pressure (at high tide), producing the classic vertical zonation pattern seen on real rocky shores worldwide. Fills the marine intertidal gap between the existing deep-sea hydrothermal vent mode and the terrestrial/freshwater ecological simulations.

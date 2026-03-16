@@ -442,6 +442,9 @@ MODE_REGISTRY = [
     # ── Tide Pool & Intertidal Ecosystem ──
     {"name": "Tide Pool & Intertidal Ecosystem", "key": "—", "category": "Complex Simulations",
      "desc": "Sinusoidal tidal cycles drive vertical rocky-shore zonation — barnacles, mussels, sea stars, urchins, kelp & hermit crabs with desiccation stress, predation fronts & vacancy-chain shell swaps", "attr": "tpool_mode", "enter": "_enter_tpool_mode", "exit": "_exit_tpool_mode"},
+    # ── Spider Orb Web Construction & Prey Capture ──
+    {"name": "Spider Orb Web Construction & Prey Capture", "key": "—", "category": "Complex Simulations",
+     "desc": "Orb-weaving spider builds radial frame/sticky spiral web, prey insects trigger vibration waves through silk network for triangulation, wind deforms elastic threads, damaged sections repaired & geometry adapts to capture patterns", "attr": "sweb_mode", "enter": "_enter_sweb_mode", "exit": "_exit_sweb_mode"},
 ]
 
 

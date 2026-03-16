@@ -352,6 +352,8 @@ def register_all_modes(App):
     reg_stellar(App)
     from life.modes.tide_pool import register as reg_tpool
     reg_tpool(App)
+    from life.modes.spider_web import register as reg_sweb
+    reg_sweb(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
