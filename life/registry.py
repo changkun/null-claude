@@ -250,6 +250,9 @@ MODE_REGISTRY = [
     # ── Simulation Portal ──
     {"name": "Simulation Portal", "key": "Ctrl+J", "category": "Meta Modes",
      "desc": "Spatial gateways connecting two simulations at a boundary with cross-talk", "attr": "portal_mode", "enter": "_enter_portal_mode", "exit": "_exit_portal_mode"},
+    # ── Split-Screen Dual Simulation ──
+    {"name": "Split-Screen Dual Simulation", "key": "—", "category": "Meta Modes",
+     "desc": "Run any two simulations side-by-side with independent state and toggle-able focus", "attr": "split_mode", "enter": "_enter_split_mode", "exit": "_exit_split_mode"},
     # ── Simulation Observatory ──
     {"name": "Simulation Observatory", "key": "Ctrl+O", "category": "Meta Modes",
      "desc": "Tiled split-screen running 4-9 simulations simultaneously with synced controls", "attr": "obs_mode", "enter": "_enter_observatory_mode", "exit": "_exit_observatory_mode"},
@@ -366,6 +369,13 @@ _DISPATCH_OVERRIDES = {
         'keys': '_handle_ancestor_search_key',
         'draw': '_draw_ancestor_search',
         'menu_attr': '_anc_no_menu',  # anc handles menu internally in key handler
+    },
+    'split_mode': {
+        'keys': '_handle_split_key',
+        'menu_keys': '_handle_split_menu_key',
+        'draw': '_draw_split',
+        'menu_draw': '_draw_split_menu',
+        'step': '_split_step',
     },
     'obs_mode': {
         'keys': '_handle_observatory_key',

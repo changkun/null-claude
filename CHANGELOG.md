@@ -4,6 +4,29 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add split-screen dual simulation mode for side-by-side comparison
+
+Added a split-screen mode that runs any two of the eight mini-simulation engines (Game of Life, Wave, Reaction-Diffusion, Forest Fire, Boids, Ising, Rock-Paper-Scissors, Physarum) side by side in independent panes with no coupling. Each pane has its own state, generation counter, and density grid. A preset menu offers 8 curated pairings plus a custom two-step picker for arbitrary combinations.
+
+**`life/modes/split_screen.py`** (new, ~466 lines):
+- **Preset menu**: 8 curated pairings (e.g., "Game of Life vs Lenia-style RD", "Boids vs Physarum") with descriptions.
+- **Custom picker**: two-step selection flow — pick left engine, then right engine from the full list.
+- **Independent panes**: each pane wraps a mashup engine with its own init/step/density cycle, zero cross-pane coupling.
+- **Focus system**: Tab swaps which pane is "focused" (highlighted title bar with reverse-video diamond marker); `r` resets only the focused pane.
+- **Pane swap**: `s` swaps left and right panes (state and all) without reinitializing.
+- **Controls**: Space play/pause, `n` single-step, `>/<` speed, `R` return to menu, `q`/Esc exit.
+
+**`life/registry.py`** (+10 lines):
+- Added `split_mode` entry to `MODE_REGISTRY` under "Meta Modes" category.
+- Added dispatch overrides for keys, menu_keys, draw, menu_draw, and step handlers.
+
+**`life/modes/__init__.py`** (+2 lines):
+- Registered `split_screen` module via the standard `register()` pattern.
+
+**Design:** Reuses the `_ENGINES` and `MASHUP_SIMS` registries from `life/modes/mashup.py`, following the same pattern as Observatory mode. Unlike Observatory (which tiles 2–9 viewports) or Mashup (which couples two engines on a shared grid), Split-Screen provides clean uncoupled pairwise comparison with per-pane control.
+
+---
+
 ### Feature: Add long-exposure photography mode for composite frame artwork
 
 Added a "long-exposure photography" system that composites hundreds of simulation frames into a single artistic still image — like astrophotography for cellular automata. Blends frame data over a configurable time window using accumulation buffers, producing luminance trails, flow lines, and density maps rendered as a high-detail truecolor frame.

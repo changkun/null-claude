@@ -263,6 +263,29 @@ Boundary influence is computed by extracting the edge columns (or rows) of one s
 
 ---
 
+## Split-Screen Dual Simulation
+
+**Source:** `life/modes/split_screen.py`
+
+### Background
+
+Split-Screen Dual Simulation runs any two of the eight mini-simulation engines side by side in independent panes, each with its own state, generation counter, and density grid. Unlike Observatory (which tiles 2–9 viewports) or Mashup (which couples two engines on the same grid), Split-Screen focuses on clean, uncoupled pairwise comparison with per-pane control: reset one side, swap the two panes, or toggle input focus with Tab.
+
+### How it works
+
+The terminal is divided vertically at the midpoint. A single-character `│` divider separates the panes. Each pane wraps one of the eight engines from the mashup module (Game of Life, Wave, Reaction-Diffusion, Forest Fire, Boids, Ising, Rock-Paper-Scissors, Physarum) via the shared `_ENGINES` registry, reusing `init`, `step`, and `density` functions. The two panes step in lockstep each frame with zero coupling — neither pane's density influences the other.
+
+A preset menu offers 8 curated pairings (e.g., "Game of Life vs Lenia-style RD", "Boids vs Physarum") for quick launch, plus a two-step custom picker that lets you choose any left and right engine independently. Focus state (`split_focus`) determines which pane's title bar is highlighted with a reverse-video diamond marker; Tab swaps focus. The `r` key resets only the focused pane, reinitializing its engine state and zeroing its generation counter while the other pane continues undisturbed.
+
+### What to explore
+
+- Compare "Game of Life vs Boids" to see grid-based discrete dynamics next to free-roaming agent behavior.
+- Use `s` to swap panes and see how visual placement affects your perception of the two simulations.
+- Reset one pane with `r` while the other runs to compare fresh vs. evolved states of the same engine.
+- Use the custom picker to pair any two engines — try "Ising vs Rock-Paper-Scissors" for two spatial competition models.
+
+---
+
 ## Simulation Observatory
 
 **Source:** `life/modes/observatory.py`

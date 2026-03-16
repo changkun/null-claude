@@ -200,6 +200,8 @@ def register_all_modes(App):
     reg_br(App)
     from life.modes.mashup import register as reg_mashup
     reg_mashup(App)
+    from life.modes.split_screen import register as reg_split
+    reg_split(App)
     from life.modes.observatory import register as reg_observatory
     reg_observatory(App)
     from life.modes.portal import register as reg_portal
