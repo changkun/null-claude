@@ -361,6 +361,9 @@ MODE_REGISTRY = [
     # ── Phase Space Navigator ──
     {"name": "Phase Space Navigator", "key": "—", "category": "Meta Modes",
      "desc": "Interactive bifurcation explorer — maps the behavioral landscape of CA rule-space as a live 2D heatmap, teleport into any universe", "attr": "phasespace_mode", "enter": "_enter_phasespace_mode", "exit": "_exit_phasespace_mode"},
+    # ── Living Labyrinth ──
+    {"name": "Living Labyrinth", "key": "—", "category": "Procedural & Computational",
+     "desc": "Playable roguelike where the dungeon IS a cellular automaton — navigate shifting walls, collect items, reach the exit before paths seal shut", "attr": "labyrinth_mode", "enter": "_enter_labyrinth_mode", "exit": "_exit_labyrinth_mode"},
 ]
 
 
@@ -466,6 +469,7 @@ _DISPATCH_OVERRIDES = {
     'kaleido_mode': {'use_delay': False},
     'aquarium_mode': {'use_delay': False},
     'collider_mode': {'use_delay': False},
+    'labyrinth_mode': {'running_check': '_is_labyrinth_auto_stepping', 'use_delay': False},
     'dnahelix_mode|delay': {'use_delay': False},
     'ns_mode': {'use_delay': False},
     'dpend_mode': {'use_delay': False},

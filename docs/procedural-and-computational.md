@@ -805,3 +805,61 @@ In the memory view, watch colored blocks expand as organisms replicate and fill 
 
 - Ray, T.S. "An Approach to the Synthesis of Life." *Artificial Life II,* Addison-Wesley, 1991. https://doi.org/10.7551/mitpress/1428.003.0010
 - Adami, C. *Introduction to Artificial Life.* Springer, 1998. https://doi.org/10.1007/978-1-4612-1650-6
+
+---
+
+## Living Labyrinth
+
+**Background**
+
+The Living Labyrinth is a playable roguelike where the dungeon itself is a cellular automaton. Unlike all other modes in this project where the user observes a simulation, here the user is a *participant* -- an agent (`@`) navigating through a maze whose walls grow and decay by CA rules. The concept merges two traditions: roguelike dungeon crawlers (Rogue, 1980; Brogue, 2009) where procedural generation creates each run's unique challenge, and cellular automata as generative systems for dynamic environments. The result is a game where the dungeon is alive and the optimal path changes every turn.
+
+**Formulation**
+
+```
+Maze generation (recursive backtracker + opening):
+  1. Generate perfect maze on odd-dimensioned grid via DFS
+  2. For each internal wall cell adjacent to 2+ floor cells:
+     open with probability 0.3 (creates loops for CA to exploit)
+
+CA evolution (Moore neighborhood, toroidal boundary):
+  For each cell (r, c) not frozen:
+    count = number of alive Moore neighbors (8-connected)
+    if alive:  survive if count in S, else die
+    if dead:   birth if count in B, else stay dead
+  Wall age tracks generations survived (used for rendering)
+
+8 rule presets:
+  Maze:       B3/S12345    — stable corridors, slow drift
+  Coral:      B3/S45678    — crystalline growth, stable clusters
+  Anneal:     B4678/S35678 — smoothing, fills gaps gradually
+  Day&Night:  B3678/S34678 — symmetric rule, balanced growth/decay
+  Stains:     B3678/S235678— spreading blobs, moderate hostility
+  Diamoeba:   B35678/S5678 — amoeboid masses, unpredictable
+  Slow Decay: B3/S238      — structures erode slowly over time
+  Life:       B3/S23       — classic Conway, chaotic and fast
+
+Items (radius-based effects):
+  Freeze:  set frozen_mask[r][c] = 10 for cells within radius 5
+           (frozen cells skip CA update for 10 turns)
+  Reverse: restore cells within radius 6 to state from 5 turns ago
+           (uses circular history buffer of depth 10)
+  Mutate:  for cells within radius 7, flip alive<->dead with P=0.4
+           (creates openings through walls, or new obstacles)
+
+Scoring:
+  Level complete: speed_bonus + level_bonus
+  speed_bonus = max(0, 500 - 2 * turns_taken)
+  level_bonus = level_number * 100
+  Rules auto-cycle every 3 levels for gameplay variety
+```
+
+**What to look for**
+
+Each rule preset creates fundamentally different gameplay. The Maze rule (B3/S12345) preserves most corridor structure with slow drift, making it the easiest starting point. Anneal (B4678/S35678) gradually fills open spaces, creating a slowly tightening challenge. Day & Night is symmetric and creates large stable regions interspersed with chaotic borders. Life (B3/S23) is the most hostile -- structures dissipate rapidly, and the dungeon can become nearly impassable within a few turns. Watch wall age rendering: newly grown walls appear as light stipple (`░░`) while old walls become solid blocks (`██`), giving visual feedback about which walls are ephemeral versus structural. Items create dramatic local effects -- a well-timed Freeze locks a safe corridor, while Mutate can blast through a sealed passage at the cost of unpredictable side effects. The tension between CA evolution speed (adjustable with +/-) and player movement creates the core strategic challenge.
+
+**References**
+
+- Toy, M. et al. *Rogue.* UC Berkeley, 1980. (Original roguelike establishing the genre) https://en.wikipedia.org/wiki/Rogue_(video_game)
+- Walker, B. *Brogue.* 2009-2020. (Modern roguelike with procedural dungeon generation and emergent systems) https://sites.google.com/site/broguegame/
+- Wolfram, S. *A New Kind of Science.* Wolfram Media, 2002. (Comprehensive survey of CA behavior classes) https://www.wolframscience.com/nks/

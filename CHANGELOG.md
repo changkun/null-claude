@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Living Labyrinth — playable roguelike where the dungeon IS a cellular automaton
+
+Added the project's first interactive/participant mode: a turn-based roguelike where the player navigates a maze that's alive. Walls grow and decay according to CA rules, corridors shift and close, and you must reach the exit portal before paths seal shut. Different CA rules create radically different gameplay — from hostile fast-collapsing mazes to stable drifting labyrinths.
+
+**`life/modes/living_labyrinth.py`** (new, ~790 lines):
+
+- **Maze generation**: Recursive backtracker with 30% extra passage opening for interesting CA evolution substrate.
+- **Player navigation** (`@`) via arrow keys, WASD, or hjkl through a viewport centered on the player.
+- **Living walls**: Full Moore-neighborhood CA step with wall-age tracking. New walls render as `░░`, aging through `▒▒`/`▓▓` to solid `██`. Frozen walls shown with blue background.
+- **Exit portal** (`◈`) placed far from player (bottom-right vs top-left). Safety zones around both prevent instant death.
+- **8 curated CA rule presets**: Maze (B3/S12345), Coral (B3/S45678), Anneal (B4678/S35678), Day & Night (B3678/S34678), Stains (B3678/S235678), Diamoeba (B35678/S5678), Slow Decay (B3/S238), Life (B3/S23). Rules auto-cycle every 3 levels.
+- **3 collectible item types** (12 per dungeon): ❄ Freeze (locks walls in radius for 10 turns), ⊛ Reverse (rewinds CA state 5 steps locally), ✦ Mutate (randomly flips cells nearby).
+- **Turn-based gameplay**: Each player move triggers 1+ CA ticks (adjustable with +/-). Space key waits without moving.
+- **Level progression**: Scoring with speed bonus (500 − 2×turns) + level bonus (level × 100). Win/death tracking across runs.
+- **Help overlay** (`?` key) with full controls reference in a bordered box.
+
+**`life/registry.py`**: Added "Living Labyrinth" entry in Procedural & Computational category. Dispatch override sets `use_delay: False` and custom `running_check` via `_is_labyrinth_auto_stepping` (always returns False — mode is turn-based).
+
+**`life/modes/__init__.py`**: Added registration call for the living_labyrinth module.
+
+---
+
 ### Feature: Add Phase Space Navigator for interactive CA rule-space exploration
 
 Added a new Meta Mode that maps the behavioral landscape of cellular automaton rule-space as a live 2D heatmap. Runs hundreds of micro-simulations in parallel, classifying each parameter-space point by emergent behavior (dead/static/oscillating/complex/chaotic/explosive/growing/dying). Users can sweep across rule parameters and teleport into any point's simulation.
