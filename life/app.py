@@ -83,6 +83,9 @@ class App:
         self.cycle_detected = False
         # Draw mode: None, "draw" (paint alive), or "erase" (paint dead)
         self.draw_mode: str | None = None
+        self._mouse_dragging = False  # True while button-1 is held for drag-draw
+        self._mouse_panning = False   # True while button-3 (right) is held for pan
+        self._mouse_pan_origin: tuple[int, int] | None = None  # (screen_y, screen_x)
         # History buffer for rewind (stores (grid_dict, pop_len) tuples)
         self.history: list[tuple[dict, int]] = []
         self.history_max = 500
@@ -3613,6 +3616,8 @@ class App:
         curses.curs_set(0)
         self.stdscr.nodelay(True)
         self.stdscr.timeout(50)
+        self.stdscr.keypad(True)
+        curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
         self._record_pop()
         # Seed initial state for cycle detection
         self.state_history[self.grid.state_hash()] = self.grid.generation
@@ -3697,6 +3702,11 @@ class App:
                 self._draw_cast_export_menu(_my, _mx)
 
             key = self.stdscr.getch()
+
+            # ── Mouse events (global, before any key dispatch) ──
+            if key == curses.KEY_MOUSE:
+                self._handle_mouse()
+                continue
 
             # ── Cast recording export menu (must intercept keys first) ──
             if self.cast_export_menu:
@@ -4567,6 +4577,139 @@ class App:
             self.cursor_c = (self.cursor_c + 1) % self.grid.cols
             self._apply_draw_mode()
             return True
+        return True
+
+    # ── Mouse interaction ──────────────────────────────────────────────
+
+    def _screen_to_grid(self, screen_y: int, screen_x: int) -> tuple[int, int] | None:
+        """Convert terminal screen coordinates to grid (row, col).
+
+        Returns None if the click lands outside the grid area (e.g. on the
+        status bar or timeline).
+        """
+        max_y, max_x = self.stdscr.getmaxyx()
+        zoom = self.zoom_level
+        vis_rows = max_y - 5
+        vis_cols = (max_x - 1) // 2
+
+        # screen_y is a row index in the terminal; grid area occupies rows 0..vis_rows-1
+        if screen_y < 0 or screen_y >= vis_rows:
+            return None
+        if screen_x < 0 or screen_x >= max_x - 1:
+            return None
+
+        # Each cell is 2 terminal columns wide
+        sx = screen_x // 2
+        sy = screen_y
+
+        grid_vis_rows = vis_rows * zoom
+        grid_vis_cols = vis_cols * zoom
+
+        vr = self.cursor_r - grid_vis_rows // 2
+        vc = self.cursor_c - grid_vis_cols // 2
+
+        gr = (vr + sy * zoom) % self.grid.rows
+        gc = (vc + sx * zoom) % self.grid.cols
+        return (gr, gc)
+
+    def _handle_mouse(self) -> bool:
+        """Process a mouse event. Returns True if handled."""
+        try:
+            _, mx, my, _, bstate = curses.getmouse()
+        except curses.error:
+            return True
+
+        # ── Scroll-wheel zoom ──
+        if bstate & curses.BUTTON4_PRESSED:
+            # Scroll up → zoom in
+            idx = ZOOM_LEVELS.index(self.zoom_level)
+            if idx > 0:
+                self.zoom_level = ZOOM_LEVELS[idx - 1]
+            self._flash(f"Zoom: {self.zoom_level}:1" if self.zoom_level > 1 else "Zoom: 1:1 (normal)")
+            return True
+
+        # Scroll down — BUTTON5_PRESSED on most curses builds
+        scroll_down = getattr(curses, "BUTTON5_PRESSED", 1 << 21)
+        if bstate & scroll_down:
+            # Scroll down → zoom out
+            idx = ZOOM_LEVELS.index(self.zoom_level)
+            if idx < len(ZOOM_LEVELS) - 1:
+                self.zoom_level = ZOOM_LEVELS[idx + 1]
+            self._flash(f"Zoom: {self.zoom_level}:1" if self.zoom_level > 1 else "Zoom: 1:1 (normal)")
+            return True
+
+        # ── Right-button drag-to-pan ──
+        if bstate & curses.BUTTON3_PRESSED:
+            self._mouse_panning = True
+            self._mouse_pan_origin = (my, mx)
+            return True
+
+        if bstate & curses.BUTTON3_RELEASED:
+            self._mouse_panning = False
+            self._mouse_pan_origin = None
+            return True
+
+        # Pan motion while right-button is held (reported as REPORT_MOUSE_POSITION)
+        if self._mouse_panning and self._mouse_pan_origin is not None:
+            oy, ox = self._mouse_pan_origin
+            dy = my - oy
+            dx = mx - ox
+            zoom = self.zoom_level
+            if abs(dy) >= 1 or abs(dx) >= 2:
+                self.cursor_r = (self.cursor_r - dy * zoom) % self.grid.rows
+                self.cursor_c = (self.cursor_c - (dx // 2) * zoom) % self.grid.cols
+                self._mouse_pan_origin = (my, mx)
+            return True
+
+        # ── Left-button click / drag-to-draw ──
+        if bstate & curses.BUTTON1_PRESSED:
+            self._mouse_dragging = True
+            pos = self._screen_to_grid(my, mx)
+            if pos is not None:
+                gr, gc = pos
+                self.cursor_r, self.cursor_c = gr, gc
+                if self.draw_mode == "erase":
+                    self.grid.set_dead(gr, gc)
+                else:
+                    self.grid.toggle(gr, gc)
+                self._reset_cycle_detection()
+                if self.pattern_search_mode:
+                    self._scan_patterns()
+            return True
+
+        if bstate & curses.BUTTON1_RELEASED:
+            self._mouse_dragging = False
+            return True
+
+        # Drag motion while left-button is held
+        if self._mouse_dragging:
+            pos = self._screen_to_grid(my, mx)
+            if pos is not None:
+                gr, gc = pos
+                if (gr, gc) != (self.cursor_r, self.cursor_c):
+                    self.cursor_r, self.cursor_c = gr, gc
+                    if self.draw_mode == "erase":
+                        self.grid.set_dead(gr, gc)
+                    else:
+                        self.grid.set_alive(gr, gc)
+                    self._reset_cycle_detection()
+                    if self.pattern_search_mode:
+                        self._scan_patterns()
+            return True
+
+        # ── Single left-click: move cursor (fallback for terminals that
+        #    don't report PRESSED/RELEASED separately) ──
+        if bstate & curses.BUTTON1_CLICKED:
+            pos = self._screen_to_grid(my, mx)
+            if pos is not None:
+                gr, gc = pos
+                self.cursor_r, self.cursor_c = gr, gc
+                self.grid.toggle(gr, gc)
+                self._reset_cycle_detection()
+                if self.pattern_search_mode:
+                    self._scan_patterns()
+            return True
+
         return True
 
 

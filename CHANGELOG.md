@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add mouse interaction support for click-to-draw, scroll-zoom, and drag-to-pan
+
+Added full mouse support using curses' built-in `mousemask()`/`getmouse()` — zero new dependencies. Every existing mode benefits from the new input layer.
+
+**`life/app.py`** (+143 lines):
+- **Mouse state tracking**: Added `_mouse_dragging`, `_mouse_panning`, and `_mouse_pan_origin` instance variables to track drag operations across event callbacks.
+- **Mouse enablement**: `stdscr.keypad(True)` and `curses.mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION)` called during `run()` startup.
+- **Global dispatch**: `curses.KEY_MOUSE` intercepted in the main loop before any keyboard dispatch, routing all mouse events to `_handle_mouse()`.
+- **`_screen_to_grid()` helper**: Converts terminal (y, x) screen coordinates to grid (row, col), accounting for zoom level, viewport offset, 2-char cell width, and grid wrapping.
+- **Scroll-wheel zoom**: Scroll up zooms in, scroll down zooms out, walking through the existing `ZOOM_LEVELS` list with a flash message.
+- **Left-click/drag to draw**: Single click toggles a cell; holding and dragging paints cells alive (or erases if draw mode is "erase"). Cursor follows the mouse position.
+- **Right-click drag to pan**: Hold right button and drag to pan the viewport across the grid by adjusting cursor position relative to mouse delta.
+- **Fallback click handling**: `BUTTON1_CLICKED` handled separately for terminals that don't report PRESSED/RELEASED individually.
+
+**Design:** Uses only the curses standard library — no external mouse libraries. Integrates with the existing draw mode ("draw"/"erase"), zoom system, cycle detection reset, and pattern scanning. All 130+ simulation modes gain mouse interaction without any per-mode changes.
+
+---
+
 ### Feature: Add split-screen dual simulation mode for side-by-side comparison
 
 Added a split-screen mode that runs any two of the eight mini-simulation engines (Game of Life, Wave, Reaction-Diffusion, Forest Fire, Boids, Ising, Rock-Paper-Scissors, Physarum) side by side in independent panes with no coupling. Each pane has its own state, generation counter, and density grid. A preset menu offers 8 curated pairings plus a custom two-step picker for arbitrary combinations.
