@@ -527,3 +527,112 @@ Switch views with `v`: top-down (height glyphs with spike markers for tall featu
 - Rosensweig, R.E. *Ferrohydrodynamics*. Cambridge University Press, 1985. (Reprinted by Dover, 2013.) https://doi.org/10.1017/CBO9780511564109
 - Cowley, M.D. and Rosensweig, R.E. "The Interfacial Stability of a Ferromagnetic Fluid." *Journal of Fluid Mechanics*, 30(4), 1967. https://doi.org/10.1017/S0022112067001740
 - Richter, R. and Barashenkov, I.V. "Two-Dimensional Solitons on the Surface of Magnetic Fluids." *Physical Review Letters*, 94(18), 2005. https://doi.org/10.1103/PhysRevLett.94.184503
+
+---
+
+## Superfluid Helium
+
+**Background.** Below the lambda point (T_λ ≈ 2.17 K), liquid helium-4 undergoes a phase transition into a superfluid state — a macroscopic quantum phenomenon first observed by Pyotr Kapitsa and independently by John Allen and Don Misener in 1937. The superfluid component flows without viscosity and its circulation is quantized in units of κ = h/m_He ≈ 9.97 × 10⁻⁴ cm²/s. Rotation and turbulence in He-II manifest not as smooth vorticity but as a tangle of discrete vortex filaments, each carrying exactly one quantum of circulation. When two vortex filaments of opposite sign approach, they reconnect — a topological event that redistributes energy and emits Kelvin waves (helical displacement oscillations) along the vortex cores. These Kelvin waves cascade to smaller scales and eventually radiate phonons into the fluid, providing the primary dissipation mechanism in quantum turbulence.
+
+The two-fluid model, developed by Laszlo Tisza (1938) and refined by Lev Landau (1941), describes He-II as an interpenetrating mixture of a superfluid component (density ρ_s, zero viscosity, zero entropy) and a normal component (density ρ_n, finite viscosity, carries all entropy). The ratio ρ_s/ρ varies from 0 at T_λ to 1 at absolute zero. This two-fluid picture predicts a remarkable phenomenon: second sound — temperature waves that propagate as coupled oscillations of entropy and superfluid/normal counterflow, distinct from ordinary (first) sound pressure waves. Second sound was predicted by Tisza and Landau and first observed by Vasily Peshkov in 1944.
+
+This mode bridges the project's quantum physics modes (which are discrete/lattice-based) and classical fluid modes (which have continuous vorticity), simulating quantized vortex dynamics with reconnection, Kelvin wave cascades, two-fluid counterflow, second sound propagation, and the lambda-point phase transition.
+
+**Formulation.** Vortices are modeled as point objects in 2D (cross-sections of 3D filaments), each carrying a signed circulation charge q = ±1. Each vortex stores position (x, y), charge, and Kelvin wave state (phase, amplitude).
+
+```
+Biot-Savart velocity (each vortex i):
+  v_i = sum_{j != i} κ * q_j / (2π * r²_ij) * (ẑ × r̂_ij)
+
+  where r_ij is the separation vector with toroidal wrapping,
+  regularised: r² = max(|r_ij|², 0.5) to prevent core singularity.
+
+  In components:
+    vx_i += -dy_ij * κ * q_j / (2π * r²_ij)
+    vy_i +=  dx_ij * κ * q_j / (2π * r²_ij)
+
+Mutual friction (coupling to normal fluid):
+  F_mf = α * (v_n - v_s)
+  vx_i += α * (vn_x - vx_i)
+  vy_i += α * (vn_y - vy_i)
+
+  where α = mutual friction coefficient (0.0–1.0)
+  and v_n = imposed normal fluid velocity (counterflow preset)
+
+Position update:
+  x_i += vx_i * dt,   y_i += vy_i * dt
+  dt = 0.15 * ρ_s/ρ   (timestep scales with superfluid fraction)
+  Toroidal boundary conditions
+
+Reconnection:
+  When opposite-sign vortices approach within d_crit = 1.5:
+    Both vortices annihilate (topological charge conserved: +1 + -1 = 0)
+    Energy released as entropy pulse: Gaussian heat deposit at midpoint
+    Tracked by reconnection counter
+
+Kelvin waves:
+  Each vortex has oscillation state (phase θ, amplitude A):
+    θ += ω,  where ω = 0.3 * ρ_s/ρ   (dispersion: ω ∝ k² ln(1/ka), simplified)
+    A *= 0.995                          (cascade damping)
+    Position perturbation: dx = 0.05 * A * cos(θ), dy = 0.05 * A * sin(θ)
+
+Superfluid fraction (two-fluid model):
+  ρ_s/ρ = 1 - (T/T_λ)^5.6   for T < T_λ
+  ρ_s/ρ = 0                   for T >= T_λ
+
+  The exponent 5.6 approximates the experimental He-4 curve;
+  the exact behavior near T_λ follows the 3D XY universality class
+  with critical exponent ν ≈ 0.6717.
+
+Temperature ramping:
+  T → T_target at rate 0.003 K/step (for lambda-point transition preset)
+
+Second sound propagation (wave equation on entropy field):
+  c₂² = 0.3 * (ρ_s/ρ) / (ρ_n/ρ)    (second sound speed squared)
+
+  ∂²s/∂t² = c₂² ∇²s
+
+  Discretised:
+    rho_v[r][c] = rho_v[r][c] * 0.998 + c₂² * laplacian(entropy)
+    entropy[r][c] += rho_v[r][c]
+
+  Clamped: entropy ∈ [-0.5, 1.0], rho_v ∈ [-0.5, 0.5]
+  When ρ_s → 0 or ρ_n → 0, second sound ceases (no propagation medium)
+
+Counterflow vortex generation:
+  Probability of spontaneous pair nucleation ∝ |v_n| * ρ_s/ρ * 0.05
+  Capped at 200 vortices total
+
+Above lambda point (ρ_s = 0):
+  No superfluid dynamics; entropy field undergoes simple diffusion
+  diffusion coefficient = 0.1
+
+Velocity field (for visualisation):
+  Coarse-grained Biot-Savart sum on a sampled grid (step = min(rows,cols)/30)
+  Block-filled for rendering speed
+
+Energy spectrum:
+  Radial shell binning of |v|² from the velocity field
+  Normalised to [0, 1] for display
+  Reference: Kolmogorov k^(-5/3) scaling line
+```
+
+**What to look for.** The Quantum Turbulence preset (T=1.2 K, 25 vortex-antivortex pairs) produces a dense tangle that evolves through repeated reconnections. Watch the vortex count decrease as pairs annihilate, and switch to the energy view to see whether the spectrum follows the Kolmogorov k⁻⁵/³ scaling — a key prediction of Kolmogorov's 1941 theory that has been confirmed in superfluid turbulence experiments by Maurer and Tabeling (1998).
+
+The Vortex Reconnection preset places four opposite-sign pairs aimed at each other. Watch them approach, reconnect (annihilate), and emit entropy pulses visible in the density view. The reconnection count in the info bar tracks these events.
+
+The Kelvin Wave Cascade preset (T=0.8 K) arranges 16 positive vortices in a ring with mode-3 Kelvin wave perturbation. The helical oscillations slowly damp as energy cascades to smaller scales — this is the quantum analogue of the Richardson cascade in classical turbulence.
+
+The Two-Fluid Counterflow preset (T=1.6 K) imposes a normal fluid velocity vn=0.3 rightward while the superfluid is stationary. The resulting mutual friction generates vortex pairs spontaneously — the counterflow instability first studied by Vinen (1957). Increase counterflow with `c` to see more vigorous pair production; decrease to let the tangle decay.
+
+The Second Sound preset (T=1.4 K) initializes a Gaussian temperature pulse at the center. Watch the ring-shaped wave expand outward — this is second sound, a temperature wave unique to superfluids. Vortices scatter the wave, creating interference patterns. Inject additional pulses with `s`.
+
+The Lambda Point Transition preset starts above T_λ (T=2.5 K, normal fluid) and cools toward 0.5 K. As T drops below 2.17 K, the superfluid fraction grows from zero, vortex dynamics activate, and the system transitions from diffusive thermal behavior to coherent quantum vortex dynamics. Watch ρ_s/ρ in the title bar increase from 0.00 to ~0.99.
+
+**Presets:** Quantum Turbulence (T=1.2K, 25 pairs), Vortex Reconnection (T=1.0K, 4 aimed pairs), Kelvin Wave Cascade (T=0.8K, vortex ring with mode-3 perturbation), Two-Fluid Counterflow (T=1.6K, vn=0.3), Second Sound (T=1.4K, central temperature pulse), Lambda Point Transition (T=2.5→0.5K, cooling ramp).
+
+**References.**
+- Donnelly, R.J. *Quantized Vortices in Helium II*. Cambridge University Press, 1991. https://doi.org/10.1017/CBO9780511564123
+- Barenghi, C.F., Skrbek, L., and Sreenivasan, K.R. "Introduction to Quantum Turbulence." *Proceedings of the National Academy of Sciences*, 111(Supplement 1), 2014. https://doi.org/10.1073/pnas.1400033111
+- Vinen, W.F. "Mutual Friction in a Heat Current in Liquid Helium II." *Proceedings of the Royal Society A*, 240(1220), 1957. https://doi.org/10.1098/rspa.1957.0071
+- Tisza, L. "Transport Phenomena in Helium II." *Nature*, 141, 1938. https://doi.org/10.1038/141913a0

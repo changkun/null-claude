@@ -84,6 +84,8 @@ MODE_REGISTRY = [
      "desc": "Smoothed particle hydrodynamics simulation", "attr": "sph_mode", "enter": "_enter_sph_mode", "exit": "_exit_sph_mode"},
     {"name": "MHD Plasma", "key": "}", "category": "Fluid Dynamics",
      "desc": "Magnetohydrodynamic plasma turbulence", "attr": "mhd_mode", "enter": "_enter_mhd_mode", "exit": "_exit_mhd_mode"},
+    {"name": "Superfluid Helium", "key": "—", "category": "Fluid Dynamics",
+     "desc": "Quantum vortex tangle — reconnections, Kelvin waves, second sound & lambda-point transition", "attr": "superfluid_mode", "enter": "_enter_superfluid_mode", "exit": "_exit_superfluid_mode"},
     # ── Chemical & Biological ──
     {"name": "Reaction-Diffusion Textures", "key": "6", "category": "Chemical & Biological",
      "desc": "Gray-Scott texture generator: coral, mitosis, fingerprints, worms & more", "attr": "rd_mode", "enter": "_enter_rd_mode", "exit": "_exit_rd_mode"},
