@@ -563,3 +563,35 @@ Key handling intercepts arrow keys and vim-style navigation only when the tuner 
 - In Reaction-Diffusion, sweep the feed rate from 0.02 to 0.06 to watch the pattern transition from spots to worms to spirals to chaos.
 - Use `[`/`]` for 10x step adjustments to quickly sweep across a parameter's full range.
 - Try the auto-detected parameters on modes without explicit definitions — the tuner discovers numeric attributes automatically.
+
+---
+
+## Mode Morph Transitions
+
+**Source:** `life/modes/morph_transition.py`
+
+### Background
+
+Mode Morph Transitions replaces the hard cut between simulation modes with a smooth crossfade. When you switch modes (manually or via screensaver auto-cycling), the outgoing mode's final frame is captured and faded out over a configurable number of frames while the new mode fades in underneath. This turns mode-switching into a visually seamless experience, especially effective during demo-reel playback through all 130+ modes.
+
+### How it works
+
+The transition engine hooks into two points in the main loop pipeline:
+
+1. **Capture** (`_morph_on_mode_exit`): Just before `_exit_current_modes` clears the old mode, the system snapshots every occupied cell on screen — both truecolor RGB cells from `tc_buf` and curses character cells via `inch()`. The snapshot is stored as a dictionary mapping `(y, x)` positions to `(char, r, g, b)` tuples.
+
+2. **Blend** (`_morph_on_refresh`): After `_tc_refresh` renders the new mode's frame, the transition engine overlays the captured old frame with decreasing opacity. For truecolor cells, RGB values are scaled by `alpha_old = 1 - easing(progress/duration)`. For curses-only cells, a grey value is derived from the alpha. Cells where the new mode already has content are skipped, so new content always takes visual priority. Output is emitted as raw ANSI 24-bit color escapes directly to stdout.
+
+Three easing curves control the fade profile:
+- **Linear**: constant fade rate
+- **Smooth**: cubic smooth-step `t²(3 - 2t)` for a natural feel (default)
+- **Ease-in-out**: quintic `16t⁵` / `1 - 16(1-t)⁵` for dramatic slow-start-slow-end
+
+Duration is configurable from 10 to 120 frames (default 45, roughly 1.5 seconds at 30 fps). The feature requires zero changes to any individual mode file — it operates entirely through the app-level dispatch and refresh hooks.
+
+### What to explore
+
+- Toggle morph transitions on with `G` (Shift+G), then switch between modes to see the crossfade in action.
+- Use `[` / `]` to shorten or lengthen the transition duration — short (10 frames) feels snappy, long (90+ frames) feels dreamlike.
+- Cycle easing curves with `Ctrl+T` to compare linear (mechanical), smooth (natural), and ease-in-out (cinematic) fade profiles.
+- Enable morph transitions alongside the screensaver/demo-reel mode for an unattended visual showcase with seamless mode changes.

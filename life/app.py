@@ -661,6 +661,8 @@ class App:
         self.pp_trail_depth = 3                # trail history length
         # Ghost trail / temporal echo layer (initialised by _ghost_trail_init)
         self._ghost_trail_init()
+        # Morph transition crossfade layer (initialised by _morph_transition_init)
+        self._morph_transition_init()
         # Wolfram 1D elementary cellular automaton mode
         self.wolfram_mode = False
         self.wolfram_rule = 30           # current rule number (0-255)
@@ -3591,6 +3593,9 @@ class App:
             # ── Ghost trail indicator overlay ──
             if self.ghost_trail_active and not self._any_menu_open():
                 self._ghost_trail_draw_indicator()
+            # ── Morph transition indicator overlay ──
+            if self.morph_enabled and not self._any_menu_open():
+                self._morph_draw_indicator()
             # ── Screensaver overlay (drawn after sub-mode content) ──
             if self.screensaver_mode and self.screensaver_running and not self.screensaver_menu:
                 _my, _mx = self.stdscr.getmaxyx()
@@ -3698,6 +3703,10 @@ class App:
 
             # ── Ghost trail key handling ──
             if self._ghost_trail_handle_key(key):
+                continue
+
+            # ── Morph transition key handling ──
+            if self._morph_handle_key(key):
                 continue
 
             # ── Post-processing pipeline key handling ──
@@ -4828,6 +4837,8 @@ class App:
 
     def _exit_current_modes(self):
         """Exit any currently active simulation mode."""
+        # Capture outgoing frame for morph crossfade before clearing
+        self._morph_on_mode_exit()
         for entry in MODE_REGISTRY:
             if entry["attr"] and getattr(self, entry["attr"], False):
                 exit_fn = getattr(self, entry["exit"], None)
@@ -5445,6 +5456,8 @@ class App:
         self.stdscr.refresh()
         if self.tc_buf.enabled and self.tc_buf.cells:
             self.tc_buf.render()
+        # Morph crossfade: overlay fading old frame on top of new content
+        self._morph_on_refresh()
 
     def _draw(self):
         self.stdscr.erase()
