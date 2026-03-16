@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add emergent computation detector for information-theoretic analysis
+
+Added a universal overlay that instruments any running simulation to discover and visualize hidden computational structures using information-theoretic measures. Toggle with `I` — works across all 150+ modes via `_get_minimap_data()`, revealing signal channels, logic gates, memory cells, and oscillators that emerge from simple rules. Pure Python, no external dependencies.
+
+**`life/modes/computation_detector.py`** (new, ~770 lines):
+
+- **Transfer entropy heatmap**: Colors each cell by outgoing information flow to neighbors (cardinal directions), using a binned conditional entropy estimator. Reveals signal propagation paths invisible in raw state views.
+- **Causal density overlay**: For each cell, measures the fraction of 8 neighbors with significant transfer entropy (threshold 0.02), highlighting tightly coupled computational units.
+- **Information flow arrows**: Computes dominant TE direction per cell, rendering Unicode directional arrows (↑↓←→↗↘↖↙) to show where information moves through the grid.
+- **Structure classifier**: Flood-fill connected regions of high TE/CD, then classify by properties — periodicity detection for oscillators/guns, high CD + small size for gates, elongated high-TE/low-CD for wires, plus sources, sinks, memory cells, and still lifes. Icons: ∿ oscillator, ━ wire, ⊕ gate, ⊛ gun, ⊞ memory, ◉ source, ◎ sink.
+- **Computation summary panel**: Real-time metrics — Φ integration score (TE weighted by causal density), cumulative bits processed, channel capacity (max TE), structure counts by type.
+- **Configurable resolution**: Sampling grid adjustable from 8×8 to 48×48 with `+`/`-`, recomputed every 4 draw frames with ring-buffered history (12 frames).
+
+**`life/registry.py`**: Added "Emergent Computation Detector" entry in Meta Modes category (key `I`).
+
+**`life/modes/__init__.py`**: Added registration call for the computation_detector module.
+
+**`life/app.py`** (~10 lines added):
+
+- `__init__`: Initialize computation detector state via `_compdet_init()`.
+- Draw loop: Render overlay when active and no menus are open.
+- Key handler: Route key events through `_compdet_handle_key()`.
+
+---
+
 ### Feature: Add persistent terrarium mode for cross-session simulation continuity
 
 Added a new Meta Mode that turns the simulator into a persistent world — the simulation saves its state automatically on exit and resumes exactly where it left off on next launch. While "away," it fast-forwards through elapsed generations based on real wall-clock time and maintains a chronicle log of notable events with timestamps. Returning shows a welcome-back summary of what happened while you were gone.

@@ -349,6 +349,9 @@ MODE_REGISTRY = [
     # ── Persistent Terrarium ──
     {"name": "Terrarium", "key": "—", "category": "Meta Modes",
      "desc": "Persistent simulation that saves on exit, resumes on launch, and fast-forwards through elapsed time", "attr": "terrarium_mode", "enter": "_enter_terrarium_mode", "exit": "_exit_terrarium_mode"},
+    # ── Emergent Computation Detector ──
+    {"name": "Emergent Computation Detector", "key": "I", "category": "Meta Modes",
+     "desc": "Information-theoretic overlay revealing hidden computational structures — transfer entropy, causal density, signal channels & logic gates", "attr": None, "enter": None, "exit": None},
 ]
 
 

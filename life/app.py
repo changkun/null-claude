@@ -696,6 +696,8 @@ class App:
         self.pp_trail_depth = 3                # trail history length
         # 2D spatial frequency spectrum overlay (initialised by _spectrum_init)
         self._spectrum_init()
+        # Emergent computation detector overlay (initialised by _compdet_init)
+        self._compdet_init()
         # Ghost trail / temporal echo layer (initialised by _ghost_trail_init)
         self._ghost_trail_init()
         # Long-exposure photography layer (initialised by _long_exposure_init)
@@ -3877,6 +3879,10 @@ class App:
                 self._spectrum_draw_panel()
                 self._spectrum_draw_indicator()
                 self._tc_refresh()
+            # ── Emergent computation detector overlay ──
+            if self.compdet_active and not self._any_menu_open():
+                self._compdet_draw()
+                self._tc_refresh()
             # ── Long-exposure indicator overlay ──
             if (self.long_exp_active or self.long_exp_frozen) and not self._any_menu_open():
                 self._long_exposure_draw_indicator()
@@ -4061,6 +4067,10 @@ class App:
 
             # ── Spectrum overlay key handling ──
             if self._spectrum_handle_key(key):
+                continue
+
+            # ── Computation detector key handling ──
+            if self._compdet_handle_key(key):
                 continue
 
             # ── Long-exposure photography key handling ──

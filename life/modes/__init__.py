@@ -286,6 +286,8 @@ def register_all_modes(App):
     reg_symbiosis(App)
     from life.modes.terrarium import register as reg_terrarium
     reg_terrarium(App)
+    from life.modes.computation_detector import register as reg_compdet
+    reg_compdet(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

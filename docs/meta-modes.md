@@ -988,3 +988,58 @@ Auto-save runs every 60 seconds during simulation, and state is always saved on 
 - Leave the terrarium running overnight and check the welcome-back summary in the morning for a history of what happened while you slept.
 - If your terrarium reaches extinction, it will auto-reseed — watch how different random configurations evolve differently after each extinction event.
 - Use the chronicle viewer (`c`) to scroll through the full event history and spot patterns across sessions.
+
+---
+
+## Emergent Computation Detector
+
+**Source:** `life/modes/computation_detector.py`
+
+### Background
+
+The project has 150+ simulation modes but until now no tool to understand *what they're computing*. Existing analytics measure statistical properties — entropy, periodicity, phase transitions — but don't reveal **causal structure and information flow**. The Emergent Computation Detector fills this gap: it's an information-theoretic overlay that can instrument any running simulation to discover hidden computational primitives — glider guns, logic gates, signal channels, memory cells — using transfer entropy, integrated information, and causal density.
+
+This mode works as a universal overlay, not a standalone simulation. It samples the active simulation via `_get_minimap_data()`, meaning it works across every existing mode without modification. Toggle it on with `I` during any simulation to see what computational structures have emerged from simple rules.
+
+### How it works
+
+**Transfer entropy** measures directed information flow between cells. For each cell, the detector estimates how much knowing a neighbor's past state reduces uncertainty about the cell's future state, using a binned conditional entropy estimator: TE(X→Y) = H(Y_t | Y_{t-1}) − H(Y_t | Y_{t-1}, X_{t-1}). The total outgoing TE per cell is summed across cardinal neighbors and normalized to [0, 1] for the heatmap.
+
+**Causal density** measures how tightly coupled a cell is with its neighborhood. For each of 8 neighbors, if the pairwise transfer entropy exceeds a threshold (0.02 bits), it counts as a causal link. Causal density is the fraction of neighbors with significant causal connections — high values indicate cells that are part of a coherent computational unit rather than isolated noise.
+
+**Information flow direction** computes pairwise TE from each cell to all 8 neighbors, then selects the direction with the highest TE as the dominant flow direction. This is rendered as Unicode arrows (↑↓←→↗↘↖↙), revealing signal propagation paths.
+
+**Structure classification** uses flood-fill to identify connected regions of high TE/CD, then classifies each region by its properties:
+
+| Structure | Icon | Detection criteria |
+|-----------|------|-------------------|
+| Oscillator | ∿ | Periodic activity, size ≤ 6 |
+| Gun | ⊛ | Periodic activity, high TE, size > 6 |
+| Gate | ⊕ | High causal density, size ≤ 4 |
+| Memory | ⊞ | High causal density, size > 4 |
+| Wire | ━ | Moderate TE, low CD, elongated |
+| Source | ◉ | High TE, low CD |
+| Sink | ◎ | Low TE, high CD |
+| Still life | ■ | Low TE, moderate CD, non-periodic |
+
+**Integration score (Φ)** approximates integrated information by weighting each cell's transfer entropy by its causal density and summing across the grid. Higher Φ means the system's information processing exceeds what independent parts would achieve.
+
+The detector samples the simulation into a configurable N×N grid (default 24×24), maintains a ring buffer of 12 frames, and recomputes all measures every 4 draw frames to balance responsiveness with CPU cost.
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **I** | Toggle computation detector on/off |
+| **Tab** | Cycle view: Transfer Entropy → Causal Density → Info Flow Arrows |
+| **+** / **-** | Increase / decrease sampling resolution (8–48, step 4) |
+| **l** | Toggle structure labels on/off |
+
+### What to explore
+
+- Run Conway's Life and toggle `I` — watch gliders appear as directional TE channels and oscillators light up as periodic high-CD clusters.
+- Compare the Φ integration score across different rule sets. Rules that produce complex behavior (like B3/S23) should score higher than rules that quickly die or fill the grid uniformly.
+- Use the causal density view to find "computational cores" — regions where cells are tightly coupled and processing information collectively.
+- Watch the info flow arrows during a glider collision to see information scatter and recombine.
+- Try it on non-CA modes (wave equations, reaction-diffusion, boids) — the information-theoretic measures work on any dynamics, revealing computational structure in continuous systems too.
+- Adjust resolution with `+`/`-`: lower resolution (8×8) gives faster updates for real-time exploration; higher resolution (48×48) reveals finer structure for detailed analysis.
