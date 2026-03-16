@@ -941,3 +941,76 @@ Environmental decoherence (rate d, adjustable 0–1):
 - Bleh, D., Calarco, T., and Montangero, S. "Quantum Game of Life," *EPL (Europhysics Letters)*, 97(2), 2012. https://doi.org/10.1209/0295-5075/97/20012
 - Meyer, D.A. "From quantum cellular automata to quantum lattice gases," *Journal of Statistical Physics*, 85, 1996. https://doi.org/10.1007/BF02199356
 - Venegas-Andraca, S.E. "Quantum walks: a comprehensive review," *Quantum Information Processing*, 11(5), 2012. https://doi.org/10.1007/s11128-012-0432-5
+
+
+---
+
+## Time Crystal
+
+**Background** — Discrete time crystals (DTCs) are a phase of matter that spontaneously breaks discrete time-translation symmetry. First proposed theoretically by Frank Wilczek in 2012 and experimentally realized in 2016–2017 using trapped ions and nitrogen-vacancy centers in diamond, DTCs exhibit a striking phenomenon: when driven periodically at frequency ω, the system responds at a subharmonic frequency ω/2 (period-doubling). This subharmonic response is robust against perturbations to the drive — a genuine symmetry breaking, not merely a resonance effect. The key ingredients are many-body localization (MBL) from quenched disorder, which prevents the system from absorbing energy and heating to infinite temperature, and Ising interactions that stabilize the collective spin-flip oscillation. This mode simulates a spin-1/2 lattice under Floquet driving, reproducing the hallmark DTC signatures.
+
+**Formulation** — Each cell holds a spin on the Bloch sphere parameterized by (σᶻ, φ), evolving under a two-phase Floquet protocol:
+
+```
+Floquet period (two half-steps):
+
+  Phase 1 — Ising interaction + disorder (drive_period = 0):
+    For each spin (r, c):
+      h_eff = h_disorder[r][c] + J * Σ_neighbors J_disorder[r][c] * σᶻ(neighbor)
+      Decompose spin: sx = √(1 - σᶻ²) cos(φ),  sy = √(1 - σᶻ²) sin(φ)
+      Precess transverse components around z by angle h_eff * dt:
+        sx' = sx cos(θ) - sy sin(θ)
+        sy' = sx sin(θ) + sy cos(θ)
+      Small transverse mixing: σᶻ' = σᶻ + 0.02 * h_eff * dt * sx'
+      Reconstruct φ from (sx', sy')
+
+  Phase 2 — Imperfect π-pulse (drive_period = 1):
+    Rotation angle: α = π - ε   (ε = drive imperfection)
+    For each spin, rotate Bloch vector around x-axis by α:
+      sx' = sx
+      sy' = sy cos(α) - σᶻ sin(α)
+      σᶻ' = sy sin(α) + σᶻ cos(α)
+    Record stroboscopic snapshot for oscillation analysis.
+
+Parameters:
+  ε        — drive imperfection (0.0 to 0.5), deviation from perfect π-pulse
+  J        — Ising coupling strength (0.0 to 3.0)
+  disorder — quenched disorder strength (0.0 to 2.0)
+  dt = 0.5   (interaction time per half-period)
+
+Quenched disorder:
+  h_disorder[r][c] ~ N(0, disorder)           local field
+  J_disorder[r][c] ~ 1 + N(0, 0.3 * disorder) coupling variation
+
+DTC order parameter:
+  Compare last two stroboscopic snapshots:
+    order = Σ |σᶻ_current - σᶻ_previous| / Σ (|σᶻ_current| + |σᶻ_previous|)
+  Perfect period-doubling → order ≈ 1.0
+
+Oscillation amplitude (per cell, from stroboscopic history):
+  Count sign alternations over last 16 Floquet periods
+  amplitude = alternating_magnitude / total_magnitude
+```
+
+**Presets** — Six configurations span the DTC phase diagram:
+- **Clean DTC**: Uniform coupling (J=1.0), small drive error (ε=0.03), no disorder — textbook period-doubling from Ising interactions alone
+- **Disordered DTC (MBL)**: Strong quenched disorder (0.5) with J=0.8 — many-body localization protects the DTC from thermalization
+- **Melting Crystal**: Large drive error (ε=0.20) near the phase boundary — fragile oscillations that gradually decay as the system absorbs energy
+- **Domain Walls**: Alternating horizontal stripe domains — watch subharmonic breathing at domain boundaries
+- **Period-4 Attempt**: Enhanced coupling (J=1.5) with checkerboard initial conditions — seeking higher-order T/4 subharmonic response
+- **Random Spins**: Fully random initial spins with moderate disorder — spontaneous DTC formation from a disordered initial state
+
+**Visualization modes** (cycle with `v`):
+- **Spin**: Current σᶻ expectation — warm colors (red/yellow) for spin-up, cool colors (blue) for spin-down, brightness proportional to polarization magnitude
+- **Oscillation**: DTC amplitude per cell — green indicates strong period-doubling, yellow moderate, blue negligible
+- **Stroboscopic**: System state sampled every full Floquet period — in a DTC phase, this view alternates uniformly between two states
+
+**Controls**: `Space` play/pause, `n`/`.` single step, `v` cycle view, `e`/`E` increase/decrease drive error ε, `j`/`J` increase/decrease Ising coupling, `d`/`D` increase/decrease disorder, `+`/`-` adjust speed, `click` flip a spin (test robustness), `r` reset, `R` return to menu.
+
+**What to look for** — In the Clean DTC preset, start the simulation and watch the global DTC order parameter in the title bar climb toward 1.0 as period-doubling establishes itself. Switch to Oscillation view to see green cells indicating robust subharmonic response. Now increase ε (press `e` repeatedly) — at around ε≈0.15–0.20, the DTC melts as the system can no longer maintain coherent period-doubling. Click individual cells to flip their spins and observe how quickly the DTC self-heals — this robustness against local perturbations is the defining feature distinguishing a DTC from trivial oscillation. Compare the Clean DTC (which eventually thermalizes without disorder) to the Disordered DTC (where many-body localization prevents heating indefinitely). The Domain Walls preset reveals how DTC behavior nucleates differently at boundaries between spin domains.
+
+**References**
+- Wilczek, F. "Quantum Time Crystals," *Physical Review Letters*, 109, 2012. https://doi.org/10.1103/PhysRevLett.109.160401
+- Else, D.V., Bauer, B., and Nayak, C. "Floquet Time Crystals," *Physical Review Letters*, 117, 2016. https://doi.org/10.1103/PhysRevLett.117.090402
+- Zhang, J. et al. "Observation of a discrete time crystal," *Nature*, 543, 2017. https://doi.org/10.1038/nature21413
+- Choi, S. et al. "Observation of discrete time-crystalline order in a disordered dipolar many-body system," *Nature*, 543, 2017. https://doi.org/10.1038/nature21426

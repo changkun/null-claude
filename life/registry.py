@@ -390,6 +390,9 @@ MODE_REGISTRY = [
     # ── Quantum Game of Life ──
     {"name": "Quantum Game of Life", "key": "—", "category": "Physics & Waves",
      "desc": "Quantum CA — cells in superposition, entangled neighbours, measurement collapse & decoherence with GoL rules as unitary operator", "attr": "qgol_mode", "enter": "_enter_qgol_mode", "exit": "_exit_qgol_mode"},
+    # ── Time Crystal ──
+    {"name": "Time Crystal", "key": "—", "category": "Physics & Waves",
+     "desc": "Discrete time crystal — spins break time-translation symmetry via Floquet driving, producing robust period-doubling subharmonic response", "attr": "tcrystal_mode", "enter": "_enter_tcrystal_mode", "exit": "_exit_tcrystal_mode"},
 ]
 
 

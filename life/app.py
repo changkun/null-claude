@@ -901,6 +901,12 @@ class App:
         self.pm_menu_sel = 0
         self.pm_running = False
 
+        # ── Time Crystal state ──
+        self.tcrystal_mode = False
+        self.tcrystal_menu = False
+        self.tcrystal_menu_sel = 0
+        self.tcrystal_running = False
+
         # ── Wave Function Collapse state ──
         self.wfc_mode = False
         self.wfc_menu = False

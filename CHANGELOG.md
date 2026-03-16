@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Time Crystal — discrete time crystal with Floquet driving and period-doubling
+
+Simulates a discrete time crystal (DTC) where a spin-1/2 lattice spontaneously breaks discrete time-translation symmetry. Under periodic Floquet driving (alternating Ising interaction and imperfect π-pulse), spins respond at half the drive frequency — a robust period-doubling that persists even when the drive is imperfect. This is the hallmark of the DTC phase, experimentally realized in 2016–2017 and one of the most striking phenomena in modern condensed matter physics. Complements the existing Quantum Game of Life and Spacetime Fabric modes in the Physics & Waves category.
+
+**`life/modes/time_crystal.py`** (new, ~683 lines):
+
+- **Two-phase Floquet protocol**: Phase 1 applies Ising nearest-neighbor interactions (Jᵢⱼ σᶻᵢ σᶻⱼ) with quenched disorder fields for many-body localization. Phase 2 applies a global imperfect π-pulse (rotation by π−ε around x-axis). The interplay produces period-doubling robust against perturbation ε.
+- **Bloch sphere spin dynamics**: Each cell stores (σᶻ, φ) parameterizing a spin on the Bloch sphere. Phase 1 precesses transverse components around the effective field; Phase 2 rotates the full Bloch vector around the x-axis.
+- **DTC order parameter**: Global metric measuring stroboscopic magnetization alternation — perfect period-doubling yields order ≈ 1.0. Displayed in the title bar with color coding (green = strong DTC, yellow = moderate, red = weak/melted).
+- **Per-cell oscillation analysis**: 16-period stroboscopic history tracks sign alternation amplitude for each cell independently, powering the Oscillation visualization.
+- **6 presets**: Clean DTC, Disordered DTC (MBL), Melting Crystal (near phase boundary), Domain Walls, Period-4 Attempt, Random Spins.
+- **3 visualization modes**: Spin (current σᶻ, warm=up/cool=down), Oscillation (DTC amplitude per cell, green=strong period-doubling), Stroboscopic (sampled every full Floquet period).
+- **Interactive controls**: drive error ε (e/E), Ising coupling J (j/J), disorder strength (d/D), click to flip spins (test robustness), view cycling (v), speed control (+/-), reset (r), menu (R).
+
+**`life/registry.py`**: Added "Time Crystal" entry in Physics & Waves category with `tcrystal_mode` attribute, `_enter_tcrystal_mode`/`_exit_tcrystal_mode` lifecycle hooks.
+
+**`life/modes/__init__.py`**: Added registration import for the time_crystal module.
+
+**`life/app.py`**: Added initialization of `tcrystal_mode`, `tcrystal_menu`, `tcrystal_menu_sel`, and `tcrystal_running` state variables.
+
+---
+
 ### Feature: Add Programmable Matter — self-assembling state-machine cells
 
 Each cell is a tiny state machine executing a local program with 3 registers and a program counter. Cells move, bond, signal, replicate, and read neighbors — all from purely local rules. Swarms self-assemble into user-defined target shapes, self-repair when damaged, and perform distributed computation. This fills the gap between the project's passive CA modes and its ecosystem modes by making cells *actively programmable agents* on a grid.

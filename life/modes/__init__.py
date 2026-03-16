@@ -314,6 +314,8 @@ def register_all_modes(App):
     reg_spacetime(App)
     from life.modes.programmable_matter import register as reg_progmatter
     reg_progmatter(App)
+    from life.modes.time_crystal import register as reg_tcrystal
+    reg_tcrystal(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
