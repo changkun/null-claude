@@ -664,6 +664,8 @@ class App:
         self.pp_trail_depth = 3                # trail history length
         # Ghost trail / temporal echo layer (initialised by _ghost_trail_init)
         self._ghost_trail_init()
+        # Long-exposure photography layer (initialised by _long_exposure_init)
+        self._long_exposure_init()
         # Morph transition crossfade layer (initialised by _morph_transition_init)
         self._morph_transition_init()
         # Wolfram 1D elementary cellular automaton mode
@@ -3596,6 +3598,9 @@ class App:
             # ── Ghost trail indicator overlay ──
             if self.ghost_trail_active and not self._any_menu_open():
                 self._ghost_trail_draw_indicator()
+            # ── Long-exposure indicator overlay ──
+            if (self.long_exp_active or self.long_exp_frozen) and not self._any_menu_open():
+                self._long_exposure_draw_indicator()
             # ── Morph transition indicator overlay ──
             if self.morph_enabled and not self._any_menu_open():
                 self._morph_draw_indicator()
@@ -3717,6 +3722,10 @@ class App:
 
             # ── Ghost trail key handling ──
             if self._ghost_trail_handle_key(key):
+                continue
+
+            # ── Long-exposure photography key handling ──
+            if self._long_exposure_handle_key(key):
                 continue
 
             # ── Morph transition key handling ──
@@ -5467,6 +5476,8 @@ class App:
         # (only on the first _tc_refresh per draw cycle — the main mode content)
         if self.ghost_trail_active and not self._ghost_frame_done:
             self._ghost_trail_process()
+        # Long-exposure: accumulate frame data before rendering
+        self._long_exposure_process()
         self.stdscr.refresh()
         if self.tc_buf.enabled and self.tc_buf.cells:
             self.tc_buf.render()
@@ -5478,6 +5489,12 @@ class App:
         self.tc_buf.clear()
         self._ghost_frame_done = False
         max_y, max_x = self.stdscr.getmaxyx()
+
+        # ── Long-exposure frozen composite (full-screen artwork) ──
+        if self.long_exp_frozen and self._long_exp_composite:
+            self._long_exposure_draw_composite()
+            self._tc_refresh()
+            return
 
         # ── Script mode: has extra overlay, handled explicitly ──
         if self.script_menu:
@@ -5882,6 +5899,10 @@ class App:
                 mode += "  │  ♪ SOUND"
             if self.ghost_trail_active:
                 mode += f"  │  GHOST({self.ghost_trail_depth})"
+            if self.long_exp_active:
+                mode += f"  │  ◉EXP({self.long_exp_frames_captured}/{self.long_exp_window})"
+            elif self.long_exp_frozen:
+                mode += f"  │  ◎EXP({self.long_exp_frames_captured}f)"
             if self.sonify_enabled:
                 mode += "  │  ♫ SONIFY"
             if self.hex_mode:
@@ -6058,6 +6079,11 @@ class App:
             "║  g         Genome: export/import sim config    ║",
             "║  G         Record/stop GIF (export frames)   ║",
             "║  Ctrl+U    Scripting & Choreography (.show)  ║",
+            "║  Ctrl+E    Long-exposure capture start/stop   ║",
+            "║  Ctrl+F    Freeze/unfreeze exposure composite  ║",
+            "║  [ ]       Adjust exposure window (±50 frames) ║",
+            "║  { }       Cycle blend mode (add/max/avg)      ║",
+            "║  Ctrl+]    Export frozen composite to file      ║",
             "║  Ctrl+V    Sparkline metrics HUD (braille)   ║",
             "║  Ctrl+X    Record/export .cast or .txt file  ║",
             "║  i         Import RLE pattern file            ║",

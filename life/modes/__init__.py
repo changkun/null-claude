@@ -266,6 +266,8 @@ def register_all_modes(App):
     reg_tierra(App)
     from life.modes.ghost_trail import register as reg_ghost_trail
     reg_ghost_trail(App)
+    from life.modes.long_exposure import register as reg_long_exposure
+    reg_long_exposure(App)
     from life.modes.morph_transition import register as reg_morph
     reg_morph(App)
     from life.modes.sparkline_hud import register as reg_sparkline_hud

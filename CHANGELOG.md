@@ -4,6 +4,45 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add long-exposure photography mode for composite frame artwork
+
+Added a "long-exposure photography" system that composites hundreds of simulation frames into a single artistic still image — like astrophotography for cellular automata. Blends frame data over a configurable time window using accumulation buffers, producing luminance trails, flow lines, and density maps rendered as a high-detail truecolor frame.
+
+**`life/modes/long_exposure.py`** (new, ~415 lines):
+- **Accumulation buffer**: each frame's truecolor RGB data is accumulated per-pixel, tracking total color, hit count, and peak intensity across the entire exposure window.
+- **3 blend modes**: additive (luminance trails weighted by activity density, with brightness boost for high-traffic areas), max (peak intensity — captures the brightest moment at each pixel), average (mean color — reveals the steady-state palette).
+- **Auto-freeze**: automatically freezes the composite and stops accumulation when the configurable exposure window (10–1000 frames) is reached.
+- **Density-based glyphs**: renders frozen composites using `· ░ ▒ ▓ █` based on how frequently each pixel was occupied, creating topographic-style density maps.
+- **Dual export**: frozen composites export as both machine-readable JSON (pixel coordinates, RGB, density) and ANSI art `.ans` files viewable with `cat` in any truecolor terminal.
+- **Progress indicator**: real-time overlay badge with mini progress bar (`█░`) showing capture progress, blend mode, and frame count.
+
+**`life/app.py`** (+30 lines):
+- Init called from `__init__` alongside ghost trail.
+- Frame accumulation hooked into `_tc_refresh()` — captures every rendered frame from any of the 130+ modes.
+- Frozen composite renders as full-screen artwork in `_draw()` (before mode dispatch), replacing the live view.
+- Key handling inserted after ghost trail handlers.
+- Status bar shows active capture progress or frozen frame count.
+- Help screen updated with all 5 new keybindings.
+
+**`life/modes/__init__.py`** (+2 lines):
+- Registered `long_exposure` module via the standard `register()` pattern.
+
+**`tests/test_long_exposure.py`** (new, 31 tests):
+- Covers initialization, key handling (start/stop/freeze/unfreeze/restart), accumulation (truecolor cells, multi-frame, max tracking, inactive/frozen guards), auto-freeze at window boundary, all 3 blend modes (additive density weighting, max peak selection, average arithmetic mean), composite rendering, indicator drawing, export with file verification, and method registration.
+
+**Design:** Builds on the existing ghost trail, truecolor buffer, and colormap infrastructure. Where ghost trail shows fading echoes of recent frames, long exposure creates permanent, layered artwork from the full trajectory. The accumulation buffer tracks 7 values per pixel (3 totals, hit count, 3 maxima) to support all blend modes from a single capture pass.
+
+**Controls:**
+| Key | Action |
+|-----|--------|
+| `Ctrl+E` | Start/stop long-exposure capture |
+| `Ctrl+F` | Freeze/unfreeze composite view |
+| `[ ]` | Adjust exposure window (±50 frames, range 10–1000) |
+| `{ }` | Cycle blend mode (additive → max → average) |
+| `Ctrl+]` | Export frozen composite to `.json` + `.ans` files |
+
+---
+
 ### Feature: Add braille-dot sparkline metrics HUD for real-time visualization
 
 Added a toggleable overlay that renders live sparkline charts using Unicode braille characters (U+2800–U+28FF) for high-resolution mini-charts in a small terminal footprint. Four metrics — population, entropy, energy, and diversity index — update in real time as the simulation runs, turning every mode into a visual science experiment.

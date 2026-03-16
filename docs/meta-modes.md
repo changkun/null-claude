@@ -505,6 +505,38 @@ Each cell's genome is a `(birth_bits, survival_bits)` pair. Alive cells check su
 
 ---
 
+## Long-Exposure Photography
+
+**Source:** `life/modes/long_exposure.py`
+
+### Background
+
+Long-Exposure Photography composites hundreds of simulation frames into a single artistic still image, like astrophotography for cellular automata. Where Ghost Trail shows fading echoes of the last few frames, Long Exposure accumulates an entire time window (10–1000 generations) into a permanent composite that reveals the full trajectory, flow patterns, and density structure of any simulation.
+
+### How it works
+
+When capture is active, every rendered frame is accumulated into a per-pixel buffer that tracks seven values: total R/G/B (for additive and average blending), hit count (how many frames occupied this pixel), and peak R/G/B (for max blending). The system captures from both the truecolor buffer (`tc_buf`) and the curses screen, so it works with all 130+ modes regardless of their rendering path.
+
+When the exposure window is reached (or the user manually freezes), the accumulation buffer is composited into a final image using one of three blend modes:
+
+- **Additive**: base color is the per-pixel average, scaled by a density factor (0.3 + 0.7 × density) with a luminance boost (up to +80 RGB) for high-traffic areas. This creates glowing trails where activity was concentrated.
+- **Max**: each pixel shows the brightest color it ever displayed during the exposure. Good for capturing peak moments and transient flashes.
+- **Average**: simple arithmetic mean of all frames. Reveals the steady-state palette and suppresses transient noise.
+
+The frozen composite renders as a full-screen truecolor image using density-mapped glyphs (`· ░ ▒ ▓ █`), creating a topographic density map where glyph weight corresponds to how frequently each pixel was active. Very low-density pixels (< 1% of max) are rendered as faint dots with dimmed colors.
+
+Export produces two files: a JSON file containing per-pixel coordinates, RGB values, and density fractions (machine-readable, suitable for further processing), and an ANSI art `.ans` file with embedded 24-bit color escapes (viewable with `cat` in any truecolor terminal).
+
+### What to explore
+
+- Capture a 500-frame exposure of Boids or N-Body to see orbital trajectories materialize as luminous trails.
+- Use **max** blend on Reaction-Diffusion to capture the full wavefront propagation in a single image.
+- Try **average** blend on a chaotic rule (Seeds, B2/S) to reveal the statistical density structure.
+- Combine with Ghost Trail active for both real-time echoes and long-term accumulation simultaneously.
+- Export the `.ans` file and view it in a truecolor terminal for a shareable artwork snapshot.
+
+---
+
 ## Ghost Trail / Temporal Echo
 
 **Source:** `life/modes/ghost_trail.py`
