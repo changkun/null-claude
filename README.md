@@ -1,7 +1,29 @@
 # Life Simulator
 
+```
+  ╔═══════════════════════════════════════════════════════════════════╗
+  ║                                                                   ║
+  ║    ██      ██ ████████ ████████                                   ║
+  ║    ██      ██ ██       ██                                         ║
+  ║    ██      ██ ██████   ██████                                     ║
+  ║    ██      ██ ██       ██                                         ║
+  ║    ███████ ██ ██       ████████                                   ║
+  ║                                                                   ║
+  ║    ███████ ██ ██     ██ ██    ██ ██       ████   ██████ ████████  ║
+  ║    ██      ██ ███   ███ ██    ██ ██      ██  ██    ██   ██    ██  ║
+  ║    ███████ ██ ██ ███ ██ ██    ██ ██      ██████    ██   ██    ██  ║
+  ║         ██ ██ ██  █  ██ ██    ██ ██      ██  ██    ██   ██    ██  ║
+  ║    ███████ ██ ██     ██  ██████  ███████ ██  ██    ██   ████████  ║
+  ║                                                                   ║
+  ║    cellular automata · fluid dynamics · particle systems          ║
+  ║    quantum circuits · neural networks · ecology · fractals        ║
+  ║    game theory · astrophysics · chemistry · evolution             ║
+  ║                                                                   ║
+  ╚═══════════════════════════════════════════════════════════════════╝
+```
+
 A terminal-based life simulator built entirely with Python's standard library.
-125 simulation modes spanning cellular automata, fluid dynamics, particle systems,
+Cellular automata, fluid dynamics, particle systems,
 quantum circuits, neural networks, ecology, game theory, fractals, and more — all
 rendered with curses at 60 fps. No external dependencies.
 
