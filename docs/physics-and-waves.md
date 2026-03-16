@@ -1268,3 +1268,75 @@ Parameters:
 - Hecht, E. *Optics*, 5th ed., Pearson, 2017. ISBN 978-0133977226
 - Born, M. and Wolf, E. *Principles of Optics*, 7th ed., Cambridge University Press, 1999. https://doi.org/10.1017/CBO9781139644181
 - Saleh, B.E.A. and Teich, M.C. *Fundamentals of Photonics*, 3rd ed., Wiley, 2019. https://doi.org/10.1002/9781119506874
+
+
+---
+
+## Tokamak Fusion Plasma Confinement
+
+**Background** — A tokamak (from the Russian acronym for "toroidal chamber with magnetic coils") is the leading design for achieving controlled thermonuclear fusion. First developed by Soviet physicists Tamm and Sakharov in the 1950s, the tokamak confines hydrogen plasma in a toroidal (doughnut-shaped) magnetic field created by external coils (toroidal field) and the plasma's own current (poloidal field). The helical field lines trace out nested flux surfaces, and particles follow these surfaces, remaining confined. The key figure of merit is the Lawson triple product n*T*tau_E — when it exceeds ~3x10^21 m^-3 keV s, the fusion plasma becomes self-sustaining (ignition). ITER, currently under construction in France, aims to demonstrate Q=10 (10x more fusion power than input heating). This simulation models the poloidal cross-section of a tokamak, capturing the essential physics of plasma heating, confinement, transport, and instabilities.
+
+**Formulation** — The simulation tracks radial profiles of temperature T(rho) and density n(rho) on normalized flux coordinates rho in [0,1], where rho=0 is the magnetic axis and rho=1 is the last closed flux surface (LCFS):
+
+```
+Geometry (poloidal cross-section):
+  Elongation kappa = 1.7, triangularity delta = 0.33
+  Shafranov shift: axis displaced outward by 0.08*(1-|z/a|)
+  Aspect ratio R/a = 3.0
+
+Safety factor profile:
+  q(rho) = q_axis + (q_edge - q_axis) * rho^2
+  q_axis ~ 0.85-1.5 (preset-dependent), q_edge = 3.5
+
+Energy balance (per flux surface):
+  dW/dt = P_ohmic + P_NBI + P_alpha - P_bremsstrahlung - P_line_rad - W/tau_E
+
+Heating:
+  P_ohmic    ~ eta * j^2,  eta ~ T^{-3/2}  (Spitzer resistivity)
+  P_NBI      ~ P_0 * exp(-(rho - 0.3)^2 / (2 * 0.3^2))  (Gaussian deposition)
+  P_alpha    ~ 0.04 * n^2 * T^2  (DT fusion reactivity, simplified)
+
+Losses:
+  P_brems    ~ 0.005 * n^2 * sqrt(T)
+  P_line_rad ~ 0.002 * n * T * Z_eff
+
+Transport (radial diffusion):
+  D_total = D_classical + D_anomalous + D_turbulent_fluctuation
+  D_classical = 0.005, D_anomalous = 0.03 (L-mode) or 0.005 (H-mode edge)
+  Laplacian diffusion: T_new = T + D * (T[i-1] + T[i+1] - 2*T[i])
+
+Confinement:
+  tau_E = 80 ticks (L-mode), 200 ticks (H-mode)
+  L-H transition when P_heat > 0.6 (normalized threshold)
+
+Lawson criterion:
+  Triple product = n_core * T_core * tau_E (normalized to ignition = 1.0)
+  Q = P_fusion / P_input
+
+Instabilities:
+  Sawtooth: q_axis < 1 triggers crash every 40 ticks — core T,n flatten to q=1 surface
+  ELM: pedestal collapse every 25 ticks, ejects 15% of edge energy
+  Disruption: thermal quench (5 ticks) + current quench (20 ticks)
+  Runaway electrons: Dreicer acceleration when T,n collapse post-disruption
+```
+
+**Presets**
+
+| Preset | Configuration | What it demonstrates |
+|--------|--------------|---------------------|
+| **Stable Ohmic Confinement** | No NBI, q_axis=1.5, L-mode | Resistive heating alone — plasma reaches modest temperature, stable but below fusion-relevant conditions |
+| **H-Mode Transition** | NBI power 0.8, ELMs enabled | Auxiliary heating triggers L-H bifurcation — edge pedestal forms, confinement doubles, periodic ELM crashes regulate edge pressure |
+| **Plasma Disruption** | Density 1.6 > limit 1.5, impurity 8% | Greenwald density limit breach — thermal quench dumps core energy in 5 ticks, current quench follows, massive wall loading |
+| **ITER-Scale Burning Plasma** | NBI 1.2, alpha heating, B=1.5T, H-mode | Self-heated plasma approaching ignition — alpha power exceeds NBI, Q>10, Lawson bar climbs toward 1.0 |
+| **Sawtooth Oscillations** | q_axis=0.85, NBI 0.4 | Internal kink mode — watch core temperature rise then periodically crash as q=1 reconnection flattens the profile |
+| **Runaway Electron Beam** | Post-disruption at tick 20, low T/n | Dreicer field accelerates electrons when collisionality drops — exponentially growing runaway fraction strikes the wall |
+
+**Controls**: `Space` play/pause, `v` cycle views (plasma/energy/graphs), `n` step, `b` toggle NBI heating, `d` trigger disruption, `+`/`-` speed, `r` restart, `R` return to preset menu, `q` exit mode.
+
+**What to look for** — Start with Stable Ohmic Confinement to see the baseline: plasma heats slowly via resistive dissipation, temperature saturates as Bremsstrahlung losses balance heating. Switch to H-Mode Transition and watch the dramatic L-H bifurcation — when NBI pushes heating past the threshold, the edge suddenly steepens and confinement doubles, visible as the Lawson bar jumping upward. ELMs then periodically crash the edge pedestal, dumping bursts of energy to the SOL. The ITER-Scale preset is the most visually rewarding: alpha self-heating creates a positive feedback loop where hotter plasma fuses more, producing more alphas, heating further — watch Q climb past 10 and the Lawson triple product approach ignition. Sawtooth Oscillations show the mesmerizing periodic core crashes — temperature builds then suddenly redistributes outward. The Disruption preset demonstrates the catastrophic loss of confinement: the thermal quench dumps stored energy to the wall in just 5 ticks, followed by a slower current decay. The Runaway Electron Beam is the most dramatic failure mode — post-disruption, a beam of relativistic electrons forms and strikes the wall.
+
+**References**
+- Wesson, J. *Tokamaks*, 4th ed., Oxford University Press, 2011. https://doi.org/10.1093/acprof:oso/9780199592234.001.0001
+- Freidberg, J.P. *Plasma Physics and Fusion Energy*, Cambridge University Press, 2007. https://doi.org/10.1017/CBO9780511755705
+- Lawson, J.D. "Some criteria for a power producing thermonuclear reactor," *Proceedings of the Physical Society B*, 1957. https://doi.org/10.1088/0370-1301/70/1/303
+- ITER Organization. "ITER — the way to new energy." https://www.iter.org

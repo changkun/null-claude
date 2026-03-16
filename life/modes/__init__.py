@@ -366,6 +366,8 @@ def register_all_modes(App):
     reg_biofilm(App)
     from life.modes.cardiac import register as reg_cardiac
     reg_cardiac(App)
+    from life.modes.tokamak import register as reg_tokamak
+    reg_tokamak(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

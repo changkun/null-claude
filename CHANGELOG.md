@@ -4,6 +4,36 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Tokamak Fusion Plasma Confinement — magnetically confined hydrogen plasma with toroidal cross-section, nested flux surfaces, ohmic/NBI/alpha heating, Lawson criterion tracking, sawtooth crashes, ELMs, H-mode transition, disruptions & runaway electrons
+
+A tokamak fusion plasma simulation modeling the poloidal cross-section of a magnetically confined deuterium-tritium plasma. Fills a major gap — the project had no nuclear/plasma-confinement physics despite 171 modes spanning nearly every other domain. Fusion energy is the defining scientific challenge of the era and produces spectacular visuals: glowing plasma, swirling field lines, and instability cascades.
+
+**`life/modes/tokamak.py`** (new, ~1320 lines):
+
+- **Toroidal geometry**: Poloidal cross-section with elongation (kappa=1.7), triangularity (delta=0.33), Shafranov shift (outward displacement of magnetic axis), aspect ratio R/a=3.0. Each grid cell assigned normalized flux coordinate rho (0=magnetic axis, 1=LCFS, >1=scrape-off layer).
+- **Magnetic topology**: Toroidal field ~1/R (stronger on inboard/high-field side), poloidal field from plasma current creating nested flux surfaces. Safety factor profile q(rho) = q_axis + (q_edge - q_axis)*rho^2 — determines MHD stability boundaries.
+- **Ohmic heating**: Resistive dissipation P_ohm ~ eta*j^2 with Spitzer resistivity eta ~ T^{-3/2} — hotter plasma becomes less resistive, creating self-limiting heating.
+- **Neutral beam injection (NBI)**: Gaussian deposition profile centered at rho=0.3 with width 0.3. Toggleable with `b` key. Power level preset-dependent (0.0-1.2 normalized units).
+- **Alpha particle heating**: DT fusion reactivity scales as ~T^2*n^2 (simplified). Alpha power coefficient 0.04 — self-heating that can dominate in burning plasma regime (Q>5).
+- **Radiation losses**: Bremsstrahlung ~ n^2*sqrt(T) (coefficient 0.005) + impurity line radiation (coefficient 0.002, amplified by impurity fraction Z_eff).
+- **Energy confinement**: tau_E = 80 ticks (L-mode) or 200 ticks (H-mode). Power balance: dW/dt = P_heat - P_rad - W/tau_E.
+- **Turbulent transport**: Anomalous diffusion coefficient 0.03 (L-mode) with intermittent fluctuations (turbulence_level 0.3). Flux-surface-averaged radial profiles for temperature and density with 4-neighbor Laplacian diffusion.
+- **H-mode transition**: When total heating power exceeds threshold (0.6 normalized), edge transport barrier forms — pedestal with reduced diffusion (0.005), steep edge gradients. L-H transition is a bifurcation: once triggered, confinement jumps discontinuously.
+- **ELMs (Edge Localized Modes)**: Periodic pedestal collapse (period 25-30 ticks) ejecting 15% of edge pedestal energy to SOL. Type I ELM analog — pressure gradient exceeds peeling-ballooning stability limit.
+- **Sawtooth oscillations**: When q_axis < 1, internal kink mode triggers periodic crashes (period 40 ticks). Core temperature/density flatten to q=1 surface radius, redistributing stored energy to mid-radius. Visible as periodic core temperature drops.
+- **Disruptions**: Density limit breach or externally triggered. Thermal quench (5 ticks — rapid core temperature collapse), followed by current quench (20 ticks — plasma current decay), massive impurity influx, wall loading.
+- **Runaway electrons**: Post-disruption, when collisionality drops (low T, low n), Dreicer electric field accelerates electrons to relativistic energies. Runaway fraction grows exponentially. Localized beam strikes wall — major machine protection concern in real tokamaks.
+- **Lawson triple product**: n*T*tau_E normalized to ignition threshold (1.0). Tracks how close the plasma is to self-sustaining fusion. Q-factor = P_fusion/P_input displayed alongside.
+- **3 visualization views** (cycle with `v`): Plasma Cross-Section (density/temperature colored plasma on flux surfaces with q=1/2/3 contour lines, magnetic axis marker, LCFS boundary, divertor X-point, first wall, NBI beam path, runaway electron beam, SOL with wall recycling — color intensity maps to local temperature with density-modulated brightness), Energy Balance Dashboard (Lawson triple-product bar with ignition threshold, Q-factor display, heating breakdown — ohmic/NBI/alpha stacked vs radiation+transport losses, radial T(rho) and n(rho) profiles as ASCII plots, confinement mode indicator L/H, normalized beta, stored energy), Time-Series Graphs (10 sparklines: core temperature, core density, Lawson triple product, Q-factor, total heating, total losses, tau_E, beta, runaway fraction, stored energy).
+- **6 presets**: Stable Ohmic Confinement (resistive heating only, L-mode, q_axis=1.5, no auxiliary heating), H-Mode Transition (NBI power 0.8 triggers L-H transition, edge pedestal forms, ELMs periodically crash edge), Plasma Disruption (density 1.6 exceeds limit 1.5 at tick 60, thermal+current quench cascade, impurity fraction 0.08), ITER-Scale Burning Plasma (NBI 1.2 + alpha heating, Q>10, H-mode active from start, B_tor=1.5, I_p=1.5, tau_E=200), Sawtooth Oscillations (q_axis=0.85<1, periodic core crashes every 40 ticks, NBI 0.4), Runaway Electron Beam (post-disruption at tick 20, low T/n plasma, Dreicer acceleration, impurity fraction 0.10).
+- **Controls**: Space=play/pause, v=cycle views, n=step, b=toggle NBI, d=trigger disruption, +/-=speed, r=restart, R=menu, q=exit.
+
+**`life/registry.py`**: Added "Tokamak Fusion Plasma Confinement" entry in Physics & Waves category.
+
+**`life/modes/__init__.py`**: Added registration import for the tokamak module.
+
+---
+
 ### Feature: Add Cardiac Electrophysiology & Arrhythmia — heart electrical conduction with SA/AV nodes, His bundle, Purkinje fibers, FitzHugh-Nagumo action potentials, Na⁺/Ca²⁺/K⁺ ion channels, re-entry spiral waves, real-time ECG trace & defibrillation
 
 A cardiac electrophysiology simulation modeling the heart's electrical conduction system as a 2D tissue slab. Complements the existing angiogenesis/blood vessel mode with the heart's *electrical* side — visually stunning spiral-wave terminal art and medically educational arrhythmia demonstrations.
