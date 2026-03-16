@@ -1014,3 +1014,66 @@ Oscillation amplitude (per cell, from stroboscopic history):
 - Else, D.V., Bauer, B., and Nayak, C. "Floquet Time Crystals," *Physical Review Letters*, 117, 2016. https://doi.org/10.1103/PhysRevLett.117.090402
 - Zhang, J. et al. "Observation of a discrete time crystal," *Nature*, 543, 2017. https://doi.org/10.1038/nature21413
 - Choi, S. et al. "Observation of discrete time-crystalline order in a disordered dipolar many-body system," *Nature*, 543, 2017. https://doi.org/10.1038/nature21426
+
+
+---
+
+## Topological Solitons
+
+**Background** — Topological defects are singular configurations in continuous order-parameter fields that cannot be smoothed away by local perturbations — they are protected by topology. In the two-dimensional XY model, the relevant defects are point vortices carrying integer winding numbers: a vortex (q = +1) where the angle field winds by +2π around a closed loop, and an antivortex (q = −1) with −2π winding. These defects interact via a Coulomb-like logarithmic potential and can only be created or destroyed in opposite-charge pairs, conserving total topological charge. At the Berezinskii-Kosterlitz-Thouless (BKT) transition temperature, bound vortex–antivortex pairs unbind and proliferate, destroying quasi-long-range order in one of the most celebrated examples of a topological phase transition. When Dzyaloshinskii-Moriya interaction (DMI) is added, the field can support magnetic skyrmions — particle-like topological solitons with integer skyrmion number that are currently of intense interest for spintronic memory and logic applications.
+
+**Formulation** — The simulation evolves a continuous angle field θ(r,c) ∈ [−π, π) on a 2D periodic lattice using overdamped Landau-Lifshitz-Gilbert dynamics:
+
+```
+∂θ/∂t = K·∇²θ + D·(DMI torque) − H_ext·sin(θ) + η(T)
+
+Angle-wrapped Laplacian:
+  ∇²θ ≈ Δ(θ_up, θ) + Δ(θ_down, θ) + Δ(θ_left, θ) + Δ(θ_right, θ)
+  where Δ(a, b) = angle_diff(a, b) wraps to [−π, π)
+
+DMI torque (antisymmetric exchange):
+  τ_DMI = D·[sin(Δ(θ_right, θ)) − sin(Δ(θ_left, θ))
+            + sin(Δ(θ_down, θ)) − sin(Δ(θ_up, θ))]
+
+Zeeman coupling:
+  τ_ext = −H_ext·sin(θ)
+
+Thermal noise:
+  η ~ N(0, √(2·T·dt))
+
+Topological charge per plaquette:
+  q = (1/2π)·[Δ(θ_01, θ_00) + Δ(θ_11, θ_01) + Δ(θ_10, θ_11) + Δ(θ_00, θ_10)]
+  q ≈ +1 → vortex, q ≈ −1 → antivortex
+
+Parameters:
+  K     — stiffness / exchange coupling (0.1 to 3.0)
+  T     — temperature / noise strength (0.0 to 2.0)
+  D     — DMI strength (0.0 to 2.0), stabilises skyrmions
+  H_ext — external Zeeman field (0.0 to 2.0)
+  dt    = 0.15 (integration timestep)
+```
+
+Vortex imprinting uses superposed atan2 phase profiles with toroidal wrapping. Skyrmion textures are initialized as radial hedgehog profiles with θ varying from π at the core to 0 at the boundary.
+
+**Presets** — Six configurations explore different regimes of topological defect physics:
+- **Vortex Gas**: Random vortex–antivortex pairs in the XY field (T=0.1, K=1.0) — watch opposite-charge defects orbit each other via the log potential and annihilate on contact
+- **BKT Transition**: Start near the Berezinskii-Kosterlitz-Thouless transition (T=0.5) — increase temperature to watch bound pairs unbind and proliferate, decrease to rebind them
+- **Skyrmion Lattice**: DMI-stabilised magnetic skyrmions (D=0.5, H=0.3) — particle-like topological solitons that resist annihilation due to the energy barrier from antisymmetric exchange
+- **Domain Walls**: Ising-like domain walls between ordered regions (K=1.5) — watch walls coarsen and straighten as the system minimizes gradient energy
+- **Vortex Dipoles**: Tightly bound vortex–antivortex pairs (separation ≈ 3 cells) that propagate as composite solitons — the bound pair moves perpendicular to its dipole axis
+- **Turbulent Defects**: High-temperature disordered field (T=0.8, K=0.8) producing a dense tangle of interacting defects — topological turbulence
+
+**Visualization modes** (cycle with `v`):
+- **Field**: Angle θ mapped to a hue wheel via directional arrows (→↗↑↖←↙↓↘), with ⊕ markers for vortices (red) and ⊖ for antivortices (blue). Defect trail positions are dimmed.
+- **Charge**: Topological charge density — vortices and antivortices shown as bold glyphs, with fading trail dots (·) marking their motion history over the last ~80 timesteps.
+- **Energy**: Local gradient energy density displayed as density glyphs (· ░▒▓█), colored from blue (low) through white and yellow to red (high). Reveals domain walls and defect cores as high-energy features.
+
+**Controls**: `Space` play/pause, `n`/`.` single step, `v` cycle view, `t`/`T` increase/decrease temperature, `k`/`K` increase/decrease stiffness, `d`/`D` increase/decrease DMI, `h`/`H` increase/decrease external field, `+`/`-` adjust steps per frame, left-click place vortex, right-click place antivortex, `c` clear trails, `r` reset, `R` return to menu, `q` exit mode.
+
+**What to look for** — Start with the Vortex Gas preset and watch how opposite-charge defects spiral toward each other and annihilate, reducing the total defect count over time. The title bar tracks ⊕ (vortex) and ⊖ (antivortex) counts along with the net topological charge Q, which is conserved (always zero for pair-created defects). Switch to the BKT Transition preset and slowly increase temperature with `t` — at around T ≈ 0.9 (depending on stiffness), you'll see the sudden proliferation of free vortices as the BKT transition unbinds pairs. The Skyrmion Lattice preset demonstrates how DMI creates an energy barrier that prevents skyrmion collapse; try reducing DMI with `D` to watch skyrmions shrink and eventually annihilate. Place your own vortex–antivortex pairs by clicking and watch them interact. In Charge view, the trail system reveals the trajectories defects follow before annihilation.
+
+**References**
+- Berezinskii, V.L. "Destruction of Long-range Order in One-dimensional and Two-dimensional Systems Possessing a Continuous Symmetry Group," *Soviet Physics JETP*, 34, 1972.
+- Kosterlitz, J.M. and Thouless, D.J. "Ordering, metastability and phase transitions in two-dimensional systems," *Journal of Physics C*, 6, 1973. https://doi.org/10.1088/0022-3719/6/7/010
+- Nagaosa, N. and Tokura, Y. "Topological properties and dynamics of magnetic skyrmions," *Nature Nanotechnology*, 8, 2013. https://doi.org/10.1038/nnano.2013.243
+- Fert, A., Reyren, N., and Cros, V. "Magnetic skyrmions: advances in physics and potential applications," *Nature Reviews Materials*, 2, 2017. https://doi.org/10.1038/natrevmat.2017.31

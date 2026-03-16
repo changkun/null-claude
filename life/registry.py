@@ -396,6 +396,9 @@ MODE_REGISTRY = [
     # ── Ferrofluid Dynamics ──
     {"name": "Ferrofluid Dynamics", "key": "—", "category": "Fluid Dynamics",
      "desc": "Magnetic nanoparticle suspension — Rosensweig spikes, labyrinthine stripes & hexagonal lattices under user-controlled fields", "attr": "ferrofluid_mode", "enter": "_enter_ferrofluid_mode", "exit": "_exit_ferrofluid_mode"},
+    # ── Topological Solitons ──
+    {"name": "Topological Solitons", "key": "—", "category": "Physics & Waves",
+     "desc": "2D order-parameter field with vortices, antivortices, skyrmions & domain walls — topological defect dynamics and BKT transition", "attr": "topo_soliton_mode", "enter": "_enter_topo_soliton_mode", "exit": "_exit_topo_soliton_mode"},
 ]
 
 

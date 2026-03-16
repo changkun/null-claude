@@ -318,6 +318,8 @@ def register_all_modes(App):
     reg_tcrystal(App)
     from life.modes.ferrofluid import register as reg_ferrofluid
     reg_ferrofluid(App)
+    from life.modes.topological_solitons import register as reg_toposoliton
+    reg_toposoliton(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

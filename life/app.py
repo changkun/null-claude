@@ -2689,6 +2689,12 @@ class App:
         self.phasespace_running = False
         self._phasespace_init()
 
+        # ── Topological Solitons state ──
+        self.topo_soliton_mode = False
+        self.topo_soliton_menu = False
+        self.topo_soliton_menu_sel = 0
+        self.topo_soliton_running = False
+
         self._rebuild_pattern_list()
 
         if pattern:
