@@ -387,6 +387,9 @@ MODE_REGISTRY = [
     # ── Programmable Matter ──
     {"name": "Programmable Matter", "key": "—", "category": "Procedural & Computational",
      "desc": "Self-assembling state-machine cells — each runs a local program, communicating via signals to form shapes, self-repair & compute", "attr": "progmatter_mode", "enter": "_enter_progmatter_mode", "exit": "_exit_progmatter_mode"},
+    # ── Quantum Game of Life ──
+    {"name": "Quantum Game of Life", "key": "—", "category": "Physics & Waves",
+     "desc": "Quantum CA — cells in superposition, entangled neighbours, measurement collapse & decoherence with GoL rules as unitary operator", "attr": "qgol_mode", "enter": "_enter_qgol_mode", "exit": "_exit_qgol_mode"},
 ]
 
 

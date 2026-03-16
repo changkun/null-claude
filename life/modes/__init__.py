@@ -132,6 +132,8 @@ def register_all_modes(App):
     reg_pwave(App)
     from life.modes.quantum_walk import register as reg_qwalk
     reg_qwalk(App)
+    from life.modes.quantum_gol import register as reg_qgol
+    reg_qgol(App)
     from life.modes.race_rules import register as reg_race
     reg_race(App)
     from life.modes.ray_marching import register as reg_raymarch

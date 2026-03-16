@@ -877,3 +877,67 @@ Presets configure four parameters — gravity (G), lensing strength, frame drag 
 - Misner, C.W., Thorne, K.S., and Wheeler, J.A. *Gravitation*. W.H. Freeman, 1973. ISBN 978-0-7167-0344-0
 - Hartle, J.B. *Gravity: An Introduction to Einstein's General Relativity*. Addison-Wesley, 2003. ISBN 978-0-8053-8662-2
 - Regge, T. "General Relativity Without Coordinates," *Il Nuovo Cimento*, 1961. https://doi.org/10.1007/BF02733251
+
+
+---
+
+## Quantum Game of Life
+
+**Background** — The Quantum Game of Life is the natural quantum generalization of Conway's Game of Life. Where classical Life cells are strictly alive or dead, quantum cells exist in superposition — a complex linear combination of |1⟩ (alive) and |0⟩ (dead). The classical B3/S23 rules are lifted to a unitary operator that continuously rotates cell amplitudes rather than applying discrete thresholds. This produces interference patterns, entanglement between neighboring cells, and probabilistic measurement collapse — phenomena with no classical analogue. The mode sits at the intersection of quantum computing and complex systems theory, drawing on work by Bleh, Calarco, and Montangero on quantum cellular automata.
+
+**Formulation** — Each cell stores a complex alive-amplitude `a = re + i·im`. The probability of being alive is `P = |a|² = re² + im²`, with dead-amplitude `√(1 - P)`.
+
+```
+Quantum state per cell:
+  |ψ⟩ = a|1⟩ + √(1−|a|²)|0⟩    where a ∈ ℂ, |a|² ≤ 1
+
+Evolution (per step):
+  1. Compute expected alive neighbours: n = Σ P(neighbour)
+  2. Compute rotation angle θ from GoL rules:
+     - Birth signal:    B(n) = exp(-(n-3)²/0.8)        peaked at n=3
+     - Survival signal: S(n) = max(exp(-(n-2)²/0.8),
+                                    exp(-(n-3)²/0.8))   peaked at n=2,3
+     - θ depends on current P:
+       P < 0.3 (mostly dead):  θ = B(n) · 0.4π          (birth)
+       P > 0.7 (mostly alive): θ = (S(n) - 0.5) · 0.3π  (survive/die)
+       else (superposition):   θ = mixed birth+survival   (interference)
+  3. Apply rotation:
+     new_re = cos(θ)·re + sin(θ)·√(1−P)
+     new_im = cos(θ)·im
+
+Entanglement:
+  When |θ| > 0.05, cells that contributed to each other's evolution
+  gain pairwise entanglement strength:
+    E(c₁,c₂) += |θ| · P(neighbour) · 0.1     (capped at 1.0)
+  Entanglement decays by factor 0.95 per step.
+
+Measurement (click):
+  Collapse cell to |1⟩ with probability P, or |0⟩ with probability 1−P.
+  Entangled partners partially collapse proportional to entanglement strength.
+
+Environmental decoherence (rate d, adjustable 0–1):
+  Each step, each cell has probability d of undergoing spontaneous measurement,
+  collapsing to a classical state and propagating decoherence to partners.
+```
+
+**Visualization modes** (cycle with `v`):
+- **Probability**: Density characters (`· ░▒▓█`) show P(alive), color hue encodes phase angle of the alive-amplitude
+- **Phase**: Color encodes complex phase angle (red→yellow→green→cyan→blue→magenta), brightness encodes amplitude magnitude
+- **Entanglement**: Background shows dim probability field; colored links and endpoint markers (●/◉) show pairwise entanglement strength between correlated cells
+
+**Presets** — Six configurations showcase different quantum phenomena:
+- **Quantum Glider**: Superposition of a glider at two translated positions with a π/3 phase offset — produces interference fringes as the two copies evolve
+- **Schrödinger's Blinker**: Period-2 oscillator in superposition of both horizontal and vertical phases simultaneously — the quantum version of the simplest oscillator
+- **Entangled Gosper Gun**: Classic Gosper glider gun with phase-varying birth sites — glider streams carry correlated quantum states
+- **Quantum Soup**: 30% of cells initialized with random amplitude (up to 0.8) and random phase — watch decoherence crystallize classical structures from quantum chaos
+- **Bell State Pair**: Two cells separated by 10 columns, each with amplitude 1/√2, maximally entangled — measuring one instantly collapses the other
+- **Quantum Garden of Eden**: Uniform low-amplitude (0.15) superposition across the entire grid with a slowly varying phase gradient — a state with no classical predecessor
+
+**Controls**: `Space` play/pause, `n` single step, `v` cycle view mode, `d`/`D` increase/decrease decoherence rate, `+`/`-` adjust steps per frame, `click` measure a cell, `r` reset current preset, `R` return to preset menu.
+
+**What to look for** — In the Quantum Glider preset, watch the two glider copies interfere as they evolve — bright regions where amplitudes constructively interfere and dark gaps where they cancel. Switch to Phase view to see the π/3 offset between the two copies. With the Bell State Pair, click one cell and watch the other instantly collapse — then switch to Entanglement view to see the correlation link vanish. Try increasing decoherence (`d` key) on the Quantum Soup to watch a quantum superposition gradually crystallize into recognizable classical Life structures like blinkers and blocks. The Entangled Gosper Gun produces the most visually complex dynamics — streams of quantum gliders carrying phase information from the gun's birth events.
+
+**References**
+- Bleh, D., Calarco, T., and Montangero, S. "Quantum Game of Life," *EPL (Europhysics Letters)*, 97(2), 2012. https://doi.org/10.1209/0295-5075/97/20012
+- Meyer, D.A. "From quantum cellular automata to quantum lattice gases," *Journal of Statistical Physics*, 85, 1996. https://doi.org/10.1007/BF02199356
+- Venegas-Andraca, S.E. "Quantum walks: a comprehensive review," *Quantum Information Processing*, 11(5), 2012. https://doi.org/10.1007/s11128-012-0432-5
