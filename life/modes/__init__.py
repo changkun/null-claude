@@ -334,6 +334,8 @@ def register_all_modes(App):
     reg_perc(App)
     from life.modes.crowd import register as reg_crowd
     reg_crowd(App)
+    from life.modes.wildfire import register as reg_wfire
+    reg_wfire(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

@@ -415,6 +415,9 @@ MODE_REGISTRY = [
     # ── Percolation Theory & Critical Phenomena ──
     {"name": "Percolation Theory & Critical Phenomena", "key": "—", "category": "Physics & Waves",
      "desc": "Bernoulli percolation on lattices — phase transition at p_c, fractal spanning clusters, power-law size distribution & universal critical exponents", "attr": "perc_mode", "enter": "_enter_perc_mode", "exit": "_exit_perc_mode"},
+    # ── Wildfire Spread & Firefighting ──
+    {"name": "Wildfire Spread & Firefighting", "key": "—", "category": "Complex Simulations",
+     "desc": "Rothermel-inspired fire on heterogeneous terrain — slope/wind-driven spread, crown fire, ember spotting, smoke plumes & firefighter agents", "attr": "wfire_mode", "enter": "_enter_wfire_mode", "exit": "_exit_wfire_mode"},
 ]
 
 

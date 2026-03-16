@@ -629,3 +629,80 @@ Seven rule presets are provided, each annotated with its musical character:
 - Hermann, T., Hunt, A. & Neuhoff, J.G. *The Sonification Handbook*. Logos Verlag, 2011. https://sonification.de/handbook/
 - Xenakis, I. *Formalized Music: Thought and Mathematics in Composition*. Pendragon Press, 1992.
 - Burraston, D. & Edmonds, E. "Cellular Automata in Generative Electronic Music and Sonic Art: A Historical and Technical Review." *Digital Creativity*, 16(3), 165-185, 2005. https://doi.org/10.1080/14626260500370882
+
+---
+
+## Wildfire Spread & Firefighting
+
+**Source:** `life/modes/wildfire.py`
+
+**Background.** This mode simulates wildfire propagation using a Rothermel-inspired model on heterogeneous terrain. Unlike the existing Forest Fire mode (a simple percolation-based cellular automaton with binary states), this simulation tracks continuous fire intensity, models crown fire transitions, computes wind- and slope-driven spread rates, launches embers for long-range spotting ignitions, generates advected smoke plumes, and deploys autonomous firefighting agents. Six fuel types — grass, shrub, timber, urban, water, and rock — each carry distinct spread rates, heat content, moisture extinction thresholds, crown fire thresholds, and ember production probabilities. The terrain is procedurally generated with octave noise elevation and preset-specific fuel distributions.
+
+**Formulation.** Fire intensity evolves on an 8-connected grid. Each cell maintains: intensity (continuous, ≥0), fuel type, fuel moisture, elevation, burned status, crown fire flag, and smoke density.
+
+```
+Spread from neighbor n to cell (r,c):
+  base     = I_n × spread_rate_fuel(n) × global_spread / dist(n)
+  wind     = max(0.1, 1.0 + 0.5 × dot(wind_vec(n), direction_to(r,c)))
+  slope    = clamp(1.0 + slope_factor × Δh / (3 × dist), 0.2, 3.0)
+  moisture = (1 - (m / m_ext)^1.5)  if m < m_ext, else 0
+  crown    = 1.5 if neighbor is crown fire, else 1.0
+
+  contribution = base × wind × slope × moisture × crown
+  spread_in = Σ max(0, contribution)  over all 8 neighbors
+
+Intensity update (existing fire):
+  I(t+1) = I(t) + 0.3 × spread_in − burnout × (1 + 0.1 × I(t))
+  If already burned: additional −0.5 × burnout (fuel exhaustion)
+
+New ignition (I(t) = 0):
+  threshold = 0.15 + moisture × 0.5
+  If spread_in > threshold:  I(t+1) = 0.5 × spread_in
+
+Crown fire transition:
+  Crown when I ≥ fuel-specific crown_thr AND I ≥ global crown_intensity
+```
+
+**Fuel properties:**
+
+```
+  Fuel Type  spread  heat  moist_ext  crown_thr  ember_prod
+  Grass       1.8    0.6     0.25      999 (n/a)    0.02
+  Shrub       1.2    1.0     0.30       3.5          0.05
+  Timber      0.7    1.8     0.35       2.5          0.10
+  Urban       0.4    2.5     0.15       2.0          0.08
+  Water       0.0    0.0     1.00      999 (n/a)     0.0
+  Rock        0.0    0.0     1.00      999 (n/a)     0.0
+```
+
+**Ember spotting.** Cells with intensity > 1.5 launch embers with probability `fuel_ember × ember_prob × intensity`. Embers travel downwind with angular perturbation (±0.5 rad) at random range (3 to `ember_range` cells). Embers ignite dry, unburned, non-firebreak cells where moisture < 0.8 × moisture extinction, starting fires at intensity 0.8–1.3.
+
+**Smoke plume.** Smoke production = intensity × 0.15 (×2 for crown fire). Existing smoke decays by `smoke_decay` per step. Smoke advects downwind by 0.8× wind velocity. Smoke density affects rendering opacity.
+
+**Firefighter agents.** Two agent types autonomously seek the nearest fire within a search radius:
+- **Break agents** cut firebreaks: set firebreak flag on cells 1–3 ahead of the fire front in the wind direction, permanently blocking fire spread through those cells.
+- **Water agents** suppress fire: reduce intensity (÷2) and increase local moisture (+0.05) in a 3×3 area around target cells.
+After acting, agents incur a cooldown (5 steps for break, 3 for water) before they can act again.
+
+**Fuel moisture dynamics.** Active fire (intensity > 0.5) dries 8 neighboring cells by `0.005 × intensity` per step, progressively lowering ignition thresholds ahead of the fire front.
+
+**Presets (6):**
+
+| Preset | Wind | Moisture | Elevation | Terrain | Behavior |
+|--------|------|----------|-----------|---------|----------|
+| Grassland Brushfire | 1.5 E | 0.10 | 3 m | Flat grass | Fast, low-intensity, wide front |
+| Mountain Wildfire | 0.8 NE | 0.20 | 25 m | Steep timber | Slope-driven runs, heavy spotting |
+| Urban-Wildland Interface | 1.2 E | 0.12 | 8 m | Mixed urban-veg | Structure ignitions, firefighter defense |
+| Prescribed Burn | 0.5 E | 0.22 | 4 m | Grass/shrub | Low intensity, containment lines |
+| Firestorm | 2.0 NE | 0.05 | 15 m | Dense fuel | Crown fire, mass spotting, multiple ignitions |
+| Canyon Wind Event | 2.5 S | 0.08 | 20 m | Canyon channel | Downslope wind acceleration |
+
+**Controls:** `Space`=play/pause, `n`=step, `v`=cycle views (fire/elevation/fuel/moisture), `w/W`=wind speed, `d/D`=wind direction, `+/-`=simulation speed, `r`=reset, `R`=menu, `q`=exit.
+
+**What to look for.** In Grassland Brushfire, the fire front advances rapidly but at low intensity, leaving a wide ash footprint. Mountain Wildfire demonstrates slope-driven acceleration — fire races uphill and launches embers far downwind, creating secondary fronts ahead of the main blaze. The Urban-Wildland Interface shows structure-to-vegetation-to-structure fire chains, with firefighter agents attempting to defend buildings. Prescribed Burn demonstrates controlled fire management: break agents cut firebreaks and water agents suppress escaping flames. Firestorm creates extreme conditions with crown fire transitions visible as intensified coloring and doubled smoke production. Canyon Wind Event shows channeled winds accelerating fire through the narrow canyon with reduced spread on the ridges. Toggle views to see how elevation drives spread patterns, how fuel type distribution creates corridors, and how moisture is progressively depleted ahead of the front.
+
+**References.**
+- Rothermel, R.C. "A Mathematical Model for Predicting Fire Spread in Wildland Fuels." USDA Forest Service Research Paper INT-115, 1972. https://www.fs.usda.gov/treesearch/pubs/32533
+- Finney, M.A. "FARSITE: Fire Area Simulator — Model Development and Evaluation." USDA Forest Service Research Paper RMRS-RP-4, 1998. https://doi.org/10.2737/RMRS-RP-4
+- Albini, F.A. "Estimating Wildfire Behavior and Effects." USDA Forest Service General Technical Report INT-30, 1976. https://www.fs.usda.gov/treesearch/pubs/29574
+- Linn, R.R. & Cunningham, P. "Numerical simulations of grass fires using a coupled atmosphere-fire model." *Journal of Geophysical Research*, 110, D13107, 2005. https://doi.org/10.1029/2004JD005597

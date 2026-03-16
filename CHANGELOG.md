@@ -4,6 +4,34 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Wildfire Spread & Firefighting Simulation — Rothermel-inspired fire propagation with crown fire, ember spotting, smoke plumes & firefighter agents
+
+A Rothermel-inspired wildfire simulation on heterogeneous terrain with elevation, wind fields, multiple fuel types (grass/shrub/timber/urban/water/rock), slope-driven acceleration, ember spotting for long-range ignition, smoke plume visualization, and active firefighting agents. Fundamentally different from the existing Forest Fire mode (a simple percolation CA) — this models continuous fire intensity, crown fire transitions, fuel moisture dynamics, and coordinated firefighting.
+
+**`life/modes/wildfire.py`** (new, ~1248 lines):
+
+- **Terrain generation**: Procedural octave noise elevation, heterogeneous fuel type grid (grass/shrub/timber/urban/water/rock), per-cell fuel moisture content, and scattered water bodies.
+- **Fire physics**: Intensity-based spread from 8-connected neighbors weighted by wind direction (dot product), slope (uphill acceleration clamped to [0.2, 3.0]×), fuel moisture dampening (power-law extinction), fuel-type-specific spread rates, and burnout decay.
+- **Crown fire**: Surface fire transitions to crown fire when intensity exceeds both per-fuel and global thresholds, boosting spread contribution 1.5× to neighbors.
+- **Ember spotting**: High-intensity cells (>1.5) probabilistically launch embers downwind at variable range (3–15 cells) with angular perturbation, igniting dry unburned fuel ahead of the main front.
+- **Smoke plumes**: Smoke production proportional to fire intensity (doubled for crown fire), advected by wind field, exponentially decaying (default 0.92/step).
+- **Firefighting agents**: Two types — `break` (cuts firebreaks ahead of fire front, blocking spread) and `water` (suppresses intensity and increases local moisture) — that autonomously navigate toward nearest fire cells.
+- **Fuel moisture dynamics**: Active fire dries nearby cells by 0.005 × intensity per step, affecting future ignition probability.
+- **6 presets**: Grassland Brushfire (fast spread, flat, low fuel), Mountain Wildfire (steep terrain, slope-driven runs, heavy ember spotting), Urban-Wildland Interface (urban clusters amid vegetation, structure defense), Prescribed Burn (low intensity, containment lines), Firestorm (extreme behavior, multiple ignitions, low moisture), Canyon Wind Event (strong downslope winds through canyon).
+- **4 view modes** (toggled with `v`): fire intensity, elevation, fuel type, moisture content.
+- **Statistics**: Active fire cells, burned area fraction, crown fire cells, ember ignitions, max intensity.
+- **Controls**: space=play/pause, n=step, v=view mode, w/W=wind speed, d/D=wind direction, +/-=speed, r=reset, R=menu.
+
+**`life/registry.py`**: Added "Wildfire Spread & Firefighting" entry in Complex Simulations category.
+
+**`life/modes/__init__.py`**: Added registration import for the wildfire module.
+
+**`life/app.py`**: Added state flags (wfire_mode, wfire_menu, wfire_menu_sel, wfire_running).
+
+**`docs/complex-simulations.md`**: Added comprehensive documentation covering Rothermel-inspired formulation, fuel properties table, spread mechanics, ember spotting algorithm, firefighter agent behavior, all six presets, and references.
+
+---
+
 ### Feature: Add Crowd Dynamics & Evacuation Simulation — social-force pedestrian model with panic contagion, arch formation & lane dynamics
 
 A social-force model where individual agents navigate rooms, corridors, and doorways with emergent crowd behaviors. Agents feel driving forces toward exits, exponential repulsion from other agents and walls, body contact forces, tangential friction, and panic-driven noise. The model reproduces key phenomena from pedestrian dynamics research: arch/clogging formation at narrow exits, lane formation in bidirectional counterflow, the faster-is-slower effect under panic, and herding/panic contagion waves.

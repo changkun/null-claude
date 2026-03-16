@@ -2750,6 +2750,12 @@ class App:
         self.crowd_menu_sel = 0
         self.crowd_running = False
 
+        # ── Wildfire state ──
+        self.wfire_mode = False
+        self.wfire_menu = False
+        self.wfire_menu_sel = 0
+        self.wfire_running = False
+
         self._rebuild_pattern_list()
 
         if pattern:
