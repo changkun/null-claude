@@ -433,6 +433,9 @@ MODE_REGISTRY = [
     # ── Bee Colony & Waggle Dance Communication ──
     {"name": "Bee Colony & Waggle Dance Communication", "key": "—", "category": "Particle & Swarm",
      "desc": "Forager bees discover flower patches & perform waggle dances encoding distance/direction — recruits interpret dances, colony builds hexagonal comb, thermoregulates via fanning & shifts roles through age-based polyethism", "attr": "bee_mode", "enter": "_enter_bee_mode", "exit": "_exit_bee_mode"},
+    # ── Firefly Synchronization & Bioluminescence ──
+    {"name": "Firefly Synchronization & Bioluminescence", "key": "—", "category": "Chemical & Biological",
+     "desc": "Integrate-and-fire oscillators with Mirollo-Strogatz coupling — fireflies flash, nudge neighbors' phases, and spontaneously synchronize from chaos, with species variation, predator femme fatales & Kuramoto order parameter tracking", "attr": "firefly_mode", "enter": "_enter_firefly_mode", "exit": "_exit_firefly_mode"},
 ]
 
 

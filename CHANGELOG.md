@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Firefly Synchronization & Bioluminescence — integrate-and-fire oscillators with Mirollo-Strogatz coupling, species-specific flash patterns, predator femme fatales & Kuramoto order parameter tracking
+
+A firefly synchronization simulation where thousands of firefly agents, each carrying an internal integrate-and-fire oscillator, flash and couple to neighbors — producing the real-world phenomenon where entire forests of fireflies spontaneously synchronize their blinking from initial chaos. Bridges the gap between the existing abstract Kuramoto oscillator mode and the biological simulations with an ecologically grounded, visually dramatic nightscape of pulsing bioluminescence.
+
+**`life/modes/firefly.py`** (new, ~580 lines):
+
+- **Integrate-and-fire oscillators** (Peskin/Mirollo-Strogatz model): Each firefly has a phase variable ∈ [0,1] that increments at its natural frequency. At phase ≥ 1.0 the firefly flashes, resets to 0, and enters a refractory cooldown. Nearby fireflies who see the flash advance their own phase by a distance-decaying coupling strength — the core mechanism driving emergent synchronization.
+- **Spatial coupling with line-of-sight**: Flash propagation decays with distance and is blocked by intervening trees. Grid-based spatial hashing (4×4 cells) provides efficient O(n·k) neighbor lookup instead of O(n²).
+- **3 species with distinct flash patterns**: *P. carolinus* (single pulse, green), *P. pyralis* (double blink, yellow), *P. consimilis* (rhythmic triplet, cyan) — each with species-specific natural frequencies and stronger intra-species coupling.
+- **Predator femme fatale** (*Photuris*): Mimics prey flash patterns, moves toward attracted victims, kills on contact, periodically switches mimic species. Does not participate in synchronization coupling.
+- **Kuramoto order parameter**: R = |mean(e^{i·2π·phase})| computed each tick across all non-predator fireflies, tracked over time as a synchronization metric (0 = chaos, 1 = full sync).
+- **Terrain generation**: Clustered tree groves, bushes, water bodies, grass. Fireflies preferentially perch on trees/bushes.
+- **3 visualization views** (cycle with `v`): Nightscape (dark field with bright flash glyphs, species color-coded, terrain rendered dimly), Phase Map (smoothed heatmap of oscillator phases with flashing stars), Sync Graph (Kuramoto order parameter time series with phase distribution histogram).
+- **6 presets**: Southeast Asian Mangrove (dense single-species, strong coupling → rapid mass synchrony), Appalachian Meadow (3-species mix with distinct flash patterns), Femme Fatale Hunting (predators mimic and hunt prey), Sync Emergence (watch chaos → order), Desynchronization Shock (pre-synced swarm perturbed at gen 80 → recovery dynamics), Competitive Signaling (male competition via flash timing).
+- **Controls**: Space=play/pause, v=cycle views, r=reset to menu, q=exit.
+
+**`life/registry.py`**: Added "Firefly Synchronization & Bioluminescence" entry in Chemical & Biological category.
+
+**`life/modes/__init__.py`**: Added registration import for the firefly module.
+
+---
+
 ### Feature: Add Deep Sea Hydrothermal Vent Ecosystem — chemosynthetic food webs, mineral precipitation chimney growth, thermal plumes & tectonic dynamics in the deep ocean abyss
 
 A deep-sea hydrothermal vent simulation where black smoker chimneys eject superheated mineral-rich fluid into frigid ocean water, with chemosynthetic bacteria forming the base of a sunlight-free food web. The simulation couples thermal plume physics, mineral precipitation chemistry, and multi-species ecology in a visually dramatic dark-ocean setting with glowing plumes and bioluminescent creatures.
