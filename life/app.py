@@ -829,6 +829,32 @@ class App:
         self.boids_steps_per_frame = 1
         self.boids_preset_name = ""
 
+        # ── Active Matter state ──
+        self.active_matter_mode = False
+        self.active_matter_menu = False
+        self.active_matter_menu_sel = 0
+        self.active_matter_running = False
+        self.active_matter_generation = 0
+        self.active_matter_rows = 0
+        self.active_matter_cols = 0
+        self.active_matter_particles: list[list[float]] = []  # [r, c, θ, vr, vc, fuel]
+        self.active_matter_num_particles = 0
+        self.active_matter_v0 = 0.5
+        self.active_matter_noise = 0.3
+        self.active_matter_align_r = 3.0
+        self.active_matter_align_w = 1.0
+        self.active_matter_repel_r = 1.5
+        self.active_matter_repel_w = 0.5
+        self.active_matter_friction = 0.02
+        self.active_matter_tumble = 0.0
+        self.active_matter_nematic = False
+        self.active_matter_spin_w = 0.0
+        self.active_matter_contract = 0.0
+        self.active_matter_steps_per_frame = 1
+        self.active_matter_preset_name = ""
+        self.active_matter_kind = ""
+        self.active_matter_view = 0
+
         # ── Particle Life state ──
         self.plife_mode = False
         self.plife_menu = False

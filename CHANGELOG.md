@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Active Matter — self-propelled particles exhibiting MIPS, active turbulence & collective flocking
+
+Simulates a system of self-propelled particles that consume fuel, generate forces, and exhibit collective phenomena with no equilibrium analogue. The mode bridges the gap between the project's passive particle modes (N-Body, Boids, Particle Life) and its biological modes — active matter is the physics underpinning bacterial colonies, cytoskeletal dynamics, and bird flocks.
+
+**`life/modes/active_matter.py`** (new, ~709 lines):
+
+- **Self-propulsion**: Each particle has heading θ, active speed v₀, and fuel level. Velocity is set by heading direction, not external forces.
+- **Polar & nematic alignment**: Vicsek-style neighbor alignment — polar (2π) for flocking, nematic (±π, double-angle trick) for liquid crystal ordering.
+- **Motility-induced phase separation (MIPS)**: Quorum-sensing slowdown where particle speed decreases with local density, causing spontaneous clustering into dense liquid-like drops surrounded by dilute gas — a hallmark of active matter with no equilibrium analogue.
+- **Run-and-tumble dynamics**: Stochastic heading reorientation at rate τ, modeling bacterial motility.
+- **Contractile/extensile dipoles**: Puller (contractile, positive) and pusher (extensile, negative) force dipoles for active turbulence and aster formation.
+- **Self-rotation**: Odd-elastic spinner dynamics with constant angular velocity ω.
+- **Spatial hashing**: Grid-based neighbor lookup for O(N) performance instead of O(N²) pairwise checks.
+- **6 presets**: Bacterial Turbulence (dense pushers with nematic alignment → chaotic vortex streets), Active Nematics (rod-like extensile particles with ±½ defect nucleation), Motility-Induced Clustering (run-and-tumble particles phase-separating into dense drops), Vicsek Flocking (polar aligning particles → long-range ordered flock), Active Spinner Gas (self-rotating disks with odd-elastic collisions), Contractile Gel (puller particles forming asters and contractile networks).
+- **3 visualization views**: Arrows (directional arrows colored by speed), Density (coarse-grained density field showing phase separation), Vorticity (local curl of velocity field showing turbulent vortices).
+- **Interactive controls**: s/S speed, e/E noise, a/A alignment, p/P repulsion, t/T tumble rate, v view cycling, mouse click to add 15-particle clusters, +/- steps per frame, r reset, R menu.
+
+**`life/registry.py`**: Added "Active Matter" entry in Particle & Swarm category with `active_matter_mode` attribute and lifecycle hooks.
+
+**`life/modes/__init__.py`**: Added registration import for the active_matter module.
+
+**`life/app.py`**: Added initialization of all `active_matter_*` state variables (mode, menu, particles, physics parameters, view state).
+
+**`docs/particle-and-swarm.md`**: Added comprehensive documentation section covering active matter physics, the Vicsek model, MIPS theory, force-dipole formulation, all presets, and references to Vicsek et al. (1995), Cates & Tailleur (2015), and Marchetti et al. (2013).
+
+---
+
 ### Feature: Add Ferrofluid Dynamics — magnetic nanoparticle self-organization with Rosensweig spikes, labyrinthine stripes & chain columns
 
 Simulates a magnetic nanoparticle suspension (ferrofluid) that self-organizes under user-controlled magnetic fields. The simulation captures three distinct physical regimes: the Rosensweig instability (hexagonal spike arrays above a critical field), labyrinthine stripe domains from competing dipolar repulsion and surface tension, and chain/columnar structures from dipolar alignment. This fills a visual and physical gap between the project's discrete Ising spins and its continuum MHD plasma — ferrofluids are the mesoscale middle ground where magnetic forces, surface tension, and gravity compete to produce some of the most striking patterns in condensed matter physics.

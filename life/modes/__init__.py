@@ -2,6 +2,8 @@
 
 def register_all_modes(App):
     """Register all mode methods on the App class."""
+    from life.modes.active_matter import register as reg_active_matter
+    reg_active_matter(App)
     from life.modes.aco import register as reg_aco
     reg_aco(App)
     from life.modes.artificial_life import register as reg_alife

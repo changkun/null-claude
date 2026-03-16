@@ -4,6 +4,86 @@ Emergent collective behavior from simple individual rules — flocking, foraging
 
 ---
 
+## Active Matter
+
+### Background
+
+Active matter is a class of non-equilibrium systems composed of self-propelled units that extract energy from their environment and convert it into directed motion. Unlike passive particles governed by detailed balance, active particles break time-reversal symmetry at the individual level, producing collective phenomena with no equilibrium analogue. The field spans biological systems (bacterial suspensions, cytoskeletal filaments, bird flocks) and synthetic ones (Janus colloids, vibrated granular rods, light-activated swimmers).
+
+Two landmark theoretical frameworks define the field. The Vicsek model (1995) showed that point particles with constant speed and local alignment interactions undergo a genuine phase transition from disordered gas to long-range-ordered flock — remarkable because the Mermin-Wagner theorem forbids such order in equilibrium 2D systems. Motility-induced phase separation (MIPS), formalized by Cates and Tailleur (2015), demonstrated that particles which simply slow down in crowds will spontaneously phase-separate into dense liquid-like clusters and dilute gas, with no attractive interactions required.
+
+### Formulation
+
+Each particle has position (r, c) on a toroidal domain, heading angle θ, velocity (vr, vc), and fuel level f. The simulation uses spatial hashing for O(N) neighbor lookup.
+
+```
+Per-timestep update for particle i:
+
+1. NEIGHBOR SEARCH (spatial grid, cell_size = max(align_r, repel_r)):
+   For each neighbor j within grid cell and 8 adjacent cells:
+     dr = r_j - r_i  (with toroidal minimum-image convention)
+     dc = c_j - c_i
+     dist = sqrt(dr² + dc²)
+
+2. ALIGNMENT TORQUE (if dist < align_r):
+   Polar:    accumulate sin(θ_j), cos(θ_j)
+   Nematic:  accumulate sin(2θ_j), cos(2θ_j)  (double-angle trick)
+   target = atan2(sin_sum, cos_sum)  [÷2 for nematic]
+   θ_new += align_w * angular_diff(target, θ) * 0.3
+
+3. SHORT-RANGE REPULSION (if dist < repel_r):
+   overlap = 1 - dist/repel_r
+   F_repel -= (dr, dc)/dist * overlap * repel_w
+
+4. CONTRACTILE/EXTENSILE DIPOLE (if |contract| > 0 and dist < align_r):
+   Project self-propulsion direction onto pair axis:
+     dot = e_i · n_ij
+   Contractile (>0) pulls along axis, extensile (<0) pushes:
+     F_dipole += n_ij * contract * dot / (dist + 0.5)
+
+5. SELF-ROTATION: θ_new += spin_w
+
+6. RUN-AND-TUMBLE: with probability τ, θ_new = random in [0, 2π)
+
+7. ANGULAR NOISE: θ_new += N(0, η)
+
+8. MIPS SLOWDOWN (when τ > 0 and neighbors present):
+   local_density = n_neighbors / (π * align_r²)
+   prop_speed = v₀ / (1 + 5 * local_density)
+
+9. VELOCITY UPDATE:
+   v_new = propulsion + F_repel + F_dipole
+   v_new = v_new * (1 - friction) + v_old * friction * 0.5
+   |v_new| clamped to 3 * v₀
+
+10. POSITION UPDATE (toroidal):
+    r_new = (r + vr) mod rows
+    c_new = (c + vc) mod cols
+```
+
+The order parameter ψ quantifies collective alignment: ψ = |Σ exp(iθ)| / N for polar (Vicsek), ψ = |Σ exp(2iθ)| / N for nematic. ψ → 1 indicates long-range order; ψ → 0 indicates disorder.
+
+### Presets
+
+- **Bacterial Turbulence**: Dense pushers (extensile dipoles, contract = −0.3) with nematic alignment. Produces chaotic vortex streets and jet-like flows characteristic of dense bacterial suspensions like *B. subtilis*.
+- **Active Nematics**: Rod-like extensile particles (contract = −0.5) with strong nematic alignment. Nucleates ±½ topological defect pairs that unbind and annihilate — the hallmark of active nematic turbulence observed in microtubule-kinesin mixtures.
+- **Motility-Induced Clustering**: Run-and-tumble particles (τ = 0.05) with no alignment interaction. Pure MIPS: particles slow down in crowds, accumulate, slow further — a positive feedback loop producing dense liquid drops in dilute gas.
+- **Vicsek Flocking**: Polar aligning particles with moderate noise. Demonstrates the Vicsek phase transition: below critical noise, the system orders into a coherent flock with giant number fluctuations.
+- **Active Spinner Gas**: Self-rotating disks (spin_w = 0.3) with odd-elastic collisions. Models systems with broken parity symmetry, producing chiral edge currents and odd-viscosity effects.
+- **Contractile Gel**: Puller particles (contract = +0.5) forming asters and contractile networks, modeling actomyosin gel dynamics where molecular motors pull filaments inward.
+
+### What to look for
+
+In **Bacterial Turbulence**, watch for turbulent vortex patterns with a characteristic length scale — switch to Vorticity view (v) to see the counter-rotating vortex pairs. **Active Nematics** produces pairs of comet-shaped (+½) and trefoil (−½) topological defects that self-propel and annihilate; the defect density reaches a statistical steady state. **MIPS** shows dramatic phase separation: initially uniform particles coarsen into a few large dense clusters via Ostwald ripening, with a sharp interface between dense and dilute phases visible in Density view. **Vicsek Flocking** exhibits a sharp order-disorder transition — use e/E to tune noise through the critical point and watch the order parameter ψ jump. In **Spinner Gas**, particles form rotating clusters with chiral symmetry breaking. **Contractile Gel** produces aster-like radial structures where particles converge.
+
+### References
+
+- Vicsek, T., Czirók, A., Ben-Jacob, E., Cohen, I. & Shochet, O. "Novel type of phase transition in a system of self-driven particles." *Physical Review Letters*, 75(6), 1226-1229, 1995. https://doi.org/10.1103/PhysRevLett.75.1226
+- Cates, M. E. & Tailleur, J. "Motility-induced phase separation." *Annual Review of Condensed Matter Physics*, 6, 219-244, 2015. https://doi.org/10.1146/annurev-conmatphys-031214-014710
+- Marchetti, M. C., et al. "Hydrodynamics of soft active matter." *Reviews of Modern Physics*, 85(3), 1143-1189, 2013. https://doi.org/10.1103/RevModPhys.85.1143
+
+---
+
 ## Falling Sand
 
 ### Background

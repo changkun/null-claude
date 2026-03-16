@@ -50,6 +50,8 @@ MODE_REGISTRY = [
      "desc": "Gravitational orbital mechanics simulation", "attr": "nbody_mode", "enter": "_enter_nbody_mode", "exit": "_exit_nbody_mode"},
     {"name": "Diffusion-Limited Aggregation", "key": "D", "category": "Particle & Swarm",
      "desc": "Crystal growth via random particle sticking", "attr": "dla_mode", "enter": "_enter_dla_mode", "exit": "_exit_dla_mode"},
+    {"name": "Active Matter", "key": "—", "category": "Particle & Swarm",
+     "desc": "Self-propelled particles — MIPS, active turbulence & collective flocking transitions", "attr": "active_matter_mode", "enter": "_enter_active_matter_mode", "exit": "_exit_active_matter_mode"},
     # ── Physics & Waves ──
     {"name": "Wave Equation", "key": "!", "category": "Physics & Waves",
      "desc": "2D wave propagation and interference", "attr": "wave_mode", "enter": "_enter_wave_mode", "exit": "_exit_wave_mode"},
