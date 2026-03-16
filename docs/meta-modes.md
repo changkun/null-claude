@@ -779,3 +779,51 @@ Caching recomputes the spectrum every 3 draw frames to stay responsive without i
 - Increase resolution to 64×64 with `}` for finer frequency discrimination on large grids.
 - Decrease to 8×8 with `{` for a fast, coarse overview that updates with minimal lag.
 - Combine with ghost trail for simultaneous temporal and spectral analysis of any simulation.
+
+---
+
+## Phase Transition Detector
+
+**Source:** `life/analytics.py` (engine), `life/app.py` (UI)
+
+### Background
+
+Phase transitions — moments when a system's qualitative behavior shifts abruptly — are the most scientifically interesting events in any simulation. Entropy collapses, symmetry breaking, the onset of oscillation, population crashes, and chaos-to-order transitions are all signatures of critical phenomena. The Phase Transition Detector monitors running analytics streams and automatically identifies these moments, bookmarking them for later review.
+
+### How it works
+
+The detector is a global overlay (not a mode) that works across all 140+ simulation engines with zero per-mode configuration. When enabled via **Ctrl+P**, it watches five analytics channels every generation:
+
+| Channel | Detection method | Threshold |
+|---------|-----------------|-----------|
+| Entropy | Z-score against rolling 200-generation baseline | \|z\| > 2.5 |
+| Population | Z-score against rolling 200-generation baseline | \|z\| > 3.0 |
+| Symmetry | Absolute change in averaged symmetry score | Δ > 0.25 |
+| Periodicity | Edge detection (period appears/disappears) | Binary |
+| Stability | Classification transition (ordered ↔ chaotic) | Phase boundary crossing |
+
+A cooldown of 20 generations between same-type detections prevents noisy rapid-fire alerts. When a transition is detected:
+
+1. A **timestamped bookmark** is automatically added to the bookmark timeline (e.g., `⚡ chaos→order @gen 847`).
+2. A **2-second flash banner** appears centered at the top of the screen with a blink effect.
+3. An **audio ping** (880 Hz, 80 ms) plays if sound is enabled.
+
+The Rule Mutation Engine has dedicated integration: when the detector is active during rule mutation, accepted mutations are fed to the detector so it can flag when a mutation crosses a phase boundary.
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **Ctrl+P** | Toggle detector on/off |
+| **Ctrl+T** | Open phase transition bookmark browser |
+| **↑/↓** or **k/j** | Navigate bookmark list |
+| **Enter** | Jump to selected bookmark |
+| **Esc** | Close bookmark browser |
+
+### What to explore
+
+- Run Conway's Life from a random fill and watch the detector flag the initial chaos→order transition as gliders and still lifes emerge from the primordial noise.
+- Enable the detector alongside the Rule Mutation Engine to see which mutations trigger phase boundary crossings.
+- Use Reaction-Diffusion and sweep parameters — the detector will bookmark the exact generation where spots transition to worms to spirals.
+- After a long session, press **Ctrl+T** to browse all detected transitions and jump between the most interesting moments, turning hours of observation into a curated highlight reel.
+- Combine with the analytics overlay (**Ctrl+K**) to see transition counts and recent events in real time.

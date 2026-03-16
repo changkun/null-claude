@@ -442,6 +442,9 @@ def _rmut_step(self):
                 self.rmut_current_fitness = candidate_fitness
                 self.rmut_accepted_mutations += 1
 
+                # Feed accepted mutation to phase transition detector
+                _rmut_feed_phase_detector(self, grid, current_entropy, pop_frac)
+
                 self.rmut_lineage.append(LineageNode(
                     rule_string(self.rmut_current_birth, self.rmut_current_survival),
                     candidate_fitness,
@@ -804,6 +807,23 @@ def _draw_rmut_status(self, max_y, max_x):
         self.stdscr.addstr(status_y, 0, bar[:max_x - 1], curses.A_REVERSE)
     except curses.error:
         pass
+
+
+# ── Phase transition integration ──────────────────────────────────────
+
+def _rmut_feed_phase_detector(self, grid, entropy, pop_frac):
+    """Feed rule mutation state to the app's phase transition detector."""
+    det = self.analytics.phase_detector
+    if not det.enabled:
+        return
+    # Classify the rule mutation's current state for the detector
+    from life.analytics import classify_stability
+    stability = classify_stability(self.rmut_pop_history, self.rmut_periodicity.period)
+    sym = symmetry_score(grid)
+    det.update(grid, entropy, self.rmut_pop_history, sym, stability,
+               self.rmut_periodicity.period)
+    # Let the app process any new transitions
+    self._process_phase_transitions()
 
 
 # ── Registration ─────────────────────────────────────────────────────

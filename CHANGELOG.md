@@ -4,6 +4,39 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add real-time phase transition detector with auto-bookmarking
+
+Added a universal phase transition detector that monitors running analytics streams for qualitative shifts and automatically bookmarks critical moments across all 140+ simulation modes.
+
+**`life/analytics.py`** (~230 lines added):
+
+- **`PhaseTransition`** data class storing generation, kind, label, and detail for each detected event.
+- **`PhaseTransitionDetector`** with 6 detection algorithms:
+  - Entropy spike/collapse — z-score analysis against rolling baseline (z > 2.5)
+  - Symmetry breaking/formation — absolute change threshold (> 0.25)
+  - Oscillation onset/death — periodicity edge detection
+  - Population boom/crash — z-score analysis (z > 3.0)
+  - Chaos→order / order→chaos — stability classification transitions
+  - Extinction — population drops to zero
+- Built-in cooldown system (20 generations between same-type detections) to prevent noise.
+- Integrated into `AnalyticsState.update()` — detector runs every frame when enabled.
+
+**`life/sound.py`** (+13 lines): Added `play_ping()` method — plays a short 880 Hz tone (80 ms) when a phase transition is detected.
+
+**`life/app.py`** (~240 lines added):
+
+- `_process_phase_transitions()` — processes pending transitions: auto-bookmarks the moment, triggers a 2-second visual flash banner, plays audio ping.
+- `_draw_phase_flash()` — centered banner with blink effect (bright first second, dim after).
+- `_draw_phase_bookmark_menu()` — scrollable menu listing all transitions with navigation and jump-to-bookmark.
+- `_handle_phase_bookmark_key()` — keyboard handler for the bookmark browser.
+- Analytics overlay expansion — when detector is active, shows transition count and last 2 events with dynamic panel sizing.
+- **Ctrl+P** — toggle phase transition detector on/off.
+- **Ctrl+T** — open phase transition bookmark browser (↑↓ navigate, Enter jump, Esc close).
+
+**`life/modes/rule_mutation.py`** (+20 lines): Added `_rmut_feed_phase_detector()` — feeds mutation state to the phase detector when a mutation is accepted, automatically detecting when rule mutations cross phase boundaries.
+
+---
+
 ### Feature: Add real-time rule mutation engine for autonomous rule evolution
 
 Added a new Meta Mode that runs a live genetic algorithm on cellular automaton birth/survival rulesets, continuously mutating rules toward maximum visual complexity using entropy feedback. The simulation discovers its own most interesting behaviors while the user watches.

@@ -153,6 +153,19 @@ class SoundEngine:
             struct.pack_into("<h", buf, i * 2, sample)
         return bytes(buf)
 
+    def play_ping(self, freq: float = 880.0, duration: float = 0.08):
+        """Play a short notification ping (for phase transition alerts)."""
+        if not self.enabled or self._play_cmd is None:
+            return
+        if self._play_thread and self._play_thread.is_alive():
+            return
+        samples = self._synthesize([freq], duration, 0.5)
+        self._stop_event.clear()
+        self._play_thread = threading.Thread(
+            target=self._play_samples, args=(samples,), daemon=True
+        )
+        self._play_thread.start()
+
     def _play_samples(self, samples: bytes):
         """Play raw PCM samples via detected player (runs in thread)."""
         import subprocess

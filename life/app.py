@@ -34,7 +34,7 @@ from life.grid import Grid
 from life.sound import SoundEngine
 from life.multiplayer import MultiplayerNet, MP_DEFAULT_PORT, MP_SIM_GENS
 from life.registry import MODE_CATEGORIES, MODE_REGISTRY, MODE_DISPATCH
-from life.analytics import AnalyticsState, _sparkline as _analytics_sparkline
+from life.analytics import AnalyticsState, PhaseTransition, _sparkline as _analytics_sparkline
 from life.modes.sparkline_hud import SparklineHUDState
 
 
@@ -2605,6 +2605,12 @@ class App:
 
         # ── Analytics overlay state ──
         self.analytics = AnalyticsState()
+        # Phase transition detector state
+        self.phase_flash_until: float = 0.0  # monotonic time when flash expires
+        self.phase_flash_label: str = ""     # label shown during flash
+        self.phase_transition_log: list[PhaseTransition] = []  # full session log
+        self.phase_bookmark_menu: bool = False  # scrub through phase bookmarks
+        self.phase_bookmark_sel: int = 0
 
         # ── Minimap overlay state ──
         self.show_minimap = False  # toggled with Tab key
@@ -2658,9 +2664,13 @@ class App:
     def _draw_analytics_overlay(self, max_y: int, max_x: int):
         """Draw the analytics HUD panel on the left side of the screen."""
         a = self.analytics
-        # Panel dimensions
+        # Panel dimensions (taller when phase detector is active)
         panel_w = 38
-        panel_h = 14
+        det = a.phase_detector
+        extra = 0
+        if det.enabled:
+            extra = 2 + min(2, len(self.phase_transition_log))  # separator + header + recent
+        panel_h = 14 + extra
         if max_x < panel_w + 4 or max_y < panel_h + 4:
             return  # terminal too small
 
@@ -2827,12 +2837,172 @@ class App:
             pass
         y += 1
 
+        # ── Phase transition detector status ──
+        det = self.analytics.phase_detector
+        if det.enabled:
+            try:
+                self.stdscr.addstr(y, start_x + 1, "─" * inner_w, border_attr)
+            except curses.error:
+                pass
+            y += 1
+            n_trans = len(self.phase_transition_log)
+            phase_str = f"Phase: {n_trans} transition{'s' if n_trans != 1 else ''}"
+            try:
+                self.stdscr.addstr(y, x, phase_str[:w],
+                                   curses.color_pair(3) | curses.A_BOLD)
+            except curses.error:
+                pass
+            y += 1
+            # Show last 2 transitions
+            recent = self.phase_transition_log[-2:]
+            for t in recent:
+                tline = t.bookmark_label()
+                try:
+                    self.stdscr.addstr(y, x, tline[:w],
+                                       curses.color_pair(3) | curses.A_DIM)
+                except curses.error:
+                    pass
+                y += 1
+
         # ── Footer hint ──
-        hint = "Ctrl+K to close"
+        hints = "Ctrl+K close"
+        if det.enabled:
+            hints += "  Ctrl+T browse"
         try:
-            self.stdscr.addstr(y, x, hint[:w], text_attr | curses.A_DIM)
+            self.stdscr.addstr(y, x, hints[:w], text_attr | curses.A_DIM)
         except curses.error:
             pass
+
+    # ── Phase transition overlays ──
+
+    def _draw_phase_flash(self, max_y: int, max_x: int):
+        """Draw a brief flash banner when a phase transition is detected."""
+        label = self.phase_flash_label
+        if not label:
+            return
+        # Centered banner near top of screen
+        w = min(len(label) + 4, max_x - 2)
+        x = max(0, (max_x - w) // 2)
+        y = 1
+        remaining = self.phase_flash_until - time.monotonic()
+        # Blink effect: bright for first second, then dim
+        if remaining > 1.0:
+            attr = curses.color_pair(3) | curses.A_BOLD | curses.A_REVERSE
+        else:
+            attr = curses.color_pair(3) | curses.A_DIM
+        banner = f" {label} ".center(w)
+        try:
+            self.stdscr.addstr(y, x, banner[:max_x - x], attr)
+        except curses.error:
+            pass
+
+    def _draw_phase_bookmark_menu(self, max_y: int, max_x: int):
+        """Draw a menu listing all phase transition bookmarks for scrubbing."""
+        transitions = self.phase_transition_log
+        if not transitions:
+            try:
+                self.stdscr.addstr(max_y // 2, max(0, max_x // 2 - 12),
+                                   " No phase transitions detected ",
+                                   curses.color_pair(6) | curses.A_DIM)
+            except curses.error:
+                pass
+            return
+
+        panel_w = min(50, max_x - 4)
+        visible = min(len(transitions), max_y - 6)
+        panel_h = visible + 4  # header + footer + border
+        sx = max(0, (max_x - panel_w) // 2)
+        sy = max(0, (max_y - panel_h) // 2)
+
+        border_attr = curses.color_pair(3) | curses.A_BOLD
+        inner_w = panel_w - 2
+
+        # Draw border
+        title = " PHASE TRANSITIONS "
+        top = "┌" + title + "─" * max(0, inner_w - len(title)) + "┐"
+        bot = "└" + "─" * inner_w + "┘"
+        try:
+            self.stdscr.addstr(sy, sx, top[:panel_w], border_attr)
+        except curses.error:
+            pass
+        for row_off in range(1, panel_h - 1):
+            try:
+                self.stdscr.addstr(sy + row_off, sx, "│" + " " * inner_w + "│", border_attr)
+            except curses.error:
+                pass
+        try:
+            self.stdscr.addstr(sy + panel_h - 1, sx, bot[:panel_w], border_attr)
+        except curses.error:
+            pass
+
+        # Clamp selection
+        self.phase_bookmark_sel = max(0, min(self.phase_bookmark_sel, len(transitions) - 1))
+
+        # Scroll offset
+        scroll = max(0, self.phase_bookmark_sel - visible + 1)
+
+        y = sy + 1
+        x = sx + 2
+        w = inner_w - 2
+
+        # Header
+        header = f"{len(transitions)} transitions detected"
+        try:
+            self.stdscr.addstr(y, x, header[:w], curses.color_pair(6) | curses.A_DIM)
+        except curses.error:
+            pass
+        y += 1
+
+        # List items
+        for i in range(scroll, min(scroll + visible, len(transitions))):
+            t = transitions[i]
+            line = t.bookmark_label()
+            if t.detail:
+                line += f"  ({t.detail})"
+            if i == self.phase_bookmark_sel:
+                attr = curses.color_pair(3) | curses.A_REVERSE
+            else:
+                attr = curses.color_pair(7)
+            try:
+                self.stdscr.addstr(y, x, line[:w].ljust(w), attr)
+            except curses.error:
+                pass
+            y += 1
+
+        # Footer
+        y = sy + panel_h - 2
+        footer = "↑↓ navigate  Enter jump  Esc close"
+        try:
+            self.stdscr.addstr(y, x, footer[:w], curses.color_pair(6) | curses.A_DIM)
+        except curses.error:
+            pass
+
+    def _handle_phase_bookmark_key(self, key: int) -> bool:
+        """Handle keys for the phase bookmark browser menu."""
+        if key == 27 or key == ord("q"):  # Esc or q
+            self.phase_bookmark_menu = False
+            return True
+        if key == curses.KEY_UP or key == ord("k"):
+            self.phase_bookmark_sel = max(0, self.phase_bookmark_sel - 1)
+            return True
+        if key == curses.KEY_DOWN or key == ord("j"):
+            self.phase_bookmark_sel = min(
+                len(self.phase_transition_log) - 1, self.phase_bookmark_sel + 1
+            )
+            return True
+        if key == 10 or key == 13:  # Enter
+            transitions = self.phase_transition_log
+            if transitions and 0 <= self.phase_bookmark_sel < len(transitions):
+                target_gen = transitions[self.phase_bookmark_sel].generation
+                # Find matching bookmark
+                for idx, (bg, _, _) in enumerate(self.bookmarks):
+                    if bg == target_gen:
+                        self._jump_to_bookmark(idx)
+                        self.phase_bookmark_menu = False
+                        return True
+                self._flash(f"No bookmark found for gen {target_gen}")
+            return True
+        return True  # consume all keys while menu is open
 
     # ── Minimap overlay ──
 
@@ -2843,7 +3013,7 @@ class App:
             return True
         # Non-mode menus
         _fixed_menus = [
-            'puzzle_menu', 'pattern_menu', 'stamp_menu', 'bookmark_menu',
+            'puzzle_menu', 'pattern_menu', 'stamp_menu', 'bookmark_menu', 'phase_bookmark_menu',
             'rule_menu', 'compare_rule_menu', 'race_rule_menu', 'tbranch_fork_menu',
             'evo_menu', 'ep_menu', 'cast_export_menu', 'script_menu',
             'screensaver_menu', 'pp_menu', 'cinem_menu', 'elab_menu', 'anc_menu',
@@ -3626,6 +3796,29 @@ class App:
         self._flash(f"★ Jumped to bookmark Gen {gen}")
 
 
+    def _process_phase_transitions(self):
+        """Check for new phase transitions and auto-bookmark/flash/ping."""
+        detector = self.analytics.phase_detector
+        if not detector.enabled:
+            return
+        new = detector.drain_pending()
+        if not new:
+            return
+        for t in new:
+            self.phase_transition_log.append(t)
+            # Auto-bookmark the moment
+            gen = t.generation
+            already = any(bg == gen for bg, _, _ in self.bookmarks)
+            if not already:
+                self.bookmarks.append((gen, self.grid.to_dict(), len(self.pop_history)))
+                self.bookmarks.sort(key=lambda x: x[0])
+            # Visual flash
+            self.phase_flash_label = t.bookmark_label()
+            self.phase_flash_until = time.monotonic() + 2.0
+            # Audio ping
+            if self.sound_engine.enabled:
+                self.sound_engine.play_ping()
+
     def _reset_cycle_detection(self):
         """Reset cycle detection state (call when grid is modified externally)."""
         self.state_history.clear()
@@ -3740,6 +3933,16 @@ class App:
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_analytics_overlay(_my, _mx)
                 self._tc_refresh()
+            # ── Phase transition flash notification ──
+            if self.phase_flash_until > time.monotonic() and not self._any_menu_open():
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_phase_flash(_my, _mx)
+                self._tc_refresh()
+            # ── Phase transition bookmark browser ──
+            if self.phase_bookmark_menu:
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_phase_bookmark_menu(_my, _mx)
+                self._tc_refresh()
             # ── Cast export menu ──
             if self.cast_export_menu:
                 _my, _mx = self.stdscr.getmaxyx()
@@ -3751,6 +3954,11 @@ class App:
             if key == curses.KEY_MOUSE:
                 self._handle_mouse()
                 continue
+
+            # ── Phase transition bookmark menu (intercept keys first) ──
+            if self.phase_bookmark_menu:
+                if self._handle_phase_bookmark_key(key):
+                    continue
 
             # ── Cast recording export menu (must intercept keys first) ──
             if self.cast_export_menu:
@@ -3781,6 +3989,26 @@ class App:
                 if self.analytics.enabled:
                     self.analytics.update(self.grid, self.pop_history)
                 self._flash("Analytics ON" if self.analytics.enabled else "Analytics OFF")
+                continue
+
+            # ── Phase transition detector toggle (Ctrl+P, global) ──
+            if key == 16:  # Ctrl+P
+                det = self.analytics.phase_detector
+                det.enabled = not det.enabled
+                if det.enabled:
+                    det.reset()
+                    self._flash("Phase detector ON")
+                else:
+                    self._flash("Phase detector OFF")
+                continue
+
+            # ── Phase transition bookmark browser (Ctrl+T, global) ──
+            if key == 20:  # Ctrl+T
+                if self.phase_transition_log:
+                    self.phase_bookmark_menu = not self.phase_bookmark_menu
+                    self.phase_bookmark_sel = len(self.phase_transition_log) - 1
+                else:
+                    self._flash("No phase transitions detected yet (Ctrl+P to enable)")
                 continue
 
             # ── Sparkline HUD toggle (Ctrl+V, global across all modes) ──
@@ -3965,8 +4193,9 @@ class App:
                         self._update_heatmap()
                         self._record_pop()
                         self._check_cycle()
-                        if self.analytics.enabled:
+                        if self.analytics.enabled or self.analytics.phase_detector.enabled:
                             self.analytics.update(self.grid, self.pop_history)
+                        self._process_phase_transitions()
                         if self.pattern_search_mode:
                             self._scan_patterns()
                         # Step the second grid in comparison mode
@@ -4013,8 +4242,9 @@ class App:
             self._update_heatmap()
             self._record_pop()
             self._check_cycle()
-            if self.analytics.enabled:
+            if self.analytics.enabled or self.analytics.phase_detector.enabled:
                 self.analytics.update(self.grid, self.pop_history)
+            self._process_phase_transitions()
             if self.pattern_search_mode:
                 self._scan_patterns()
             if self.compare_mode and self.grid2:
