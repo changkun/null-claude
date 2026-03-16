@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Nuclear Reactor Physics & Meltdown Dynamics — PWR cross-section with neutron transport & fission chain reaction, control rod insertion/withdrawal, Xe-135 poisoning dynamics, thermal hydraulics with Doppler & void coefficient feedback, LOCA/meltdown failure cascades, hydrogen generation & corium pooling
+
+Nuclear fission counterpart to the existing Tokamak Fusion Plasma mode — models fission reactor physics from normal operation through accident scenarios, filling the gap between fusion plasma physics and the other energy/physics simulations. The six presets recreate the physics behind the three major nuclear accidents (Chernobyl, TMI, Fukushima) plus normal operation and a breeder reactor.
+
+**`life/modes/nuclear_reactor.py`** (new, ~1052 lines):
+
+- **Neutron transport & fission**: 2D diffusion on a circular reactor cross-section lattice (fuel/moderator/coolant/reflector/vessel wall). U-235 fission with σ_f=0.08×enrichment, yielding 2.5 avg daughter neutrons (prompt fraction 1-β, delayed fraction β=0.0065 via precursor decay λ=0.08). 4-neighbor Laplacian diffusion (D=0.25). Parasitic absorption σ_a=0.03. Reflector albedo 0.85. Flux capped at 3.0 for stability.
+- **Control rods**: 5 vertical rod channels with adjustable insertion depth (0=fully in, 1=fully out). Absorption cross-section σ_rod=0.85. `+`/`-` keys adjust by ±0.05/tick, `s` triggers emergency SCRAM (auto-insertion at 0.05/tick). Auto-SCRAM fires when avg flux > 1.5 or meltdown detected (if safety not disabled by preset).
+- **Xenon-135 poisoning**: Full I-135 → Xe-135 decay chain. Iodine production from fission (yield 0.006), decay to xenon (λ_I=0.0003). Xenon produced from iodine decay + direct fission yield (0.003), destroyed by radioactive decay (λ_Xe=0.0001) and neutron burnup (σ_Xe=0.60 — the enormous thermal cross-section). The "xenon pit" rebound emerges naturally: shutdown stops burnup while iodine continues decaying to xenon, causing reactivity to plunge — exactly the Chernobyl RBMK-1000 Unit 4 scenario.
+- **Thermal hydraulics**: Fuel rod heat generation (q_fission=0.15×φ + decay heat), 4-neighbor conduction (k=0.04), convective transfer to coolant (h=0.08×ΔT×coolant_level×(1-void)). Coolant flow removes heat toward inlet temperature (T_inlet=0.15) at flow rate 0.05 (or 0.0025 natural circulation when pumps off).
+- **Reactivity feedback**: Doppler coefficient always negative (-0.003, stabilizing). Void coefficient configurable: negative for PWR (-0.015, safe — more steam = less moderation = less fission) or positive for RBMK (+0.012, dangerous — more steam = less absorption = more fission, the Chernobyl positive feedback).
+- **Failure cascades**: LOCA coolant drainage (0.003+0.001×t per tick), steam void formation when coolant exceeds boiling point (T>0.55), cladding failure at T>0.80, fuel rod melting at T>0.95, zirconium-steam hydrogen generation at T>0.75 (rate 0.005×(T-0.75)), corium gravity slumping (P=0.02/tick downward), containment pressurization from steam+H2 (failure at P=0.95).
+- **Decay heat**: Fraction of full power (7%) with 300-tick half-life — the reason Fukushima melted despite successful SCRAM.
+- **3 visualization views**: Reactor cross-section map (fuel ●/moderator ≈/coolant ~/control rod ║/reflector ░/vessel ▓/melted */corium X + flux density overlay + damage markers), temperature/pressure heatmap (fuel & coolant temperature with 5-level heat coloring + void fraction overlay + containment pressure), 10-metric sparkline time series (k_eff, neutron flux, fuel temp, coolant temp, Xe-135 concentration, power output, control rod position, void fraction, dose rate, containment pressure).
+- **6 presets**: Normal Power Operation (rod_pos=0.45, steady-state with negative void coefficient), Control Rod Withdrawal Accident (rod_pos=0.85, SCRAM disabled, supercritical excursion), Xenon Poisoning Restart/Chernobyl (rod_pos=0.90 with RBMK positive void coefficient, high Xe-135 from recent shutdown, SCRAM disabled), Loss-of-Coolant Accident/TMI (active LOCA breach draining coolant), Station Blackout/Fukushima (pumps off, decay heat with natural circulation only), Breeder Reactor Fast Spectrum (no moderator, enrichment 1.4×, Pu-239 breeding analog).
+- **Controls**: Space (play/pause), v (cycle views), +/- (adjust control rods), s (emergency SCRAM), n (single step), r (reset), R/m (menu), q (quit).
+
+**`life/registry.py`**: Added "Nuclear Reactor Physics & Meltdown Dynamics" entry in Physics & Waves category with `use_delay: False`.
+
+**`life/modes/__init__.py`**: Added registration import for the nuclear_reactor module.
+
+**`docs/physics-and-waves.md`**: Added scientific documentation — reactor geometry, neutron transport equations, fission chain reaction, control rod mechanics, xenon poisoning dynamics, thermal hydraulics, reactivity feedback coefficients, failure cascade sequence, preset descriptions, observation guide, and references (Lamarsh, Todreas & Kazimi, GRS Chernobyl report).
+
+---
+
 ### Feature: Add Planetary Atmosphere & Weather System — 2D Mercator planetary climate with Hadley/Ferrel/Polar circulation cells, Coriolis jet streams, cyclone/anticyclone genesis, moisture transport & precipitation, ocean-atmosphere coupling, adjustable CO2 greenhouse forcing with ice-albedo feedback
 
 First planetary-scale climate/weather simulation — bridges fluid dynamics with thermodynamics at a scale none of the existing modes (tornado, aurora, earthquake, atmospheric weather) cover. The existing Atmospheric Weather mode simulates synoptic-scale pressure centers and fronts; this mode simulates the full planetary energy balance, general circulation, and climate feedbacks.

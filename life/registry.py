@@ -478,6 +478,9 @@ MODE_REGISTRY = [
     # ── Planetary Atmosphere & Weather System ──
     {"name": "Planetary Atmosphere & Weather System", "key": "—", "category": "Fluid Dynamics",
      "desc": "2D Mercator planetary climate — Hadley/Ferrel/Polar circulation cells, Coriolis jet streams, cyclone/anticyclone genesis, moisture transport & precipitation, ocean-atmosphere coupling, adjustable CO2 greenhouse forcing with ice-albedo feedback", "attr": "planetary_atmos_mode", "enter": "_enter_planetary_atmos_mode", "exit": "_exit_planetary_atmos_mode"},
+    # ── Nuclear Reactor Physics & Meltdown Dynamics ──
+    {"name": "Nuclear Reactor Physics & Meltdown Dynamics", "key": "—", "category": "Physics & Waves",
+     "desc": "PWR cross-section with neutron transport & fission chain reaction, control rod insertion/withdrawal, Xe-135 poisoning dynamics, thermal hydraulics with void coefficient feedback, LOCA/meltdown failure cascades, hydrogen generation & corium pooling", "attr": "nuclear_reactor_mode", "enter": "_enter_nuclear_reactor_mode", "exit": "_exit_nuclear_reactor_mode"},
 ]
 
 
@@ -601,6 +604,7 @@ _DISPATCH_OVERRIDES = {
     'fluidlife_mode': {'running_check': '_is_fluidlife_auto_stepping', 'use_delay': False},
     'spacetime_mode': {'running_check': '_is_spacetime_auto_stepping', 'use_delay': False},
     'planetary_atmos_mode': {'use_delay': False},
+    'nuclear_reactor_mode': {'use_delay': False},
 }
 
 

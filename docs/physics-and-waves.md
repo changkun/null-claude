@@ -1340,3 +1340,110 @@ Instabilities:
 - Freidberg, J.P. *Plasma Physics and Fusion Energy*, Cambridge University Press, 2007. https://doi.org/10.1017/CBO9780511755705
 - Lawson, J.D. "Some criteria for a power producing thermonuclear reactor," *Proceedings of the Physical Society B*, 1957. https://doi.org/10.1088/0370-1301/70/1/303
 - ITER Organization. "ITER — the way to new energy." https://www.iter.org
+
+
+---
+
+## Nuclear Reactor Physics & Meltdown Dynamics
+
+**Background** — Nuclear fission power converts the binding energy released when heavy nuclei (U-235, Pu-239) split into kinetic energy of fission fragments and neutrons, ultimately producing heat. A fission chain reaction is self-sustaining when each fission event produces, on average, exactly one neutron that goes on to cause another fission — a condition called criticality (k-eff = 1.0). Subcritical (k < 1) means the reaction dies out; supercritical (k > 1) means exponential growth. Reactor control is the art of keeping k-eff precisely at 1.0 while extracting heat safely. This simulation models a pressurized water reactor (PWR) cross-section with the key physics that govern both normal operation and accident scenarios, including the mechanisms behind the three major nuclear accidents: Chernobyl (1986), Three Mile Island (1979), and Fukushima Daiichi (2011).
+
+**Reactor geometry** — The 2D cross-section is a circular vessel containing:
+- **Fuel cells**: U-235 fissile material arranged in a lattice pattern (`(r+c) % 3 == 0`)
+- **Moderator cells**: Light water or graphite that thermalizes fast neutrons to increase fission probability (`(r+c) % 3 == 1`, absent in breeder preset)
+- **Coolant channels**: Water flowing through the core to remove heat (`(r+c) % 3 == 2`)
+- **Control rod channels**: 5 vertical columns of neutron-absorbing material (boron/hafnium), adjustable from fully inserted (0) to fully withdrawn (1)
+- **Reflector ring**: Returns escaping neutrons back into the core (albedo 0.85)
+- **Vessel wall**: Steel pressure boundary
+
+**Neutron transport** — Neutron flux φ evolves via diffusion with sources and sinks:
+
+```
+φ_new = φ + D × ∇²φ + S_prompt + S_delayed - Σ_a × φ - Σ_Xe × Xe × φ
+
+where:
+  D = 0.25              diffusion coefficient
+  ∇²φ                   4-neighbor Laplacian
+  S_prompt = ν × Σ_f × φ × (1-β) × doppler × void_fb
+  S_delayed = λ × C     delayed neutrons from precursor decay
+  ν = 2.5               neutrons per fission
+  Σ_f = 0.08 × enrich   fission cross-section
+  Σ_a = 0.03            parasitic absorption
+  Σ_Xe = 0.60           xenon-135 absorption (enormous)
+  β = 0.0065            delayed neutron fraction
+  λ = 0.08              precursor decay constant
+```
+
+The delayed neutron fraction β = 0.0065 is critical to reactor control — it slows the response time from microseconds (prompt neutron lifetime) to seconds (precursor half-lives), making human/mechanical control possible.
+
+**Xenon-135 poisoning** — The most important fission product for reactor dynamics:
+
+```
+dI/dt = γ_I × φ - λ_I × I          (I-135: produced by fission, decays to Xe)
+dXe/dt = λ_I × I + γ_Xe × φ - λ_Xe × Xe - σ_Xe × φ × Xe
+
+where:
+  γ_I = 0.006    I-135 fission yield
+  γ_Xe = 0.003   Xe-135 direct fission yield
+  λ_I = 0.0003   I-135 decay rate (half-life ~6.6 hours)
+  λ_Xe = 0.0001  Xe-135 decay rate (half-life ~9.2 hours)
+  σ_Xe = 0.60    Xe-135 absorption (2.6 × 10⁶ barns in reality)
+```
+
+At steady state, xenon burnup (σ_Xe × φ × Xe) balances production. On shutdown, burnup stops instantly but iodine continues decaying to xenon for hours, causing Xe concentration to *rise* — the "xenon pit." Attempting to restart during a xenon pit requires pulling control rods dangerously far out. This is exactly what happened at Chernobyl on April 26, 1986: operators withdrew nearly all rods to overcome xenon poisoning, then a sudden power surge in the RBMK's positive-void-coefficient core caused a prompt-critical excursion.
+
+**Reactivity feedback** — Two temperature-dependent feedback mechanisms:
+
+```
+Doppler:  rate_modifier = 1 + α_D × max(0, T_fuel - 0.3)     α_D = -0.003 (always negative)
+Void:     rate_modifier = 1 + α_v × void × 10                 α_v = -0.015 (PWR) or +0.012 (RBMK)
+```
+
+- **Doppler broadening** (always stabilizing): Hotter fuel broadens U-238 resonance absorption peaks, capturing more neutrons before they can cause fission.
+- **Void coefficient** (design-dependent): In a PWR, steam voids reduce moderation, which reduces fission — a self-limiting negative feedback. In an RBMK like Chernobyl, the graphite moderator is separate from the water coolant, so steam voids reduce neutron absorption without reducing moderation — a dangerous positive feedback that amplifies power excursions.
+
+**Thermal hydraulics** — Coupled heat generation and removal:
+
+```
+dT_fuel/dt = q_fission + q_decay + k∇²T - h(T_fuel - T_cool) × coolant × (1-void)
+dT_cool/dt = h(T_fuel - T_cool) × 0.5 - flow × (T_cool - T_inlet) × coolant_level
+
+where:
+  q_fission = 0.15 × φ          heat from fission
+  q_decay = 0.07 × P_history    decay heat (7% of operating power)
+  k = 0.04                       fuel conductivity
+  h = 0.08                       convective coefficient
+  flow = 0.05 (pumps on) or 0.0025 (natural circulation)
+  T_inlet = 0.15                 coolant inlet temperature
+```
+
+**Failure cascade sequence** — The progression from normal to catastrophe:
+
+1. **Loss of coolant** (LOCA) or **loss of flow** (blackout) → reduced heat removal
+2. **Coolant boiling** (T_cool > 0.55) → steam void formation
+3. **Void feedback** → in RBMK: positive feedback accelerates fission; in PWR: negative feedback helps but may not be enough
+4. **Cladding failure** (T_fuel > 0.80) → fission product release
+5. **Zirconium-steam reaction** (T_fuel > 0.75) → hydrogen generation (H₂_rate = 0.005 × (T-0.75)), the gas that exploded at Fukushima
+6. **Fuel melting** (T_fuel > 0.95) → loss of geometry, corium formation
+7. **Corium slumping** → gravity-driven downward flow (P=0.02/tick)
+8. **Containment pressurization** → steam + hydrogen → potential breach at P > 0.95
+
+**Presets**
+
+| Preset | Configuration | What it demonstrates |
+|--------|--------------|---------------------|
+| **Normal Power Operation** | rod_pos=0.45, PWR void coeff, SCRAM enabled | Steady-state criticality — watch k-eff hover near 1.0, xenon reach equilibrium, stable temperatures |
+| **Control Rod Withdrawal Accident** | rod_pos=0.85, SCRAM disabled | Supercritical excursion — excess reactivity from withdrawn rods drives exponential flux growth |
+| **Xenon Poisoning Restart (Chernobyl)** | rod_pos=0.90, RBMK +void coeff, high Xe/I, SCRAM disabled | The Chernobyl scenario — rods nearly fully out to overcome xenon pit, positive void coefficient creates runaway feedback |
+| **Loss-of-Coolant Accident (TMI)** | Active LOCA breach, coolant draining | Three Mile Island analog — watch coolant level drop, fuel uncover, void fraction rise, partial meltdown |
+| **Station Blackout (Fukushima)** | Pumps off, rod_pos=0.10, decay heat active | Fukushima scenario — reactor scrammed successfully but decay heat with no forced cooling slowly boils off coolant |
+| **Breeder Reactor Fast Spectrum** | No moderator, enrichment 1.4×, fast neutrons | Fast reactor — no thermalization, higher enrichment compensates, breeding Pu-239 from U-238 blanket |
+
+**Controls**: `Space` play/pause, `v` cycle views (cross-section/thermal/graphs), `+`/`-` adjust control rods, `s` emergency SCRAM, `n` step, `r` restart, `R`/`m` return to preset menu, `q` exit mode.
+
+**What to look for** — Start with Normal Power Operation: watch neutron flux stabilize as the control rods balance fission production against absorption, observe xenon building to equilibrium over ~100 ticks, and note how Doppler feedback self-corrects small perturbations. Switch to the Xenon Poisoning Restart to see the Chernobyl mechanism in action: the initially suppressed flux suddenly surges as xenon burns away and the positive void coefficient amplifies the excursion — note how quickly the situation becomes unrecoverable with rods nearly fully withdrawn and SCRAM disabled. The LOCA preset shows the TMI scenario: coolant drains, void fraction climbs, fuel temperatures steadily rise toward melting — switch to the temperature view to watch the thermal front propagate. The Station Blackout preset is the most insidious: the reactor is safely shutdown (rods in), but the relentless 7% decay heat slowly boils away coolant with only natural circulation (5% of normal flow) available — watch the temperature creep upward over hundreds of ticks. The Breeder preset shows how a fast-spectrum reactor operates without a moderator, relying on higher enrichment and fast-neutron fission.
+
+**References**
+- Lamarsh, J.R. and Baratta, A.J. *Introduction to Nuclear Engineering*, 4th ed., Pearson, 2017.
+- Todreas, N.E. and Kazimi, M.S. *Nuclear Systems I: Thermal Hydraulic Fundamentals*, 2nd ed., CRC Press, 2011. https://doi.org/10.1201/b14887
+- GRS (Gesellschaft für Anlagen- und Reaktorsicherheit). "The Accident and the Safety of RBMK Reactors," GRS-121, 1996.
