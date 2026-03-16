@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Granular Dynamics — DEM granular material simulation with force chains, jamming, avalanches & Brazil nut convection
+
+Simulates granular materials (sand, grains, powder) using the Discrete Element Method where every grain is a physical particle subject to Hertzian contact forces, Coulomb friction, and gravity. This fills the gap between the rule-based Falling Sand cellular automaton and the continuum fluid modes — granular matter is famously "the fourth state" exhibiting solid, liquid, and gas-like behavior depending on conditions.
+
+**`life/modes/granular_dynamics.py`** (new, ~866 lines):
+
+- **Hertzian contact forces**: F ∝ overlap^1.5 between all particle pairs, with normal damping (dashpot) for realistic energy dissipation and regularized Coulomb friction for tangential forces.
+- **Spatial hashing**: Grid-based O(N) neighbor lookup instead of O(N²) brute-force pairwise checks.
+- **Wall collisions**: Axis-aligned boundary walls plus line-segment collision detection for arbitrary funnel/hopper geometries using point-to-segment projection.
+- **Jamming detection**: Tracks kinetic energy, maximum contact force, and jammed particle fraction (velocity < threshold) to identify flowing vs. jammed states.
+- **6 presets**: Hopper Flow (funnel with arching/clogging), Avalanche Slope (sandpile near angle of repose), Brazil Nut Effect (shaking-driven size segregation via convection), Force Chain Network (compressed grains revealing branching stress networks), Granular Gas (dilute inelastic particles with clustering instability), Drum Rotation (rotating gravity with segregation bands).
+- **3 visualization views**: Grains (particles colored cyan→green→yellow→magenta→red by contact force), Force Chains (stress network field with persistence decay), Density (coarse-grained packing fraction).
+- **Interactive controls**: g/G gravity, t/T tilt, f/F friction, e/E restitution, s/S shake amplitude, k/K stiffness, v view cycling, +/- steps per frame, click to drop 12-grain clusters, r reset, R menu.
+
+**`life/registry.py`**: Added "Granular Dynamics" entry in Particle & Swarm category with `granular_mode` attribute and lifecycle hooks.
+
+**`life/modes/__init__.py`**: Added registration import for the granular_dynamics module.
+
+**`docs/particle-and-swarm.md`**: Added comprehensive documentation section covering DEM physics, Hertzian contact formulation, Coulomb friction, all presets, and references to Cundall & Strack (1979), Jaeger et al. (1996), and Bak et al. (1987).
+
+---
+
 ### Feature: Add Active Matter — self-propelled particles exhibiting MIPS, active turbulence & collective flocking
 
 Simulates a system of self-propelled particles that consume fuel, generate forces, and exhibit collective phenomena with no equilibrium analogue. The mode bridges the gap between the project's passive particle modes (N-Body, Boids, Particle Life) and its biological modes — active matter is the physics underpinning bacterial colonies, cytoskeletal dynamics, and bird flocks.

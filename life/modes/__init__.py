@@ -324,6 +324,8 @@ def register_all_modes(App):
     reg_toposoliton(App)
     from life.modes.superfluid_helium import register as reg_superfluid
     reg_superfluid(App)
+    from life.modes.granular_dynamics import register as reg_granular
+    reg_granular(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

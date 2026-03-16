@@ -84,6 +84,84 @@ In **Bacterial Turbulence**, watch for turbulent vortex patterns with a characte
 
 ---
 
+## Granular Dynamics
+
+### Background
+
+Granular materials — sand, grains, powders, cereals — are sometimes called "the fourth state of matter" because they exhibit solid-like, liquid-like, and gas-like behavior depending on conditions, yet fit none of these categories. A sandpile can support weight like a solid (via force chains), flow like a liquid (avalanches, hopper discharge), or behave like a gas (dilute inelastic particles). The Discrete Element Method (DEM), introduced by Cundall and Strack (1979), models each grain as an individual particle subject to contact forces, gravity, and friction. From these simple ingredients emerge rich phenomena: force chain networks (branching stress paths visible under photoelastic imaging), jamming transitions (where a flowing granular medium suddenly arrests), avalanche cascades exhibiting self-organized criticality, arching and clogging in hoppers, and the Brazil nut effect (large grains rising to the top when shaken via granular convection).
+
+This mode fills the gap between the project's rule-based Falling Sand cellular automaton (which uses material-type swap rules) and its continuum fluid modes (Navier-Stokes, LBM). Here every grain is a physical particle with Hertzian contact, Coulomb friction, and inertia.
+
+### Formulation
+
+Each grain has position (r, c), velocity (vr, vc), radius, mass (proportional to area, m = πr²), accumulated contact force magnitude, and a large-grain flag. Spatial hashing (cell size 2.0) provides O(N) neighbor lookup.
+
+```
+Contact force between grains i and j (if overlapping):
+    dr = r_j - r_i,  dc = c_j - c_i
+    dist = sqrt(dr² + dc²)
+    overlap = (rad_i + rad_j) - dist
+
+    Normal direction: n = (dr, dc) / dist
+
+    Hertzian normal force:
+        F_n = k * overlap^1.5                    (nonlinear spring)
+
+    Normal damping (dashpot):
+        v_rel_n = (v_j - v_i) · n
+        F_damp = -0.3 * k * v_rel_n * sqrt(overlap)
+        F_n_total = max(0, F_n + F_damp)         (no tensile contact)
+
+    Coulomb friction (regularized):
+        v_rel_t = (v_j - v_i) · t                (tangential relative velocity)
+        F_t_max = μ * F_n_total                   (Coulomb limit)
+        F_t = clamp(-0.5 * k * v_rel_t * sqrt(overlap), -F_t_max, F_t_max)
+
+    Apply equal and opposite forces to i and j.
+
+Wall collisions:
+    Axis-aligned walls: same Hertzian + friction formulation
+    Line-segment walls (hopper funnel): project particle center onto segment,
+        compute overlap from closest point, apply normal + friction forces
+
+Velocity and position update (symplectic Euler):
+    a = gravity + F_contact / mass + shake_oscillation
+    v_new = (v + a) * (1 - damping)
+    |v_new| clamped to 3.0
+    r_new = r + v_new
+    Hard boundary clamp with restitution coefficient
+
+Shaking (Brazil nut):
+    shake_offset = A * sin(gen * ω * 2π)         (sinusoidal vertical oscillation)
+
+Drum rotation:
+    gravity direction rotates: θ += ω_drum per step
+    g_r = |g| * cos(θ),  g_c = |g| * sin(θ)
+```
+
+Force chain visualization accumulates contact force magnitudes on a grid with 0.7× decay per step for visual persistence.
+
+### Presets
+
+- **Hopper Flow**: Funnel geometry with converging walls and a narrow outlet. Grains arch and clog at the aperture — tilt gravity laterally (t/T) to restart flow. Demonstrates the Beverloo scaling law for granular discharge and the intermittent clog-flow transition.
+- **Avalanche Slope**: Sandpile initialized near the angle of repose. Adding grains (click) triggers cascading avalanches with power-law size distributions characteristic of self-organized criticality (Bak-Tang-Wiesenfeld).
+- **Brazil Nut Effect**: Mixed small and large grains under vertical shaking. Large grains (shown as yellow diamonds) migrate to the surface via granular convection cells — the same mechanism that sorts breakfast cereal in the box.
+- **Force Chain Network**: Densely packed grains under strong gravity with high stiffness. Switch to Force Chains view (v) to see the branching stress network — bright filaments carry most of the load while many grains bear almost none, as observed in photoelastic disk experiments.
+- **Granular Gas**: Dilute inelastic particles with no gravity and high restitution. Exhibits clustering instability — initially uniform particles spontaneously form dense clumps separated by voids, driven by the inelastic collapse mechanism where energy dissipation concentrates particles.
+- **Drum Rotation**: Grains in a container with slowly rotating gravity direction, modeling a rotating drum. Produces radial segregation (large grains migrate outward), avalanching surface flow, and S-shaped dynamic angle of repose.
+
+### What to look for
+
+In **Hopper Flow**, watch for the dramatic transition between free flow and complete arrest — a single arch of 5–8 grains spanning the aperture can halt all flow. Tilting gravity breaks the arch and restarts discharge. In **Force Chain Network**, the force chains view reveals that stress transmission in granular matter is highly heterogeneous: a few branching filaments carry enormous loads while adjacent grains are nearly stress-free. The **Brazil Nut** preset shows convection-driven size segregation developing over ~100 generations of shaking — large grains ride convection cells upward. **Granular Gas** starts uniform but rapidly develops dense clusters separated by expanding voids, a hallmark of inelastic collapse. **Avalanche Slope** demonstrates self-organized criticality: small grain additions produce avalanches spanning a wide range of sizes.
+
+### References
+
+- Cundall, P. A. & Strack, O. D. L. "A discrete numerical model for granular assemblies." *Géotechnique*, 29(1), 47-65, 1979. https://doi.org/10.1680/geot.1979.29.1.47
+- Jaeger, H. M., Nagel, S. R. & Behringer, R. P. "Granular solids, liquids, and gases." *Reviews of Modern Physics*, 68(4), 1259-1273, 1996. https://doi.org/10.1103/RevModPhys.68.1259
+- Bak, P., Tang, C. & Wiesenfeld, K. "Self-organized criticality: An explanation of the 1/f noise." *Physical Review Letters*, 59(4), 381-384, 1987. https://doi.org/10.1103/PhysRevLett.59.381
+
+---
+
 ## Falling Sand
 
 ### Background

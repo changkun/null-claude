@@ -52,6 +52,8 @@ MODE_REGISTRY = [
      "desc": "Crystal growth via random particle sticking", "attr": "dla_mode", "enter": "_enter_dla_mode", "exit": "_exit_dla_mode"},
     {"name": "Active Matter", "key": "—", "category": "Particle & Swarm",
      "desc": "Self-propelled particles — MIPS, active turbulence & collective flocking transitions", "attr": "active_matter_mode", "enter": "_enter_active_matter_mode", "exit": "_exit_active_matter_mode"},
+    {"name": "Granular Dynamics", "key": "—", "category": "Particle & Swarm",
+     "desc": "DEM granular materials — force chains, jamming, avalanches & Brazil nut convection", "attr": "granular_mode", "enter": "_enter_granular_mode", "exit": "_exit_granular_mode"},
     # ── Physics & Waves ──
     {"name": "Wave Equation", "key": "!", "category": "Physics & Waves",
      "desc": "2D wave propagation and interference", "attr": "wave_mode", "enter": "_enter_wave_mode", "exit": "_exit_wave_mode"},
