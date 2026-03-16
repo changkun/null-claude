@@ -375,6 +375,9 @@ MODE_REGISTRY = [
     # ── Rule Phylogenetics ──
     {"name": "Rule Phylogenetics", "key": "—", "category": "Meta Modes",
      "desc": "Comparative genomics for CA rules — builds evolutionary family trees, identifies conserved behavioral motifs, traces lineage from Hall of Fame", "attr": "phylo_mode", "enter": "_enter_phylo_mode", "exit": "_exit_phylo_mode"},
+    # ── Reverse Life ──
+    {"name": "Reverse Life", "key": "—", "category": "Meta Modes",
+     "desc": "Constraint solver that runs Game of Life backwards — finds predecessor states, detects Garden of Eden patterns", "attr": "reverse_life_mode", "enter": "_enter_reverse_life_mode", "exit": "_exit_reverse_life_mode"},
 ]
 
 
@@ -494,6 +497,7 @@ _DISPATCH_OVERRIDES = {
     'sph_mode': {'use_delay': False},
     'rbc_mode': {'use_delay': False},
     'symphony_mode': {'running_check': '_is_symphony_auto_stepping', 'use_delay': False},
+    'reverse_life_mode': {'running_check': '_is_reverse_life_auto_stepping', 'use_delay': False},
 }
 
 

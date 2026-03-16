@@ -4,6 +4,28 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Reverse Life — constraint solver that runs the Game of Life backwards
+
+Tackles a genuinely hard problem in CA theory (predecessor-finding is NP-complete) by building an interactive constraint-propagation solver that reconstructs history that was never simulated. Unlike the existing timeline/rewind feature which replays *recorded* history, this mode **computes** predecessor states from scratch for any pattern. It also detects Garden of Eden patterns — configurations with no possible predecessor, one of the deepest results in cellular automaton theory.
+
+**`life/modes/reverse_life.py`** (new, ~560 lines):
+
+- **Constraint propagation engine (`_ReverseSolver`)**: Tri-state cell variables (UNKNOWN/ALIVE/DEAD) with GoL rule constraints. Uses most-constrained-variable heuristic for branching, generator-based solving for incremental visualization, and full solution verification (steps predecessor forward and compares to target).
+- **Garden of Eden detection**: When the solver exhausts all possibilities without finding a valid predecessor, the pattern is identified as a Garden of Eden — a configuration that can only exist as an initial condition, never as the result of any predecessor.
+- **Live search visualization**: Confirmed cells glow green, exploring cells flicker yellow, dead-ends flash red, unknowns shown as dots. Progress bar, backtrack counter, propagation stats, and elapsed time displayed throughout.
+- **4 view modes**: Solver (live search), solution (final predecessor), overlay (predecessor on target), diff (what changed between generations).
+- **3 display modes**: Cells (grid view), search-tree (text overview of solver state), stats (detailed solver metrics panel).
+- **4 speed settings**: Slow (1 cell/frame), medium (5), fast (25), instant (run to completion).
+- **9 preset patterns**: Block, Blinker (both phases), Glider, Beehive, Loaf, Toad, Beacon, R-pentomino (dynamically evolved 50 gens).
+- **Iterative reversal**: Accept a solution and immediately solve for its predecessor, chaining backwards through time to explore deep ancestral lineages.
+- **Full interactive controls**: Start/pause, accept/reverse again, find alternative predecessors, reset, Garden of Eden check, speed/view/display cycling, preset loading, search region adjustment, help overlay.
+
+**`life/registry.py`**: Added "Reverse Life" entry in Meta Modes category with `reverse_life_mode` attribute, custom running check (`_is_reverse_life_auto_stepping`), and no-delay dispatch.
+
+**`life/modes/__init__.py`**: Added registration import for the reverse_life module.
+
+---
+
 ### Feature: Add Cellular Symphony — real-time sonification turning CA patterns into emergent music
 
 Adds an entirely new sensory dimension to the simulator by bridging cellular automata into the auditory domain. The grid becomes a step sequencer: rows are beats, columns are pitches, neighbor counts shape timbre, and cell age controls dynamics. Different CA rules produce characteristic musical textures — Conway's Life yields chaotic jazz, Seeds produces staccato bursts, Maze generates thick clusters. Users can paint cells and hear the pattern sing, creating a synesthetic experience where emergence is both seen and heard simultaneously.

@@ -304,6 +304,8 @@ def register_all_modes(App):
     reg_phylo(App)
     from life.modes.cellular_symphony import register as reg_symphony
     reg_symphony(App)
+    from life.modes.reverse_life import register as reg_revlife
+    reg_revlife(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
