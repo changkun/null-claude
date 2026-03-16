@@ -334,6 +334,9 @@ MODE_REGISTRY = [
     # ── Primordial Soup / Origin of Life ──
     {"name": "Primordial Soup & Origin of Life", "key": "—", "category": "Chemical & Biological",
      "desc": "Abiogenesis in hydrothermal vents — H\u2082/CO\u2082/NH\u2083 form amino acids & nucleotides on mineral catalysts, RNA World replicators compete with mutation/error catastrophe, lipid protocells divide & evolve metabolism", "attr": "psoup_mode", "enter": "_enter_psoup_mode", "exit": "_exit_psoup_mode"},
+    # ── Embryogenesis & Gastrulation ──
+    {"name": "Embryogenesis & Gastrulation", "key": "—", "category": "Chemical & Biological",
+     "desc": "Multicellular development from zygote through cleavage, blastula, gastrulation & neurulation — morphogen gradients (BMP/Wnt/Nodal), cell fate determination via French Flag model, differential adhesion sorting, convergent extension & neural tube folding", "attr": "embryo_mode", "enter": "_enter_embryo_mode", "exit": "_exit_embryo_mode"},
     # ── Quantum Circuit Simulator ──
     {"name": "Quantum Circuit Simulator", "key": "Ctrl+Q", "category": "Procedural & Computational",
      "desc": "Build & simulate quantum circuits with Bloch spheres, entanglement links & measurement histograms", "attr": "qcirc_mode", "enter": "_enter_qcirc_mode", "exit": "_exit_qcirc_mode"},

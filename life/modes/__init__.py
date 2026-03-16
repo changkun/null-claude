@@ -264,6 +264,8 @@ def register_all_modes(App):
     reg_nntrain(App)
     from life.modes.primordial_soup import register as reg_psoup
     reg_psoup(App)
+    from life.modes.embryogenesis import register as reg_embryo
+    reg_embryo(App)
     from life.modes.quantum_circuit import register as reg_qcirc
     reg_qcirc(App)
     from life.modes.electric_circuit import register as reg_circuit

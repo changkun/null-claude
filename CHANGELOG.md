@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Embryogenesis & Gastrulation — multicellular development from zygote through cleavage, blastula, gastrulation & neurulation with morphogen gradients, French Flag fate determination, differential adhesion sorting & convergent extension
+
+A developmental biology simulation modeling embryogenesis — the transformation of a single fertilized egg into a structured, multi-layered embryo through successive rounds of cell division, morphogen-mediated patterning, and coordinated cell movements. The natural sequel to the Primordial Soup mode: origin of life → development of complex multicellular organisms. Visually compelling: watch a single zygote cleave into a morula, hollow out into a blastula, then invaginate and fold as three germ layers self-organize under morphogen control.
+
+**`life/modes/embryogenesis.py`** (new, ~730 lines):
+
+- **Cell model**: `_Cell` with position, fate (zygote/pluripotent/ectoderm/mesoderm/endoderm/neural/notochord), lineage ID, generation, polarity angle, adhesion, internal morphogen concentrations (BMP/Wnt/Nodal), commitment state, and energy. 16-slot `__slots__` for performance.
+- **Cleavage divisions**: Rapid symmetric mitosis from zygote. Division probability = base rate (0.04) × slowdown^generation (0.92×/gen), with daughter placement in adjacent empty cells. Population capped at 600 (700 for axis duplication/twinning presets).
+- **Morphogen gradients**: Three diffusible signals on 2D grids — BMP (ventral bias, strength 0.06×multiplier), Wnt (posterior, from blastopore region, strength 0.05), Nodal (from dorsal lip organizer, strength 0.05). All diffuse at coefficient 0.12 with decay 0.008/tick. Cells internalize morphogens via exponential smoothing (0.9 retention + 0.1 local field).
+- **Organizer signaling**: Dorsal organizer secretes Nodal and antagonizes BMP (chordin/noggin analog), suppressing BMP within radius 6. Second organizer available for axis duplication preset (80% strength of primary).
+- **Cell fate determination**: French Flag model — Nodal ≥ 0.55 → endoderm, Nodal ≥ 0.30 → mesoderm (+ high Wnt → notochord), BMP ≥ 0.30 with low Nodal → ectoderm, BMP < 0.12 → neural induction. Cells commit irreversibly except ectoderm → neural upgrade during neurulation.
+- **Stage tracking**: Automatic progression based on cell count and generation — Zygote (n≤1) → Cleavage (n≤8) → Morula (n≤32) → Blastula (gen<80) → Gastrula (gen<160) → Neurula.
+- **Cavity formation**: Blastocoel hollows out at center starting at tick 40, expanding as cells push outward. Archenteron invaginates from blastopore during gastrulation.
+- **Gastrulation movements**: Invagination — endoderm/mesoderm cells move toward blastopore (strength 0.4). Convergent extension — mesoderm intercalates toward midline (strength 0.3). Ectoderm undergoes epiboly, spreading to cover the exterior.
+- **Neurulation**: Low-BMP neural cells converge toward dorsal midline and fold inward, simulating neural tube closure.
+- **Differential adhesion sorting**: Steinberg hypothesis — cells swap positions to maximize same-type neighbor contacts (adhesion_same=1.0, adhesion_diff=0.3). Cells adjacent to differently typed neighbors swap if it increases adhesion energy.
+- **Twinning**: Early blastomere separation at 2-cell stage, displacing daughter clusters ±5 columns to produce monozygotic twins developing independently.
+- **3 visualization views** (cycle with `v`): Cross-Section (cell glyphs @@/●●/▓▓/▒▒/░░/NN/== colored by fate, toggleable BMP/Wnt/Nodal morphogen overlay heatmap, cavity spaces, dorsal-ventral axis labels, blastopore marker), Fate Map (split left=lineage coloring right=germ layer coloring with legend), Time-Series Graphs (10 sparklines: cell count, pluripotent, ectoderm, mesoderm, endoderm, neural, avg BMP, avg Nodal, cavity size, development stage).
+- **6 presets**: Normal Development (standard zygote→neurula), Axis Duplication/Spemann Organizer (second organizer induces secondary axis with BMP antagonism), Neural Tube Defect (BMP ×2.2 blocks neural induction), Morphogen Knockout (Nodal disabled → no mesoderm/endoderm), Twinning Event (blastomere separation → monozygotic twins), Accelerated Gastrulation (boosted rates ×1.8 speed, faster morphogen production, earlier stage transitions).
+- **Controls**: Space=play/pause, v=cycle views, n=step, o=cycle morphogen overlay (none/BMP/Wnt/Nodal), g=force gastrulation, r=restart, R=menu.
+
+**`life/registry.py`**: Added "Embryogenesis & Gastrulation" entry in Chemical & Biological category.
+
+**`life/modes/__init__.py`**: Added registration import for the embryogenesis module.
+
+---
+
 ### Feature: Add Bacterial Quorum Sensing & Biofilm Formation — density-dependent autoinducer signaling triggers collective biofilm phenotype switch with EPS matrix, water channels, nutrient/O₂ gradients, persister cells, antibiotic resistance & quorum quenching
 
 A bacterial biofilm simulation modeling quorum sensing — the density-dependent signaling mechanism by which bacteria collectively switch from free-swimming planktonic individuals to surface-attached biofilm communities. Fills the microbial collective behavior gap: the project has no mode covering bacterial decision-making, biofilm physics, or antibiotic resistance mechanics. Visually dramatic: individual bacteria swimming freely, then collectively switching phenotype as autoinducer concentration crosses the quorum threshold, secreting EPS matrix and building structured biofilm towers with water channels.

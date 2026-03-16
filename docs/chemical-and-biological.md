@@ -970,3 +970,86 @@ The simulation domain is oriented with bulk fluid at the top (row 0) and substra
 - Flemming, H.-C. et al. "Biofilms: an emergent form of bacterial life." *Nature Reviews Microbiology* 14 (2016): 563-575. https://doi.org/10.1038/nrmicro.2016.94
 - Stewart, P. S. & Costerton, J. W. "Antibiotic resistance of bacteria in biofilms." *The Lancet* 358 (2001): 135-138. https://doi.org/10.1016/S0140-6736(01)05321-1
 - Dong, Y.-H. et al. "Quenching quorum-sensing-dependent bacterial infection by an N-acyl homoserine lactonase." *Nature* 411 (2001): 813-817. https://doi.org/10.1038/35081101
+
+---
+
+## Embryogenesis & Gastrulation
+
+**Background** — Embryogenesis is the process by which a single fertilized egg (zygote) develops into a complex, multi-layered organism through coordinated cell division, morphogen-mediated patterning, and mechanical tissue movements. This simulation models the key stages of early animal development: cleavage (rapid symmetric mitosis producing a ball of cells), blastula formation (a hollow sphere with an internal cavity, the blastocoel), gastrulation (invagination that establishes the three germ layers — ectoderm, mesoderm, endoderm), and neurulation (folding of the neural plate into the neural tube). These processes are orchestrated by diffusible morphogen gradients that provide positional information to cells via the French Flag model (Wolpert, 1969), where cells adopt different fates depending on the local concentration of signaling molecules.
+
+The simulation is the natural sequel to the Primordial Soup mode — extending the story from the origin of life to the development of complex multicellular organisms. It captures several foundational concepts in developmental biology: Spemann's organizer (a signaling center that patterns the dorsal-ventral axis by secreting BMP antagonists), convergent extension (mediolateral cell intercalation that narrows and elongates tissue), and the Steinberg differential adhesion hypothesis (cells sort themselves by maximizing adhesive contacts with same-type neighbors).
+
+**Cell model** — Each cell tracks:
+- Position (row, column) on a 2D cross-section grid
+- Fate: zygote → pluripotent → ectoderm / mesoderm / endoderm / neural / notochord
+- Lineage ID (inherited from parent) and unique ID for tracking ancestry
+- Generation count (determines division rate slowdown)
+- Internal morphogen concentrations for BMP, Wnt, and Nodal (exponentially smoothed from the local field)
+- Commitment state (irreversible once determined, except ectoderm → neural upgrade)
+- Polarity angle and adhesion coefficient
+
+**Morphogen system** — Three diffusible signals establish the body axes:
+
+| Morphogen | Axis | Source | Role |
+|-----------|------|--------|------|
+| BMP | Dorsal-Ventral | Ventral cells (bottom hemisphere) | High → ectoderm/epidermal. Low → neural induction (antagonized by organizer) |
+| Wnt | Anterior-Posterior | Blastopore region | High → posterior fate. Cooperates with Nodal |
+| Nodal | Mesoderm/Endoderm | Dorsal lip organizer | Medium → mesoderm, High → endoderm. Organizer also antagonizes BMP |
+
+All morphogens diffuse via 4-neighbor averaging (coefficient 0.12) with linear decay (0.008/tick). Cells internalize signals by exponential smoothing: `internal = 0.9 × internal + 0.1 × local_field`.
+
+**Formulation** — Cell fate determination follows the French Flag model with morphogen thresholds:
+
+```
+Fate determination (applied from blastula stage onward):
+    IF Nodal_internal ≥ 0.55:       → Endoderm (committed)
+    ELIF Nodal_internal ≥ 0.30:     → Mesoderm (committed)
+        IF Wnt_internal ≥ 0.40:     → Notochord (committed)
+    ELIF BMP_internal ≥ 0.30:       → Ectoderm (committed)
+    ELIF BMP_internal < 0.12:       → Neural (during neurula stage)
+
+Cell division:
+    Probability = base_rate × slowdown^generation
+    base_rate = 0.04/tick, slowdown = 0.92×/generation
+    Daughter placed in random adjacent empty cell
+    Inherits parent morphogen state, lineage, generation+1
+
+Morphogen diffusion (per tick, per field):
+    new[r][c] = old[r][c] + coeff × (avg_neighbors − old[r][c]) − decay × old[r][c]
+    coeff = 0.12, decay = 0.008
+
+Differential adhesion sorting (Steinberg):
+    For each cell with differently-typed neighbors:
+        Energy = Σ(adhesion_same if same type, adhesion_diff otherwise)
+        Swap with neighbor if it increases total adhesion energy
+    adhesion_same = 1.0, adhesion_diff = 0.3
+
+Gastrulation movements:
+    Invagination: endoderm/mesoderm cells drift toward blastopore (strength 0.4)
+    Convergent extension: mesoderm intercalates toward midline (strength 0.3)
+    Epiboly: ectoderm spreads over exterior surface
+
+Stage progression:
+    Zygote (n≤1) → Cleavage (n≤8) → Morula (n≤32) → Blastula (gen<80)
+    → Gastrula (gen<160) → Neurula
+```
+
+**Presets** — Six scenarios demonstrate different developmental outcomes:
+
+| Preset | Configuration | What to watch |
+|--------|--------------|---------------|
+| Normal Development | Standard parameters, all morphogens active | Full progression: zygote → cleavage → morula → blastula → gastrula → neurula |
+| Axis Duplication (Spemann Organizer) | Second organizer at 80% strength, BMP antagonism from both sites | Two body axes form — conjoined twin-like embryo with duplicated dorsal structures |
+| Neural Tube Defect | BMP multiplier ×2.2, neural threshold lowered to 0.05 | Elevated BMP prevents neural induction — ectoderm cannot transition to neural fate |
+| Morphogen Knockout | Nodal secretion disabled (strength=0) | No mesoderm or endoderm induction — embryo remains ectodermal, gastrulation fails |
+| Twinning Event | Blastomeres separated at 2-cell stage, displaced ±5 columns | Two independent embryos develop from a single zygote — monozygotic twins |
+| Accelerated Gastrulation | Division rate 0.07, speed ×1.8, earlier gastrulation at tick 50 | Rapid development with boosted morphogen production and earlier stage transitions |
+
+**What to look for** — In the Cross-Section view, watch the single zygote (@@) undergo rapid cleavage into a growing ball of pluripotent cells (●●), then hollow out as the blastocoel cavity forms. Toggle morphogen overlay with `o` to see BMP gradient forming ventrally (bottom), Wnt concentrating at the blastopore, and Nodal radiating from the organizer. As gastrulation begins, endoderm (░░) and mesoderm (▒▒) cells invaginate through the blastopore while ectoderm (▓▓) spreads over the exterior by epiboly. During neurulation, low-BMP dorsal ectoderm transforms to neural fate (NN) and converges toward the midline. The Fate Map view shows lineage relationships (left) and germ layer assignments (right). The sparkline graphs track cell count, fate populations, morphogen levels, cavity size, and developmental stage in real time.
+
+**References**
+- Wolpert, L. "Positional information and the spatial pattern of cellular differentiation." *Journal of Theoretical Biology* 25 (1969): 1-47. https://doi.org/10.1016/S0022-5193(69)80016-0
+- Spemann, H. & Mangold, H. "Induction of embryonic primordia by implantation of organizers from a different species." *Roux's Archives of Developmental Biology* 100 (1924): 599-638. https://doi.org/10.1007/BF02108133
+- Steinberg, M. S. "Reconstruction of tissues by dissociated cells." *Science* 141 (1963): 401-408. https://doi.org/10.1126/science.141.3579.401
+- Keller, R. "Mechanisms of elongation in embryogenesis." *Development* 133 (2006): 2291-2302. https://doi.org/10.1242/dev.02406
+- Gilbert, S. F. *Developmental Biology*. 12th ed. Sinauer Associates, 2019.
