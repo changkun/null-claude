@@ -502,3 +502,34 @@ Each cell's genome is a `(birth_bits, survival_bits)` pair. Alive cells check su
 - "Mutation Storm" starts with a single Life rule but high mutation creates rapid speciation -- watch dozens of species emerge.
 - Adjust mutation rate with `+`/`-` in real time: low rates produce stable ecosystems, high rates produce constant turnover.
 - The species panel shows which B/S rules are currently winning the ecological competition.
+
+---
+
+## Parameter Tuner
+
+**Source:** `life/modes/param_tuner.py`
+
+### Background
+
+Parameter Tuner adds a real-time HUD overlay for interactively adjusting any simulation mode's constants while it runs. Instead of restarting a mode with different parameters, you press `P` to open a translucent panel listing the active mode's tunable values — diffusion rates, gravity constants, coupling strengths, temperatures, thresholds — and tweak them live with immediate visual feedback.
+
+### How it works
+
+The system has two layers. First, an explicit parameter registry (`TUNABLE_PARAMS`) defines curated min/max/step/format metadata for 33 modes covering ~100 individual parameters: Boids (7 params for separation/alignment/cohesion radii and weights), Physarum (sensor angle, distance, turn/move speed, deposit, decay), Reaction-Diffusion (feed/kill rates, diffusion coefficients), Ising (temperature, external field), N-Body (gravity, timestep, softening), and many more.
+
+Second, an auto-detection fallback scans any mode's `self.{prefix}_*` attributes for numeric values, filters out structural/internal attributes via a suffix blocklist, and generates reasonable ranges and step sizes based on magnitude. This means all 132 modes can benefit from the tuner even without explicit definitions.
+
+The HUD draws on the right side of the screen with:
+- Parameter names with current formatted values
+- Visual progress bars showing position within the valid range
+- Scroll support for modes with many parameters
+- Footer with control hints
+
+Key handling intercepts arrow keys and vim-style navigation only when the tuner is active; all other keys pass through to the simulation, which keeps running underneath.
+
+### What to explore
+
+- Open Boids and crank Separation Weight to 5x while watching the flock explode apart, then drop it to 0.1 and watch them collide.
+- In Reaction-Diffusion, sweep the feed rate from 0.02 to 0.06 to watch the pattern transition from spots to worms to spirals to chaos.
+- Use `[`/`]` for 10x step adjustments to quickly sweep across a parameter's full range.
+- Try the auto-detected parameters on modes without explicit definitions — the tuner discovers numeric attributes automatically.

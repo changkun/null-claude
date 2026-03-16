@@ -184,6 +184,10 @@ class App:
         self.puzzle_win_gen: int | None = None  # generation when win condition was met
         self.puzzle_score: int = 0         # score for current puzzle
         self.puzzle_scores: dict = {}      # puzzle_id -> best score
+        # Parameter tuning overlay state
+        self.param_tuner_active = False
+        self.param_tuner_sel = 0
+        self.param_tuner_params: list[dict] = []
         # Genetic algorithm evolution mode state
         self.evo_mode = False
         self.evo_menu = False              # settings menu before starting
@@ -3620,6 +3624,11 @@ class App:
                 _my, _mx = self.stdscr.getmaxyx()
                 self._draw_cast_indicator(_my, _mx)
                 self._tc_refresh()
+            # ── Parameter tuning overlay ──
+            if self.param_tuner_active:
+                _my, _mx = self.stdscr.getmaxyx()
+                self._draw_param_tuner_overlay(_my, _mx)
+                self._tc_refresh()
             # ── Analytics overlay (drawn after all other overlays) ──
             if self.analytics.enabled and not self._any_menu_open():
                 _my, _mx = self.stdscr.getmaxyx()
@@ -3665,6 +3674,13 @@ class App:
 
             # ── Universal topology key handling ──
             if self._topology_handle_key(key):
+                continue
+
+            # ── Parameter tuner key handling ──
+            if key == ord('P') and self._get_active_mode_prefix() is not None:
+                self._toggle_param_tuner()
+                continue
+            if self.param_tuner_active and self._handle_param_tuner_key(key):
                 continue
 
             # ── Post-processing pipeline key handling ──

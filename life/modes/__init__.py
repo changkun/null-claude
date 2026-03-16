@@ -218,6 +218,8 @@ def register_all_modes(App):
     reg_topology(App)
     from life.modes.post_processing import register as reg_pp
     reg_pp(App)
+    from life.modes.param_tuner import register as reg_param_tuner
+    reg_param_tuner(App)
     from life.modes.layer_compositing import register as reg_comp
     reg_comp(App)
     from life.modes.recording import register as reg_recording

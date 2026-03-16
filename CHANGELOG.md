@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add real-time parameter tuning overlay for all simulation modes
+
+Added an interactive HUD overlay (`P` key) that lets users adjust any mode's simulation constants in real-time while the simulation keeps running. This turns passive viewing into active exploration — sweep gravity, diffusion rates, coupling strengths, and temperatures with immediate visual feedback.
+
+**`life/modes/param_tuner.py`** (new, ~350 lines):
+- `TUNABLE_PARAMS` registry with curated min/max/step/format for 33 modes (~100 parameters total): Boids (7 params), Physarum (6), Reaction-Diffusion (5), Lotka-Volterra (5), SIR (4), Hodge (4), Kuramoto (3), N-Body (3), SPH (3), Traffic (3), Cloth (3), Forest Fire (3), BZ (3), and 20 more
+- Auto-detection fallback: scans `self.{prefix}_*` for numeric attributes, generates reasonable ranges/steps — all 132 modes benefit even without explicit definitions
+- HUD overlay with parameter names, formatted values, visual progress bars, and scrolling
+- Controls: `↑`/`↓` or `j`/`k` to select, `←`/`→` or `h`/`l` to adjust, `[`/`]` for 10x steps, `0` to refresh, `P` to close
+
+**`life/app.py`** (+16 lines):
+- Added `param_tuner_active/sel/params` state variables
+- `P` key intercept (only when a simulation mode is active)
+- Overlay drawing in render loop after cast indicator
+- Param tuner key handling before mode dispatch (arrow keys intercepted when active, all other keys pass through)
+
+**`life/modes/__init__.py`** (+2 lines):
+- Registered `param_tuner` module in `register_all_modes()`
+
+**Design:** Non-invasive — the tuner reads/writes existing `self.*` attributes directly, so every mode works without modification. Arrow keys are only intercepted when the panel is open; the simulation continues running underneath.
+
+**Files added:** `.ralph/round-368-thinker.json`, `.ralph/round-368-worker.json`
+
+---
+
 ### Rendering: Add 24-bit truecolor support with perceptually uniform colormaps
 
 Added a three-tier color rendering pipeline (truecolor → redefined 256-color → 8-color ANSI) that dramatically improves visual fidelity on modern terminals without breaking compatibility on older ones.
