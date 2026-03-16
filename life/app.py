@@ -2738,6 +2738,12 @@ class App:
         self.topo_soliton_menu_sel = 0
         self.topo_soliton_running = False
 
+        # ── Percolation Theory state ──
+        self.perc_mode = False
+        self.perc_menu = False
+        self.perc_menu_sel = 0
+        self.perc_running = False
+
         self._rebuild_pattern_list()
 
         if pattern:

@@ -410,6 +410,9 @@ MODE_REGISTRY = [
     # ── Spin Ice & Emergent Magnetic Monopoles ──
     {"name": "Spin Ice & Emergent Monopoles", "key": "—", "category": "Physics & Waves",
      "desc": "Frustrated square-ice lattice with 2-in/2-out ice rules — emergent magnetic monopoles, Dirac strings & Coulomb gas dynamics", "attr": "spinice_mode", "enter": "_enter_spinice_mode", "exit": "_exit_spinice_mode"},
+    # ── Percolation Theory & Critical Phenomena ──
+    {"name": "Percolation Theory & Critical Phenomena", "key": "—", "category": "Physics & Waves",
+     "desc": "Bernoulli percolation on lattices — phase transition at p_c, fractal spanning clusters, power-law size distribution & universal critical exponents", "attr": "perc_mode", "enter": "_enter_perc_mode", "exit": "_exit_perc_mode"},
 ]
 
 

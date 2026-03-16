@@ -330,6 +330,8 @@ def register_all_modes(App):
     reg_quake(App)
     from life.modes.spin_ice import register as reg_spinice
     reg_spinice(App)
+    from life.modes.percolation import register as reg_perc
+    reg_perc(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
