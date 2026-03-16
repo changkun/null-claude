@@ -112,6 +112,8 @@ class App:
         self.compare_rule_sel = 0
         # Timeline branching state
         self._tbranch_init()
+        # Butterfly Effect state
+        self._butterfly_init()
         # Race mode state: multi-rule evolution competition
         self.race_mode = False
         self.race_grids: list[Grid] = []         # 3-4 grids with different rules
@@ -4042,6 +4044,10 @@ class App:
                 self._toggle_sparkline_hud()
                 continue
 
+            # ── Butterfly Effect key handling ──
+            if self._butterfly_handle_key(key):
+                continue
+
             # ── Timeline branching key handling ──
             if self._tbranch_handle_key(key):
                 continue
@@ -4237,6 +4243,8 @@ class App:
                             self.pop_history2.append(self.grid2.population)
                         # Step the branch grid in timeline-branch mode
                         self._tbranch_step()
+                        # Step butterfly effect (parallel timelines)
+                        self._butterfly_step()
                         # Step all race grids
                         if self.race_mode and self.race_grids and not self.race_finished:
                             self._step_race()
@@ -6087,6 +6095,11 @@ class App:
 
         if self.race_mode and self.race_grids:
             self._draw_race(max_y, max_x)
+            self._tc_refresh()
+            return
+
+        if self.butterfly_mode and self.butterfly_grid:
+            self._butterfly_draw(max_y, max_x)
             self._tc_refresh()
             return
 

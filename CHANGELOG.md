@@ -4,6 +4,35 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Butterfly Effect mode for causal divergence analysis
+
+Added a new Meta Mode that forks any running simulation, applies a single-cell perturbation, and visualizes the divergence between original and altered timelines as a real-time spreading heatmap. Answers the question "did this cell actually matter?" for any simulation mode.
+
+**`life/modes/butterfly_effect.py`** (new, ~500 lines):
+
+- **Cell-picking phase**: Ctrl+B snapshots the grid, presents a crosshair cursor (arrows/hjkl + Enter) to select which cell to flip (alive↔dead).
+- **Parallel timeline execution**: Both the original and perturbed grids step independently each generation, with population histories tracked separately.
+- **Divergence heatmap**: Per-cell divergence tracking with cumulative (total historical) and instantaneous (current frame) modes. Blue→cyan→green→yellow→orange→red→pink color ramp with linear or logarithmic scaling.
+- **Three visualization modes** (cycle with `d`):
+  - *Heatmap Overlay*: Original grid with color-coded divergence overlay and blinking perturbation marker.
+  - *Side-by-Side*: Split screen with original left, perturbed right, differences highlighted in red, dual population sparklines.
+  - *Dual Overlay*: Blended view — green = only original alive, red = only perturbed alive, white = both alive.
+- **Real-time metrics**: Divergence percentage, peak divergence, population delta between timelines, generations since fork.
+- **Controls**: Space (play/pause), n (step), h (cumulative/instantaneous), c (log/linear scale), r (reset and re-pick), speed adjustment with </>.
+
+**`life/registry.py`**: Added "Butterfly Effect" entry in Meta Modes category (key `Ctrl+B`) and `butterfly_mode` to `_EXPLICIT_MODES`.
+
+**`life/modes/__init__.py`**: Added registration call for the butterfly_effect module.
+
+**`life/app.py`** (~13 lines added):
+
+- `__init__`: Initialize butterfly state via `_butterfly_init()`.
+- Key handler: Route key events through `_butterfly_handle_key()`.
+- Step loop: Step perturbed timeline via `_butterfly_step()`.
+- Draw loop: Render butterfly visualization when active.
+
+---
+
 ### Feature: Add emergent computation detector for information-theoretic analysis
 
 Added a universal overlay that instruments any running simulation to discover and visualize hidden computational structures using information-theoretic measures. Toggle with `I` — works across all 150+ modes via `_get_minimap_data()`, revealing signal channels, logic gates, memory cells, and oscillators that emerge from simple rules. Pure Python, no external dependencies.

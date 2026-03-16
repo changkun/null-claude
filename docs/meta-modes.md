@@ -1043,3 +1043,56 @@ The detector samples the simulation into a configurable N×N grid (default 24×2
 - Watch the info flow arrows during a glider collision to see information scatter and recombine.
 - Try it on non-CA modes (wave equations, reaction-diffusion, boids) — the information-theoretic measures work on any dynamics, revealing computational structure in continuous systems too.
 - Adjust resolution with `+`/`-`: lower resolution (8×8) gives faster updates for real-time exploration; higher resolution (48×48) reveals finer structure for detailed analysis.
+
+---
+
+## Butterfly Effect
+
+**Source:** `life/modes/butterfly_effect.py`
+
+### Background
+
+Butterfly Effect mode answers the question "did this cell actually matter?" by forking the simulation at any point, applying a single-cell perturbation, and running both the original and altered timelines in parallel. A real-time divergence heatmap shows exactly how and where the perturbation cascades through the system, turning the simulator into a causal analysis tool.
+
+This ties together the simulator's existing timeline/bookmark infrastructure with a new divergence-tracking engine. The name comes from chaos theory's "butterfly effect" — the idea that a tiny change in initial conditions can lead to vastly different outcomes.
+
+### How it works
+
+Press **Ctrl+B** to enter Butterfly Effect mode. The current grid state is deep-copied into a second "perturbed" timeline. A crosshair cursor appears for cell selection — navigate with arrow keys or hjkl, then press Enter to flip that cell (alive→dead or dead→alive). Both timelines then evolve independently using identical rules.
+
+Each generation, the engine computes a cell-by-cell diff between the two grids. In cumulative mode, the heatmap accumulates total historical divergence per cell; in instantaneous mode, it shows only the current frame's differences. The divergence percentage (fraction of cells that differ) and peak divergence are tracked continuously.
+
+Three visualization modes are available:
+
+- **Heatmap Overlay** — The original grid rendered with a color-coded divergence overlay. Cells where the timelines have diverged are colored along a blue→cyan→green→yellow→orange→red→pink ramp. Undivergent live cells are shown dimmed. The perturbation point blinks with an `X` marker.
+
+- **Side-by-Side** — Split screen with the original timeline on the left and the perturbed timeline on the right. Cells that differ between timelines are highlighted in red on the perturbed side. Population sparklines appear below each panel.
+
+- **Dual Overlay** — A blended single-grid view where green cells are alive only in the original, red cells are alive only in the perturbed timeline, and yellow/white cells are alive in both. Dead-in-both cells are blank.
+
+The heatmap supports both linear and logarithmic color scaling. Log scale is useful for revealing subtle early divergence before the perturbation has cascaded widely.
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **Ctrl+B** | Enter/exit Butterfly Effect mode |
+| **Arrows / hjkl** | Move cursor (picking) or scroll viewport (running) |
+| **Enter** | Confirm cell perturbation |
+| **Space** | Play/pause both timelines |
+| **n** / **.** | Single-step both timelines |
+| **d** | Cycle view: Heatmap → Side-by-Side → Dual Overlay |
+| **h** | Toggle cumulative vs instantaneous heatmap |
+| **c** | Toggle linear vs logarithmic color scale |
+| **r** | Reset: re-snapshot grid and pick a new cell |
+| **<** / **>** | Adjust simulation speed |
+| **Esc** / **q** | Cancel picking / quit |
+
+### What to explore
+
+- Perturb a cell near a glider's path and watch the divergence spread as the glider's trajectory shifts, creating a widening cone of causal influence.
+- Compare perturbation sensitivity across different rulesets — chaotic rules (like B3678/S34678) will show rapid, explosive divergence while stable rules show minimal spread.
+- Use log scale to catch the exact moment divergence begins propagating — useful for identifying causal chains.
+- Try perturbing cells in different regions: a cell in a dense cluster vs. an isolated cell vs. one near a glider gun. The divergence patterns reveal the causal structure of the simulation.
+- Watch the population delta between timelines — sometimes killing a single cell causes a population explosion in the perturbed timeline (or vice versa).
+- Use the instantaneous diff mode to see the "active front" of divergence — the boundary where the perturbation is currently spreading.

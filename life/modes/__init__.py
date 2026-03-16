@@ -288,6 +288,8 @@ def register_all_modes(App):
     reg_terrarium(App)
     from life.modes.computation_detector import register as reg_compdet
     reg_compdet(App)
+    from life.modes.butterfly_effect import register as reg_butterfly
+    reg_butterfly(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

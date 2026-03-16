@@ -352,6 +352,9 @@ MODE_REGISTRY = [
     # ── Emergent Computation Detector ──
     {"name": "Emergent Computation Detector", "key": "I", "category": "Meta Modes",
      "desc": "Information-theoretic overlay revealing hidden computational structures — transfer entropy, causal density, signal channels & logic gates", "attr": None, "enter": None, "exit": None},
+    # ── Butterfly Effect ──
+    {"name": "Butterfly Effect", "key": "Ctrl+B", "category": "Meta Modes",
+     "desc": "Fork simulation, perturb one cell, visualize divergence as a spreading heatmap — causal analysis of 'did this cell matter?'", "attr": "butterfly_mode", "enter": "_enter_butterfly_mode", "exit": "_exit_butterfly_mode"},
 ]
 
 
@@ -378,6 +381,7 @@ _EXPLICIT_MODES = {
     'evo_mode',         # uses self.running not evo_running, custom step
     'script_mode',      # draw has extra overlay (_draw_script_source)
     'terrarium_mode',   # meta-mode wrapping base sim with persistence
+    'butterfly_mode',   # special draw/key/step, Ctrl+B toggle
 }
 
 # Per-mode overrides for non-standard method names or behavior.
