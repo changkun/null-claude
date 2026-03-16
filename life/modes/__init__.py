@@ -282,6 +282,8 @@ def register_all_modes(App):
     reg_spectrum(App)
     from life.modes.recursive_sim import register as reg_rsim
     reg_rsim(App)
+    from life.modes.symbiosis import register as reg_symbiosis
+    reg_symbiosis(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

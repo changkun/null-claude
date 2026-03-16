@@ -884,3 +884,69 @@ In zoom mode, the selected cell's micro-simulation is rendered full-screen with 
 - Zoom into individual cells and watch how neighboring macro-cell states visibly influence a cell's internal dynamics.
 - Compare "Ising ← RPS Cells" (magnetic spins driven by rock-paper-scissors competition) with "RPS ← Wave Cells" (competitive dynamics driven by wave interference) to see how the choice of micro engine fundamentally changes macro-scale behavior.
 - Use small cell sizes (6×6) for faster iteration and larger macro grids, or large cell sizes (12×12) for richer micro-simulation detail.
+
+---
+
+## Symbiosis Multi-Physics
+
+**Source:** `life/modes/symbiosis.py`
+
+### Background
+
+Symbiosis Multi-Physics is a co-simulation mode where 3–8 distinct simulation engines run simultaneously on overlapping layers of the same grid, interacting through shared environmental fields. Unlike Mashup mode (which blends rules into a single engine) or Split Screen (side-by-side comparison), Symbiosis preserves each engine's independent dynamics while coupling them through four physical fields: temperature, chemical concentration, and flow velocity (u/v components). This creates true cross-domain emergent phenomena — organisms following chemical trails shaped by fluid currents, reactions accelerating in warm zones created by friction, currents deflected by growing biological structures.
+
+### How it works
+
+Each engine runs its own simulation step independently, producing a density grid per layer. After each generation, every engine's density is used to update the shared environmental fields according to engine-specific contribution rules:
+
+- **Wave** → raises temperature (kinetic energy), creates flow gradients
+- **Reaction-Diffusion** → deposits chemical concentration
+- **Fire** → raises temperature (combustion heat)
+- **Boids** → create flow fields (flock velocity) and deposit chemical pheromones
+- **Physarum** → deposits chemical trail pheromone
+- **Ising** → raises temperature from spin frustration energy
+- **RPS** → deposits chemical from competition intensity
+- **Game of Life** → raises temperature from population density
+
+The fields then feed back into each engine through coupling densities — each engine type responds to different fields (e.g., fire responds to chemical fuel and wind, boids follow chemical gradients and are carried by flow currents, physarum is attracted to chemicals but avoids heat). Fields decay and diffuse spatially each step for smooth, natural-looking interactions.
+
+Visualization uses RGB-layered color channels: each engine is assigned a color (red, green, cyan, yellow, magenta, or white), with the dominant layer at each cell determining the displayed color. When two layers overlap with similar intensity, magenta is used to indicate mixing. Density is shown using five-level Unicode block characters (░▒▓█).
+
+### Presets
+
+| Preset | Engines | Description |
+|--------|---------|-------------|
+| **Fluid-Chemical-Biological** | Wave + RD + Physarum | Waves drive chemical reactions; chemicals guide slime mold; slime creates wave disturbances |
+| **Fire-Ising-Boids** | Fire + Ising + Boids | Fire heats spins; magnetic domains steer flocks; flock density fuels combustion |
+| **Wave-RPS-GoL** | Wave + RPS + GoL | Waves modulate dominance; RPS competition seeds life; life emits wave pulses |
+| **Full Ecosystem** | RD + Boids + Fire + Physarum | Chemistry, organisms, fire, and fungal networks interacting through shared fields |
+| **Quantum-Classical Bridge** | Wave + Ising + RD | Wave interference shapes spin domains; spin alignment catalyzes reactions; reactions emit waves |
+| **Predator Ecosystem** | Boids + Physarum + RPS + GoL | Flocks, slime trails, cyclic competition, and cellular life in one shared world |
+| **Custom** | Pick 3–8 engines | Checkbox selection from the full engine catalogue |
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **Space** | Play / pause |
+| **n** or **.** | Single step |
+| **1**–**8** | Solo layer N (press again to unsolo) |
+| **!**–**\*** (Shift+1–8) | Mute / unmute layer N |
+| **a** | Show all layers |
+| **f** | Toggle environmental field overlay |
+| **F** | Cycle through field views (temperature → chemical → flow_u → flow_v) |
+| **+** / **-** | Increase / decrease coupling strength |
+| **0** | Set coupling to zero (independent engines) |
+| **>** / **<** | Increase / decrease simulation speed |
+| **r** | Reset simulation |
+| **R** | Return to preset menu |
+| **q** or **Esc** | Exit mode |
+
+### What to explore
+
+- Start with "Fluid-Chemical-Biological" to see the canonical three-way interaction: waves create flow that shapes chemical gradients, which in turn guide physarum growth, whose structures then disturb the wave field.
+- Use the field overlay (**f**/**F**) to watch the invisible environmental fields that mediate cross-engine coupling — see temperature hotspots from fire, chemical trails from physarum, flow vectors from wave gradients.
+- Solo individual layers (**1**–**8**) to see how each engine behaves in isolation while still being influenced by the shared fields, then show all (**a**) to see the combined picture.
+- Try "Full Ecosystem" (4 engines) for a richer interaction network where chemistry, organisms, fire, and fungal networks create complex feedback loops.
+- Adjust coupling from 0 (independent) to 1.0 (maximum) to see how cross-domain influence changes emergent behavior. At zero coupling, engines evolve independently; at high coupling, they become strongly correlated.
+- Build a custom combination to test unusual pairings — what happens when Ising spins interact with boid flocks through temperature fields?

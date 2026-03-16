@@ -4,6 +4,27 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add multi-physics co-simulation mode (Symbiosis)
+
+Added a new Meta Mode where 3–8 distinct simulation engines coexist on the same grid, each running on a separate layer but interacting through shared environmental fields (temperature, chemical concentration, flow velocity). This creates true cross-domain emergent phenomena unlike existing modes: Mashup blends rules into one engine, Split Screen shows side-by-side — Symbiosis preserves independent engine dynamics while coupling them through physics.
+
+**`life/modes/symbiosis.py`** (new, ~842 lines):
+
+- **Shared environmental fields**: 4 fields (temperature, chemical, flow_u, flow_v) with per-step decay, diffusion, and engine-specific read/write rules.
+- **Field-specific engine interactions**: Each of 8 engine types (wave, RD, fire, boids, physarum, Ising, RPS, GoL) contributes to and responds to different fields through distinct coupling functions.
+- **6 presets**: Fluid-Chemical-Biological, Fire-Ising-Boids, Wave-RPS-GoL, Full Ecosystem (4 engines), Quantum-Classical Bridge, Predator Ecosystem (4 engines).
+- **Custom mode**: Checkbox selection of 3–8 engines from the full catalogue.
+- **RGB-layered visualization**: Each engine assigned a color channel (R/G/B/Y/M/W), with magenta overlap mixing and 5-level Unicode density glyphs.
+- **Layer controls**: `1`–`8` solo, `Shift+1`–`8` mute, `a` show all.
+- **Field overlay**: `f` toggles environmental field heatmap view, `F` cycles through temperature/chemical/flow fields.
+- **Adjustable coupling**: `+`/`-` to control cross-engine interaction strength (0.0–1.0).
+
+**`life/registry.py`**: Added "Symbiosis Multi-Physics" entry in Meta Modes category.
+
+**`life/modes/__init__.py`**: Added registration call for the symbiosis module.
+
+---
+
 ### Feature: Add real-time phase transition detector with auto-bookmarking
 
 Added a universal phase transition detector that monitors running analytics streams for qualitative shifts and automatically bookmarks critical moments across all 140+ simulation modes.

@@ -343,6 +343,9 @@ MODE_REGISTRY = [
     # ── Sim-in-a-Cell (Recursive Nested Simulation) ──
     {"name": "Sim-in-a-Cell", "key": "—", "category": "Meta Modes",
      "desc": "Recursive nested simulation — each macro cell contains an independent micro-simulation driving multi-scale emergence", "attr": "rsim_mode", "enter": "_enter_recursive_mode", "exit": "_exit_recursive_mode"},
+    # ── Symbiosis Multi-Physics Co-Simulation ──
+    {"name": "Symbiosis Multi-Physics", "key": "—", "category": "Meta Modes",
+     "desc": "3+ physics engines co-simulate on shared environmental fields with cross-domain emergent phenomena", "attr": "symbiosis_mode", "enter": "_enter_symbiosis_mode", "exit": "_exit_symbiosis_mode"},
 ]
 
 
