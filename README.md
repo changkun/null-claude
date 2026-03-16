@@ -253,6 +253,8 @@ or through the mode browser (`m`).
 |-----|--------|
 | `s` | Save grid state |
 | `o` | Open / load a saved state |
+| `Ctrl+W` | Save full snapshot (grid + mode + config) |
+| `Ctrl+O` | Load a full snapshot |
 | `i` | Import RLE pattern file |
 | `G` | Record / stop GIF export |
 | `Ctrl+X` | Record / export `.cast` or `.txt` |
@@ -282,6 +284,14 @@ keeps running so changes are visible in real time.
 Every generation is recorded into a ring buffer. Rewind with `u`, scrub with
 `[`/`]`, and fork alternate timelines with `Ctrl+F` at any past point. Bookmarks
 (`b`/`B`) mark interesting states for later recall.
+
+### Snapshots
+
+Press `Ctrl+W` to save a full simulation snapshot — grid state, active mode,
+mode-specific parameters, viewport position, zoom, speed, colormap, and more —
+to a named `.snapshot.json` file in `~/.life_saves/snapshots/`. Press `Ctrl+O`
+to browse saved snapshots with metadata preview, load one to resume exactly where
+you left off, or delete old ones. Works across all 130+ modes.
 
 ### Heatmap & Overlays
 

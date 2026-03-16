@@ -4,6 +4,40 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add full simulation snapshot save/load system
+
+Added a complete state serialization system that lets users save, browse, and restore full simulation snapshots — grid cells, ages, generation count, active mode, mode-specific parameters, viewport position, cursor, zoom, speed, colormap, heatmap state, and running state — to versioned JSON files on disk. This turns ephemeral terminal sessions into a persistent exploration journal that works across all 130+ modes.
+
+**`life/constants.py`** (+1 line):
+- Added `SNAPSHOT_DIR` constant (`~/.life_saves/snapshots/`) — keeps snapshots separate from grid-only saves.
+
+**`life/app.py`** (+267 lines):
+- **`_snapshot_detect_mode()`** — Detects the active mode by checking MODE_DISPATCH table and explicit mode flags (`evo_mode`, `ep_mode`, etc.).
+- **`_snapshot_collect_mode_params(mode_attr)`** — Collects all mode-specific numeric/bool/string/set parameters by naming convention (prefix matching).
+- **`_snapshot_restore_mode_params(params)`** — Restores collected parameters, handling set↔list JSON round-trip conversion.
+- **`_save_snapshot()`** — Prompts for a name, serializes full state to a versioned `.snapshot.json` file.
+- **`_load_snapshot()`** / **`_show_snapshot_menu(snaps)`** — Blocking menu with metadata preview (generation, mode name), scroll support, and delete capability (`d` key with confirmation).
+- **`_apply_snapshot(data)`** — Cleanly exits the current mode via exit methods, restores grid state, viewport, display settings, enters the target mode via enter methods, restores mode-specific parameters, and resets tracking state (history, cycle detection, heatmap).
+- **Keybindings**: `Ctrl+W` (save) and `Ctrl+O` (load) wired as global keys before analytics overlay dispatch.
+- **Help screen** updated with the two new keybindings.
+
+**`tests/test_snapshot.py`** (new, 17 tests):
+- Mode detection: base Game of Life returns `None`, dispatch modes detected, explicit modes detected, first-active-wins ordering.
+- Parameter collection: empty for base mode, captures prefixed attrs, converts sets to sorted lists.
+- Parameter restoration: numeric values, set-from-list conversion, unknown attrs skipped safely.
+- Snapshot application: grid state restored, topology/hex_mode restored, mode activation with params, previous mode deactivation, history clearing.
+- JSON round-trip: full state survives serialize→deserialize→apply, including with active modes and parameters.
+
+**Design:** The snapshot format is versioned (`"version": 1`) for forward compatibility. Mode detection uses the existing MODE_DISPATCH registry plus an explicit fallback list, so new modes added to the dispatch table are automatically supported. Parameter collection uses naming convention (prefix matching) rather than per-mode schemas, keeping maintenance cost at zero as modes are added.
+
+**Controls:** `Ctrl+W` save snapshot, `Ctrl+O` load snapshot.
+
+**Tests:** 5930 passed — all green (5913 existing + 17 new).
+
+**Files added:** `tests/test_snapshot.py`, `.ralph/round-370-thinker.json`, `.ralph/round-370-worker.json`
+
+---
+
 ### Rendering: Add ghost trail / temporal echo layer for all simulation modes
 
 Added a rendering overlay that captures frame snapshots and composites fading afterimages from previous frames onto any active simulation mode. Particles leave streaks, wavefronts show propagation paths, cellular automata reveal their evolution — all without modifying any mode logic.

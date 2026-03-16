@@ -15,7 +15,7 @@ import threading
 import time
 
 from life.constants import (
-    SAVE_DIR, BLUEPRINT_FILE, SPEEDS, SPEED_LABELS,
+    SAVE_DIR, SNAPSHOT_DIR, BLUEPRINT_FILE, SPEEDS, SPEED_LABELS,
     CELL_CHAR, HEX_CELL, HEX_DEAD, HEX_NEIGHBORS_EVEN, HEX_NEIGHBORS_ODD,
     ZOOM_LEVELS, DENSITY_CHARS, DEAD_CHAR, SPARKLINE_CHARS,
 )
@@ -3661,6 +3661,14 @@ class App:
                 self._flash("Minimap ON" if self.show_minimap else "Minimap OFF")
                 continue
 
+            # ── Snapshot save/load (Ctrl+W save, Ctrl+O load, global) ──
+            if key == 23:  # Ctrl+W
+                self._save_snapshot()
+                continue
+            if key == 15:  # Ctrl+O
+                self._load_snapshot()
+                continue
+
             # ── Analytics overlay toggle (Ctrl+K, global across all modes) ──
             if key == 11:  # Ctrl+K
                 self.analytics.enabled = not self.analytics.enabled
@@ -5124,6 +5132,261 @@ class App:
                 break
         self.stdscr.nodelay(True)
 
+    # ── Full Snapshot Save/Load ──
+
+    def _snapshot_detect_mode(self) -> str | None:
+        """Return the attr name of the currently active mode, or None for base Game of Life."""
+        for md in MODE_DISPATCH:
+            if getattr(self, md['attr'], False):
+                return md['attr']
+        # Check explicit (non-dispatch) modes
+        for attr in ('evo_mode', 'ep_mode', 'elab_mode', 'race_mode',
+                      'puzzle_mode', 'screensaver_mode', 'compare_mode',
+                      'mp_mode', 'anc_mode'):
+            if getattr(self, attr, False):
+                return attr
+        return None
+
+    def _snapshot_collect_mode_params(self, mode_attr: str | None) -> dict:
+        """Collect mode-specific numeric/bool/string parameters for the active mode."""
+        if mode_attr is None:
+            return {}
+        prefix = mode_attr.removesuffix('_mode')
+        params = {}
+        for name in dir(self):
+            if not name.startswith(prefix + '_'):
+                continue
+            val = getattr(self, name, None)
+            if isinstance(val, (int, float, bool, str)):
+                params[name] = val
+            elif isinstance(val, set):
+                params[name] = sorted(val)
+        return params
+
+    def _snapshot_restore_mode_params(self, params: dict):
+        """Restore mode-specific parameters from a snapshot dict."""
+        for name, val in params.items():
+            if not hasattr(self, name):
+                continue
+            cur = getattr(self, name)
+            if isinstance(cur, set) and isinstance(val, list):
+                setattr(self, name, set(val))
+            elif isinstance(val, (int, float, bool, str)):
+                setattr(self, name, type(cur)(val) if cur is not None else val)
+
+    def _save_snapshot(self):
+        """Save a complete simulation snapshot (grid + mode + viewport + params) to disk."""
+        name = self._prompt_text("Snapshot name (enter to cancel)")
+        if not name:
+            self._flash("Snapshot cancelled")
+            return
+        safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)
+        if not safe_name:
+            self._flash("Invalid name")
+            return
+        os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+        mode_attr = self._snapshot_detect_mode()
+        snapshot = {
+            "version": 1,
+            "name": name,
+            "timestamp": time.time(),
+            "grid": self.grid.to_dict(),
+            "hex_mode": self.grid.hex_mode,
+            "topology": self.grid.topology,
+            "mode": mode_attr,
+            "viewport": {
+                "view_r": self.view_r,
+                "view_c": self.view_c,
+                "cursor_r": self.cursor_r,
+                "cursor_c": self.cursor_c,
+                "zoom_level": self.zoom_level,
+            },
+            "speed_idx": self.speed_idx,
+            "colormap": self.tc_colormap,
+            "colormap_idx": self.tc_colormap_idx,
+            "heatmap_mode": self.heatmap_mode,
+            "running": self.running,
+            "mode_params": self._snapshot_collect_mode_params(mode_attr),
+        }
+        path = os.path.join(SNAPSHOT_DIR, safe_name + ".snapshot.json")
+        try:
+            with open(path, "w") as f:
+                json.dump(snapshot, f, indent=2)
+            self._flash(f"Snapshot saved: {safe_name}")
+        except OSError as e:
+            self._flash(f"Snapshot save error: {e}")
+
+    def _load_snapshot(self):
+        """Show a menu to select and load a full simulation snapshot."""
+        if not os.path.isdir(SNAPSHOT_DIR):
+            self._flash("No snapshots found")
+            return
+        snaps = sorted(f for f in os.listdir(SNAPSHOT_DIR) if f.endswith(".snapshot.json"))
+        if not snaps:
+            self._flash("No snapshots found")
+            return
+        self._show_snapshot_menu(snaps)
+
+    def _show_snapshot_menu(self, snaps: list[str]):
+        """Run a blocking menu to select a snapshot file."""
+        sel = 0
+        scroll = 0
+        self.stdscr.nodelay(False)
+        while True:
+            self.stdscr.erase()
+            max_y, max_x = self.stdscr.getmaxyx()
+            title = "── Load Snapshot (Enter=load, d=delete, q/Esc=cancel) ──"
+            try:
+                self.stdscr.addstr(1, max(0, (max_x - len(title)) // 2), title,
+                                   curses.color_pair(7) | curses.A_BOLD)
+            except curses.error:
+                pass
+            # Load metadata for visible items
+            visible_rows = max_y - 5
+            if scroll > sel:
+                scroll = sel
+            if sel >= scroll + visible_rows:
+                scroll = sel - visible_rows + 1
+            for i in range(scroll, min(len(snaps), scroll + visible_rows)):
+                y = 3 + i - scroll
+                if y >= max_y - 2:
+                    break
+                fname = snaps[i]
+                label = fname.removesuffix(".snapshot.json")
+                # Try to read metadata
+                meta = ""
+                try:
+                    with open(os.path.join(SNAPSHOT_DIR, fname)) as f:
+                        data = json.load(f)
+                    gen = data.get("grid", {}).get("generation", "?")
+                    mode = data.get("mode") or "Game of Life"
+                    if mode and mode.endswith("_mode"):
+                        mode = mode.removesuffix("_mode").replace("_", " ").title()
+                    meta = f"  gen={gen}  mode={mode}"
+                except Exception:
+                    pass
+                line = f"  {label}{meta}"[:max_x - 4]
+                attr = curses.color_pair(6)
+                if i == sel:
+                    attr = curses.color_pair(7) | curses.A_REVERSE
+                try:
+                    self.stdscr.addstr(y, 2, line, attr)
+                except curses.error:
+                    pass
+            # Footer hint
+            footer = f" {sel + 1}/{len(snaps)} "
+            try:
+                self.stdscr.addstr(max_y - 1, max(0, (max_x - len(footer)) // 2),
+                                   footer, curses.color_pair(7))
+            except curses.error:
+                pass
+            self._tc_refresh()
+            key = self.stdscr.getch()
+            if key == 27 or key == ord("q"):
+                break
+            if key in (curses.KEY_UP, ord("k")):
+                sel = (sel - 1) % len(snaps)
+            elif key in (curses.KEY_DOWN, ord("j")):
+                sel = (sel + 1) % len(snaps)
+            elif key == ord("d"):
+                # Delete snapshot with confirmation
+                fname = snaps[sel]
+                confirm = self._prompt_text(f"Delete {fname.removesuffix('.snapshot.json')}? (y/n)")
+                if confirm and confirm.lower().startswith("y"):
+                    try:
+                        os.remove(os.path.join(SNAPSHOT_DIR, fname))
+                        snaps.pop(sel)
+                        if not snaps:
+                            self._flash("All snapshots deleted")
+                            break
+                        sel = min(sel, len(snaps) - 1)
+                        self._flash("Snapshot deleted")
+                    except OSError as e:
+                        self._flash(f"Delete error: {e}")
+            elif key in (10, 13, curses.KEY_ENTER):
+                path = os.path.join(SNAPSHOT_DIR, snaps[sel])
+                try:
+                    with open(path) as f:
+                        data = json.load(f)
+                    self._apply_snapshot(data)
+                    self._flash(f"Snapshot loaded: {snaps[sel].removesuffix('.snapshot.json')}")
+                except (json.JSONDecodeError, KeyError, TypeError, OSError) as e:
+                    self._flash(f"Snapshot load error: {e}")
+                break
+        self.stdscr.nodelay(True)
+
+    def _apply_snapshot(self, data: dict):
+        """Apply a loaded snapshot to restore full simulation state."""
+        # Deactivate current mode first
+        cur_mode = self._snapshot_detect_mode()
+        if cur_mode is not None:
+            exited = False
+            for md in MODE_DISPATCH:
+                if md['attr'] == cur_mode:
+                    prefix = md['prefix']
+                    exit_fn = f"_exit_{prefix}_mode"
+                    if hasattr(self, exit_fn):
+                        try:
+                            getattr(self, exit_fn)()
+                            exited = True
+                        except Exception:
+                            pass
+                    break
+            if not exited:
+                setattr(self, cur_mode, False)
+
+        # Restore grid state
+        self.grid.load_dict(data["grid"])
+        self.grid.hex_mode = data.get("hex_mode", False)
+        self.grid.topology = data.get("topology", "torus")
+
+        # Restore viewport
+        vp = data.get("viewport", {})
+        self.view_r = vp.get("view_r", 0)
+        self.view_c = vp.get("view_c", 0)
+        self.cursor_r = vp.get("cursor_r", self.grid.rows // 2)
+        self.cursor_c = vp.get("cursor_c", self.grid.cols // 2)
+        self.zoom_level = vp.get("zoom_level", 1)
+
+        # Restore display settings
+        self.speed_idx = data.get("speed_idx", 2)
+        cmap = data.get("colormap", "viridis")
+        if cmap in COLORMAP_NAMES:
+            self.tc_colormap = cmap
+            self.tc_colormap_idx = COLORMAP_NAMES.index(cmap)
+        self.heatmap_mode = data.get("heatmap_mode", False)
+        self.running = data.get("running", False)
+
+        # Activate target mode
+        target_mode = data.get("mode")
+        if target_mode and hasattr(self, target_mode):
+            # Try to call the enter method for initialization side-effects
+            for md in MODE_DISPATCH:
+                if md['attr'] == target_mode:
+                    prefix = md['prefix']
+                    enter_fn = f"_enter_{prefix}_mode"
+                    if hasattr(self, enter_fn):
+                        try:
+                            getattr(self, enter_fn)()
+                        except Exception:
+                            pass
+                    break
+            # Ensure the mode flag is active (enter methods may not set it)
+            setattr(self, target_mode, True)
+
+        # Restore mode-specific parameters (after mode enter, so defaults are set)
+        self._snapshot_restore_mode_params(data.get("mode_params", {}))
+
+        # Reset tracking state
+        self.pop_history.clear()
+        self._record_pop()
+        self._reset_cycle_detection()
+        self.history.clear()
+        self.timeline_pos = None
+        if self.heatmap_mode:
+            self.heatmap = [[0] * self.grid.cols for _ in range(self.grid.rows)]
+            self.heatmap_max = 0
+
     # ── RLE Import ──
 
 
@@ -5773,6 +6036,8 @@ class App:
             "║  r         Fill grid randomly                 ║",
             "║  s         Save grid state to file            ║",
             "║  o         Open/load a saved state            ║",
+            "║  Ctrl+W    Save full snapshot (grid+mode+cfg) ║",
+            "║  Ctrl+O    Load a full snapshot               ║",
             "║  c         Clear grid                         ║",
             "║  q         Quit                               ║",
             "║  ? / h     Show this help                     ║",

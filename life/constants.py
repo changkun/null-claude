@@ -2,6 +2,7 @@
 import os
 
 SAVE_DIR = os.path.expanduser("~/.life_saves")
+SNAPSHOT_DIR = os.path.join(SAVE_DIR, "snapshots")
 BLUEPRINT_FILE = os.path.join(SAVE_DIR, "blueprints.json")
 
 CELL_CHAR = "\u2588\u2588"  # Full block × 2 for squarish cells
