@@ -337,6 +337,9 @@ MODE_REGISTRY = [
     # ── Magnetism & Spin Glass ──
     {"name": "Magnetism & Spin Glass", "key": "—", "category": "Physics & Waves",
      "desc": "Continuous-spin lattice with frustrated bonds, domain walls, glassy freezing & phase transitions", "attr": "spinglass_mode", "enter": "_enter_spinglass_mode", "exit": "_exit_spinglass_mode"},
+    # ── Rule Mutation Engine ──
+    {"name": "Rule Mutation Engine", "key": "—", "category": "Meta Modes",
+     "desc": "Autonomous rule evolution — breeds birth/survival sets toward maximum visual complexity using entropy feedback", "attr": "rmut_mode", "enter": "_enter_rmut_mode", "exit": "_exit_rmut_mode"},
 ]
 
 

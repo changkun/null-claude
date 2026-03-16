@@ -276,6 +276,8 @@ def register_all_modes(App):
     reg_sparkline_hud(App)
     from life.modes.auto_discovery import register as reg_adisco
     reg_adisco(App)
+    from life.modes.rule_mutation import register as reg_rmut
+    reg_rmut(App)
     from life.modes.spectrum import register as reg_spectrum
     reg_spectrum(App)
     from life.dashboard import register as reg_dashboard

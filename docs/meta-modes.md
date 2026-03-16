@@ -695,6 +695,57 @@ Duration is configurable from 10 to 120 frames (default 45, roughly 1.5 seconds 
 
 ---
 
+## Rule Mutation Engine
+
+**Source:** `life/modes/rule_mutation.py`
+
+### Background
+
+Rule Mutation Engine turns the simulator from a tool you explore manually into one that explores *itself*. It runs a live genetic algorithm on cellular automaton birth/survival rulesets, continuously mutating rules each generation and keeping mutations that increase Shannon entropy and spatial complexity. The user watches as the simulation autonomously discovers its most visually complex behaviors, with a lineage sidebar showing the ancestry of the current rule.
+
+Where Auto-Discovery evaluates batches of candidates offline in a tiled grid, Rule Mutation Engine operates on a single live simulation — you see the mutation happen in real time as rules shift, populations fluctuate, and the fitness score climbs. It is a "genetic algorithm for interestingness" running directly on screen.
+
+### How it works
+
+The engine operates in a two-phase cycle:
+
+1. **Stable phase** (40 generations): The current rule runs undisturbed. Shannon entropy, population, periodicity, and symmetry metrics are collected every 2 steps. At the end of the window, a composite fitness score is computed and the full grid state is saved as a revert checkpoint.
+
+2. **Evaluation phase** (40 generations): A candidate rule is produced by randomly flipping digits in the birth/survival sets at the configured mutation rate. The candidate rule is applied to the live grid and evaluated for another 40 steps. At the end:
+   - **Accept** if the candidate's fitness meets or exceeds the current fitness (within a −0.02 margin), plus a 5% random acceptance chance for exploration (simulated annealing).
+   - **Hard reject** if the grid goes extinct (population = 0) or saturates (>85% alive). On extinction, the grid is reverted from the saved checkpoint and re-seeded if needed.
+   - **Soft reject** if fitness dropped and the static periodicity detector shows a frozen or short-cycle pattern.
+
+**Fitness function** — a weighted composite of four signals:
+- **Shannon entropy** (×40): the dominant factor, measuring structural diversity in the density field.
+- **Population dynamics** (up to +35): rewards moderate density (5–60% alive) and population variance (coefficient of variation 0.02–0.5).
+- **Periodicity scoring** (−20 to +10): penalises static grids and short cycles, rewards complex oscillations.
+- **Partial symmetry bonus** (+10): rewards partial (20–80%) horizontal, vertical, and rotational symmetry — more visually interesting than none or full.
+
+**Lineage tracking**: Every mutation attempt is recorded as a `LineageNode` with rule string, fitness score, generation, parent rule, and accept/reject status. The sidebar displays the ancestry as a scrolling list with ✓/✗ markers.
+
+### Presets
+
+| Preset | Initial rule | Mutation rate | Strategy |
+|--------|-------------|---------------|----------|
+| Entropy Climber | B3/S23 | 0.12 | Start from Conway's Life, hill-climb entropy |
+| Chaos Seeker | Random | 0.25 | Aggressive mutations from a random starting point |
+| Gentle Drift | B36/S23 | 0.06 | Slow, careful evolution from HighLife |
+| Complexity Hunter | B3/S23 | 0.15 | Balanced mutation with diversity bonus |
+| From Nothing | B/S (empty) | 0.30 | Discover viable rules from an empty ruleset |
+| Day & Night Explorer | B3678/S34678 | 0.10 | Explore the neighborhood of Day & Night |
+
+### What to explore
+
+- Run Entropy Climber and watch the rule gradually depart from standard Life, discovering increasingly complex behavior.
+- Try From Nothing to see viable birth/survival rules emerge from a blank ruleset — the lineage sidebar shows the evolutionary path.
+- Use `e` to pause evolution while the simulation keeps running, freezing on a particularly interesting rule to observe its long-term dynamics.
+- Adjust mutation rate with `+`/`-` to balance exploration (high rate, more novelty) vs. refinement (low rate, incremental improvement).
+- Press `a` to adopt the currently evolved rule into the main Game of Life grid for full-resolution exploration.
+- Compare with Auto-Discovery: Rule Mutation runs a single live simulation with continuous in-place mutation, while Auto-Discovery evaluates batches in parallel with crossover breeding.
+
+---
+
 ## 2D Spatial Frequency Spectrum
 
 **Source:** `life/modes/spectrum.py`

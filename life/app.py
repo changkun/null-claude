@@ -2566,6 +2566,43 @@ class App:
         self.pexplorer_generation: int = 0
         self.pexplorer_sims: list = []
 
+        # ── Rule Mutation Engine mode state ──
+        self.rmut_mode = False
+        self.rmut_menu = False
+        self.rmut_menu_sel = 0
+        self.rmut_running = False
+        self.rmut_generation = 0
+        self.rmut_mutation_gen = 0
+        self.rmut_grid = None
+        self.rmut_rows = 40
+        self.rmut_cols = 60
+        self.rmut_mutation_rate = 0.12
+        self.rmut_density = 0.35
+        self.rmut_speed_mult = 1
+        self.rmut_preset_name = ""
+        self.rmut_paused_evolving = False
+        self.rmut_current_birth = {3}
+        self.rmut_current_survival = {2, 3}
+        self.rmut_candidate_birth = None
+        self.rmut_candidate_survival = None
+        self.rmut_eval_step = 0
+        self.rmut_eval_phase = "stable"
+        self.rmut_saved_cells = None
+        self.rmut_saved_gen = 0
+        self.rmut_current_fitness = 0.0
+        self.rmut_best_fitness = 0.0
+        self.rmut_best_rule = "B3/S23"
+        self.rmut_periodicity = None
+        self.rmut_entropy_history = []
+        self.rmut_pop_history = []
+        self.rmut_fitness_history = []
+        self.rmut_lineage = []
+        self.rmut_lineage_scroll = 0
+        self.rmut_total_mutations = 0
+        self.rmut_accepted_mutations = 0
+        self.rmut_reverted_mutations = 0
+        self.rmut_best_entropy = 0.0
+
         # ── Analytics overlay state ──
         self.analytics = AnalyticsState()
 

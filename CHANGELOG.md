@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add real-time rule mutation engine for autonomous rule evolution
+
+Added a new Meta Mode that runs a live genetic algorithm on cellular automaton birth/survival rulesets, continuously mutating rules toward maximum visual complexity using entropy feedback. The simulation discovers its own most interesting behaviors while the user watches.
+
+**`life/modes/rule_mutation.py`** (new, ~820 lines):
+
+- **Two-phase mutation cycle**: 40-generation stable phase for metric collection, then 40-generation evaluation of a candidate mutation. Accepts improvements, hard-rejects extinction/saturation, includes 5% simulated annealing for exploration.
+- **Composite fitness function**: Weighted combination of Shannon entropy (dominant signal), population dynamics (density sweet spot + variance), periodicity scoring (penalises static, rewards complex oscillations), and partial symmetry bonus.
+- **Mutation operators**: Random digit flipping on birth/survival sets at configurable rate, plus crossover and random rule generation utilities.
+- **Revert safety**: Full grid state checkpointed before each mutation; reverts both rule and grid on extinction, re-seeds if needed.
+- **Lineage tracking**: Every mutation attempt recorded as a `LineageNode` with rule string, fitness, generation, parent, and accept/reject status. Displayed as a scrolling ancestry sidebar with ✓/✗ markers.
+- **6 presets**: Entropy Climber, Chaos Seeker, Gentle Drift, Complexity Hunter, From Nothing, Day & Night Explorer.
+- **UI**: Full simulation grid with age-based coloring (bold during evaluation), 34-column sidebar with current/candidate rule, evaluation progress bar, stats, entropy/fitness sparklines, and lineage history.
+- **Controls**: Space (play/pause), `e` (toggle evolution), `r`/`R` (re-seed/random reset), `+`/`-` (mutation rate), `[`/`]` (speed), `a` (adopt rule into main grid), `n` (single step).
+
+**`life/app.py`** (+37 lines): Added 35 `rmut_*` state attributes for mode state management.
+
+**`life/registry.py`** (+3 lines): Registered mode as "Rule Mutation Engine" under "Meta Modes" category.
+
+**`life/modes/__init__.py`** (+2 lines): Added import and registration call.
+
+**`docs/meta-modes.md`**: Added full documentation section with background, algorithm details, preset table, and exploration suggestions.
+
+---
+
 ### Feature: Add bidirectional simulation coupling to split-screen mode
 
 Split-screen mode now supports real-time bidirectional coupling between its two simulation panes, turning it from a comparison tool into a cross-domain emergence laboratory. Each simulation can feed its density field into the other at a configurable coupling strength, enabling phenomena that exist in neither simulation alone.
