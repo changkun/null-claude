@@ -491,3 +491,101 @@ The fundamental DLA branching pattern arises because outer tips of the crystal a
 
 - Witten, T. A. & Sander, L. M. "Diffusion-limited aggregation, a kinetic critical phenomenon." *Physical Review Letters*, 47(19), 1400-1403, 1981. https://doi.org/10.1103/PhysRevLett.47.1400
 - Meakin, P. "Fractals, Scaling and Growth Far from Equilibrium." Cambridge University Press, 1998. https://doi.org/10.1017/CBO9780511806179
+
+---
+
+## Bee Colony & Waggle Dance Communication
+
+### Background
+
+Honeybee colonies are among the most studied examples of swarm intelligence, combining individual simplicity with remarkable collective problem-solving. Karl von Frisch's Nobel Prize–winning work (1967) decoded the waggle dance — a figure-eight movement performed by returning foragers on the vertical comb face, encoding the distance and direction to a food source relative to the sun's azimuth. Recruits observing the dance extract this vector information and navigate to the advertised patch, creating a positive feedback loop where richer sources attract more foragers. Thomas Seeley's later work showed that this dance-based recruitment system implements a decentralized "house-hunting" algorithm with near-optimal collective decision-making.
+
+Beyond communication, honeybee colonies exhibit age-based division of labor (temporal polyethism): young bees nurse brood, middle-aged bees build comb and process nectar, and older bees forage and guard. This role allocation is not genetically fixed but emerges from hormonal thresholds modulated by colony needs — a workforce that dynamically reallocates itself. The colony also collectively thermoregulates the brood nest to 35°C ± 1°C through endothermic muscle shivering (heating) and wing-fanning evaporative cooling, maintaining homeostasis across ambient temperatures from −20°C to +45°C.
+
+This mode simulates foraging economics, waggle dance recruitment, hexagonal comb construction, thermoregulation, and age-based polyethism as an integrated colony-level system.
+
+### Formulation
+
+Each bee agent has position (x, y), heading, speed, energy, age, role, and behavioral state. Seven roles exist: Queen, Nurse, Builder, Forager, Guard, Fanner, and Scout. Flower patches have position, nectar/pollen reserves with regeneration, bloom windows, and species identity.
+
+```
+Age-based polyethism (every 100 ticks):
+    age > 12, Nurse → Builder   (P = 0.10)
+    age > 20, Nurse → Forager   (P = 0.15)
+    age > 40, any   → Guard     (P = 0.10)
+
+Emergency role switching:
+    alert_level > 0.5: Forager → Guard  (P = 0.05 per tick, if in hive)
+    hive_temp > 38°C:  any → Fanner     (P = 0.03 per tick, if in hive)
+
+Forager behavior (state machine):
+    IDLE     → pick known patch or random direction → FORAGING
+    FORAGING → move toward target patch at speed 0.4–0.7
+               on arrival: harvest nectar/pollen (deplete patch proportionally)
+               → RETURNING
+    RETURNING → steer toward hive center
+               on arrival: deposit nectar → honey_store, pollen → pollen_store
+               → DANCING
+    DANCING  → perform waggle dance for 15–25 ticks
+               dance encodes: angle = atan2(patch.y − hive.y, patch.x − hive.x)
+                              distance = euclidean(patch, hive)
+               quality ∝ nectar collected
+               → IDLE (cycle repeats)
+
+    FOLLOWING → recruit observes dance, extracts (angle, distance)
+               navigates to encoded location with angular noise ±0.2 rad
+               → FORAGING on arrival near target
+
+Scout behavior:
+    Random exploration at wider radius than foragers
+    On discovering a rich patch (nectar > 30): return and dance
+
+Waggle dance encoding:
+    angle:    direction from hive to food source (radians)
+    distance: euclidean distance / field_diagonal (normalized)
+    quality:  proportional to nectar harvested (affects recruit probability)
+    type:     ROUND (close source, dist < 5) or WAGGLE (far source)
+
+Temperature regulation:
+    heat_gain = n_bees × 0.015 × 0.01
+    cooling   = n_fanners × 0.4 × 0.1
+    drift     = (ambient − hive_temp) × 0.01
+    hive_temp += drift + heat_gain − cooling
+    hive_temp ∈ [ambient, 45°C]
+
+Comb construction (Builder role):
+    If wax_store > 2: place WAX cell adjacent to existing comb (P = 0.15)
+    wax_store += honey_store × 0.01  (bees convert honey to wax)
+
+Queen egg-laying (every 50 ticks):
+    If honey_store > 5: place BROOD in empty comb cell, honey_store −= 0.5
+
+Nurse behavior:
+    Tend BROOD cells: pollen_store −= 0.05 per nursing action
+    Wander within hive radius
+
+Patch regeneration:
+    In bloom:  nectar += regen_rate × max_nectar per tick
+    Out of bloom: nectar decays slowly (−0.01/tick)
+    Bloom cycling: every 500 ticks, 30% of patches shift bloom windows
+```
+
+### Presets
+
+- **Spring Bloom**: Abundant wildflower meadow with 12 diverse patches and a large forager workforce. The colony operates at peak efficiency — watch waggle dance trails converge on the richest patches as scouts discover them.
+- **Overwintering Cluster**: Ambient temperature −5°C with minimal forage. Bees cluster tightly for warmth, fanners work overtime, and the colony slowly depletes honey reserves. A survival scenario where thermoregulation dominates behavior.
+- **Swarm Departure**: Colony in reproductive mode — scouts search for new nest sites while foragers maintain existing operations. Demonstrates the exploration-exploitation trade-off at colony scale.
+- **Bear Attack Defense**: A bear agent advances toward the hive, triggering high alert. Foragers abandon patches and switch to guard duty; guards converge to sting the intruder. If enough guards mobilize (>10 near bear), they push it back. Honey stores drain if the bear breaches the hive perimeter.
+- **Robber Bee Invasion**: Foreign bees (20 robbers) approach the hive to steal honey. Guards intercept and drain robber energy; depleted robbers respawn at distance. A resource-defense scenario with attacker-defender dynamics.
+- **Pollination Network**: Six flower species arranged in clusters, with 18 patches total. Foragers develop patch fidelity — watch specialization emerge as bees repeatedly visit the same species clusters, mimicking real-world floral constancy.
+
+### What to look for
+
+In **Spring Bloom**, watch the initial exploration phase where scouts fan out randomly, then observe how the first successful forager's waggle dance triggers a cascade of recruitment to her patch — the colony rapidly focuses its workforce on the best sources. As patches deplete, dancers switch to advertising new locations, demonstrating the exploration-exploitation balance. In **Overwintering Cluster**, the hive temperature gauge is the key metric: watch fanners activate when temperature rises above 38°C from bee body heat, then deactivate as it drops, creating an oscillating thermostat. The **Bear Attack** preset shows emergency role switching in action — the forager-to-guard transition happens within ticks of the bear entering alert range, and the collective defense pushes the bear away if guard mobilization is fast enough. In the **Comb view** (press v), observe hexagonal cells filling with honey (gold), pollen (orange), and brood (pink) as builders expand the comb structure outward from the center. The **Dance view** zooms into the dance floor, rendering the figure-eight waggle dance trajectories — each dance's orientation encodes direction and its duration encodes distance, exactly as von Frisch described.
+
+### References
+
+- von Frisch, K. "The Dance Language and Orientation of Bees." Harvard University Press, 1967. https://doi.org/10.4159/harvard.9780674418776
+- Seeley, T. D. "Honeybee Democracy." Princeton University Press, 2010. https://press.princeton.edu/books/paperback/9780691147215/honeybee-democracy
+- Seeley, T. D. "The Wisdom of the Hive." Harvard University Press, 1995. https://doi.org/10.4159/9780674043404
+- Camazine, S., Deneubourg, J.-L., Franks, N. R., Sneyd, J., Theraulaz, G. & Bonabeau, E. "Self-Organization in Biological Systems." Princeton University Press, 2001. https://press.princeton.edu/books/paperback/9780691116242/self-organization-in-biological-systems

@@ -430,6 +430,9 @@ MODE_REGISTRY = [
     # ── Deep Sea Hydrothermal Vent Ecosystem ──
     {"name": "Deep Sea Hydrothermal Vent Ecosystem", "key": "—", "category": "Complex Simulations",
      "desc": "Black smoker chimneys, chemosynthetic food webs, mineral precipitation, thermal plumes, tectonic activity & larval transport in the deep ocean abyss", "attr": "hvent_mode", "enter": "_enter_hvent_mode", "exit": "_exit_hvent_mode"},
+    # ── Bee Colony & Waggle Dance Communication ──
+    {"name": "Bee Colony & Waggle Dance Communication", "key": "—", "category": "Particle & Swarm",
+     "desc": "Forager bees discover flower patches & perform waggle dances encoding distance/direction — recruits interpret dances, colony builds hexagonal comb, thermoregulates via fanning & shifts roles through age-based polyethism", "attr": "bee_mode", "enter": "_enter_bee_mode", "exit": "_exit_bee_mode"},
 ]
 
 

@@ -2762,6 +2762,12 @@ class App:
         self.optics_menu_sel = 0
         self.optics_running = False
 
+        # ── Bee Colony state ──
+        self.bee_mode = False
+        self.bee_menu = False
+        self.bee_menu_sel = 0
+        self.bee_running = False
+
         self._rebuild_pattern_list()
 
         if pattern:
