@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Genesis Protocol — autonomous open-ended evolution engine
+
+Added a new Meta Mode that autonomously explores cellular automata rule-space, scoring discovered universes for emergent complexity and curating a persistent Hall of Fame of the most interesting finds. The system generates, simulates, measures, ranks, and breeds rule combinations in a continuous loop — turning the simulator from a tool you operate into one that explores on its own.
+
+**`life/modes/genesis_protocol.py`** (new, ~1600 lines):
+
+- **Generate phase**: Seeds batches of random CA rule combinations (birth/survival sets, neighborhood type, seed density/style) using evolutionary operators (crossover, mutation) with diversity injection. Six seed styles: random, symmetric, clustered, sparse, striped, central.
+- **Simulate phase**: Runs each universe candidate forward for 120 generations in a tiled live visualization (2×4 grid).
+- **Measure phase**: Scores each universe using information-theoretic metrics — Shannon entropy (structural complexity), transfer entropy (information flow between cells), spatial complexity (edge density), symmetry (partial symmetry scores highest), population dynamics (coefficient of variation), and periodicity quality (oscillation detection).
+- **Rank phase**: Sorts by composite score, promotes top performers to the persistent Hall of Fame with adaptive quality threshold.
+- **Display phase**: Tiled live visualization with info panel showing per-universe metrics, sparklines, and structural classification.
+- **Structure classifier**: Auto-detects gliders, oscillators, replicators, still lifes, chaotic, expanding, and collapsing patterns using population trajectory analysis.
+- **Persistent Hall of Fame**: Saves to `~/.life_saves/genesis_hall_of_fame.json`, persists across sessions. Browsable with detail view and snapshot thumbnails.
+- **Autonomous breeding**: Auto-continues from hall of fame + top performers with crossover, mutation, and diversity injection to maintain exploration breadth.
+
+**`life/registry.py`**: Added "Genesis Protocol" entry in Meta Modes category and `genesis_mode` dispatch override with custom running check.
+
+**`life/modes/__init__.py`**: Added registration call for the genesis_protocol module.
+
+**`life/app.py`** (~36 lines added):
+
+- `__init__`: Initialize all genesis state variables (simulation tiles, genomes, fitness scores, hall of fame, phase tracking, UI state).
+
+---
+
 ### Feature: Add Butterfly Effect mode for causal divergence analysis
 
 Added a new Meta Mode that forks any running simulation, applies a single-cell perturbation, and visualizes the divergence between original and altered timelines as a real-time spreading heatmap. Answers the question "did this cell actually matter?" for any simulation mode.

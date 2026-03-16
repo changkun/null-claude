@@ -1096,3 +1096,55 @@ The heatmap supports both linear and logarithmic color scaling. Log scale is use
 - Try perturbing cells in different regions: a cell in a dense cluster vs. an isolated cell vs. one near a glider gun. The divergence patterns reveal the causal structure of the simulation.
 - Watch the population delta between timelines — sometimes killing a single cell causes a population explosion in the perturbed timeline (or vice versa).
 - Use the instantaneous diff mode to see the "active front" of divergence — the boundary where the perturbation is currently spreading.
+
+---
+
+## Genesis Protocol
+
+**Source:** `life/modes/genesis_protocol.py`
+
+### Background
+
+Genesis Protocol is an autonomous open-ended evolution engine for cellular automata rule-space exploration. Rather than requiring the user to manually choose rules and initial conditions, the system independently generates random rule combinations, simulates them, measures their emergent complexity using information-theoretic metrics, and curates a persistent ranked gallery of the most interesting discovered universes. It turns the simulator from a tool you operate into one that explores on its own.
+
+The mode builds on the project's existing infrastructure — rule mutation from the auto-discovery engine, information-theoretic measures from the computation detector, and parallel simulation from split-screen and symbiosis modes — tying them together into a single autonomous loop: **generate → simulate → measure → rank → breed → repeat**.
+
+### How it works
+
+Each round, the system generates a batch of 8 candidate universes with random or evolved genomes. A genome encodes: birth set, survival set, neighborhood type (Moore or von Neumann), initial density, and seed style (random, symmetric, clustered, sparse, striped, or central). Candidates are displayed in a 2×4 tiled grid and simulated forward for 120 generations.
+
+During simulation, the system collects per-universe metrics:
+
+- **Shannon entropy** — structural complexity of the spatial pattern
+- **Transfer entropy** — information flow between cells (sampled on a 16×16 subgrid)
+- **Spatial complexity** — edge density between differing cell states
+- **Symmetry** — partial symmetry scores highest (pure symmetry or pure randomness score low)
+- **Population dynamics** — coefficient of variation of the population trajectory
+- **Periodicity** — oscillation detection via autocorrelation of population history
+
+After 120 generations, each universe receives a composite fitness score (0–100). Structural classification identifies gliders, oscillators, replicators, still lifes, chaotic patterns, expanding, and collapsing configurations. Top scorers are promoted to the Hall of Fame (persisted to `~/.life_saves/genesis_hall_of_fame.json`) if they exceed an adaptive quality threshold that rises as better universes are found.
+
+The next round breeds from the best: crossover between hall-of-fame members and top performers, point mutation on birth/survival sets, and fresh random genomes for diversity injection. The system auto-continues indefinitely, building up an increasingly curated collection of complex emergent universes.
+
+### Controls
+
+| Key | Action |
+|-----|--------|
+| **Space** | Pause/resume simulation |
+| **s** | Skip to scoring (end current eval early) |
+| **b** | Force breed next generation |
+| **Arrows / hjkl** | Navigate cursor between tiles |
+| **Enter** | Adopt selected universe's rules for main simulation |
+| **f** | Toggle Hall of Fame browser |
+| **↑ / ↓** (in HoF view) | Scroll through Hall of Fame entries |
+| **a** | Toggle auto-continue between rounds |
+| **Esc** / **q** | Exit Genesis Protocol |
+
+### What to explore
+
+- Launch it and walk away — come back to find a curated collection of universes the system discovered autonomously, each with complexity scores and structural classifications.
+- Watch the Hall of Fame threshold rise over time as the system discovers increasingly complex rule combinations.
+- Look for universes classified as "glider" or "replicator" — these represent rules that produce mobile or self-copying structures, which are relatively rare in random rule-space.
+- Compare the information-theoretic profiles of different structural classes: oscillators tend to have high periodicity but moderate entropy, while chaotic patterns have high entropy but low periodicity.
+- Adopt an interesting discovered rule into your main simulation to explore it in detail with other modes (computation detector, butterfly effect, etc.).
+- Browse the Hall of Fame across sessions — the persistent gallery accumulates discoveries over multiple runs, building a long-term catalog of interesting CA rule-space regions.

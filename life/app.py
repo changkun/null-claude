@@ -2623,6 +2623,42 @@ class App:
         self.terrarium_mode = False
         self._terrarium_init()
 
+        # ── Genesis Protocol mode state ──
+        self.genesis_mode = False
+        self.genesis_menu = False
+        self.genesis_menu_sel = 0
+        self.genesis_running = False
+        self.genesis_sims: list = []
+        self.genesis_genomes: list = []
+        self.genesis_pop_histories: list = []
+        self.genesis_period_dets: list = []
+        self.genesis_te_histories: list = []
+        self.genesis_prev_cells: list = []
+        self.genesis_fitness: list = []
+        self.genesis_classifications: list = []
+        self.genesis_grid_rows = 2
+        self.genesis_grid_cols = 4
+        self.genesis_tile_h = 10
+        self.genesis_tile_w = 10
+        self.genesis_batch_size = 8
+        self.genesis_eval_steps = 120
+        self.genesis_mutation_rate = 0.15
+        self.genesis_hall_max = 50
+        self.genesis_round = 0
+        self.genesis_sim_step = 0
+        self.genesis_phase = "idle"
+        self.genesis_cursor = 0
+        self.genesis_auto_continue = True
+        self.genesis_hall: list = []
+        self.genesis_hall_view = False
+        self.genesis_hall_sel = 0
+        self.genesis_hall_scroll = 0
+        self.genesis_history: list = []
+        self.genesis_total_universes = 0
+        self.genesis_best_ever_score = 0.0
+        self.genesis_best_ever_rule = ""
+        self.genesis_hall_threshold = 80.0
+
         self._rebuild_pattern_list()
 
         if pattern:

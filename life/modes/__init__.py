@@ -290,6 +290,8 @@ def register_all_modes(App):
     reg_compdet(App)
     from life.modes.butterfly_effect import register as reg_butterfly
     reg_butterfly(App)
+    from life.modes.genesis_protocol import register as reg_genesis
+    reg_genesis(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

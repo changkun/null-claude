@@ -355,6 +355,9 @@ MODE_REGISTRY = [
     # ── Butterfly Effect ──
     {"name": "Butterfly Effect", "key": "Ctrl+B", "category": "Meta Modes",
      "desc": "Fork simulation, perturb one cell, visualize divergence as a spreading heatmap — causal analysis of 'did this cell matter?'", "attr": "butterfly_mode", "enter": "_enter_butterfly_mode", "exit": "_exit_butterfly_mode"},
+    # ── Genesis Protocol ──
+    {"name": "Genesis Protocol", "key": "—", "category": "Meta Modes",
+     "desc": "Autonomous evolution engine — seeds random rule combinations, scores by information-theoretic complexity, curates a ranked Hall of Fame of discovered universes", "attr": "genesis_mode", "enter": "_enter_genesis_mode", "exit": "_exit_genesis_mode"},
 ]
 
 
@@ -424,6 +427,7 @@ _DISPATCH_OVERRIDES = {
     # ── Custom running checks ──
     'elab_mode': {'running_check': '_is_elab_auto_stepping'},
     'adisco_mode': {'running_check': '_is_adisco_auto_stepping'},
+    'genesis_mode': {'running_check': '_is_genesis_auto_stepping'},
     'nca_mode': {'running_check': '_is_nca_auto_stepping'},
     'nntrain_mode': {'running_check': '_is_nntrain_auto_stepping'},
     'wfc_mode': {'running_check': '_is_wfc_auto_stepping'},
