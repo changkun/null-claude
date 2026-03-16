@@ -332,3 +332,162 @@ MODE_REGISTRY = [
     {"name": "Magnetism & Spin Glass", "key": "—", "category": "Physics & Waves",
      "desc": "Continuous-spin lattice with frustrated bonds, domain walls, glassy freezing & phase transitions", "attr": "spinglass_mode", "enter": "_enter_spinglass_mode", "exit": "_exit_spinglass_mode"},
 ]
+
+
+# ── Mode dispatch table ────────────────────────────────────────────────────
+# Convention-based routing: given attr "foo_mode", prefix is "foo", and
+# method names are derived as _handle_foo_key, _draw_foo, _foo_step, etc.
+# Only non-standard names need explicit overrides.
+
+# Attrs that are NOT routed through the dispatch table (handled explicitly):
+_EXPLICIT_MODES = {
+    None,               # Game of Life, Topology, Visual FX
+    'cast_recording',   # toggle, not a simulation mode
+    'compare_mode',     # special draw condition (grid2)
+    'race_mode',        # special draw condition (race_grids)
+    'puzzle_mode',      # multi-phase key dispatch
+    'iso_mode',         # overlay on GoL, no menu
+    'hex_mode',         # overlay on GoL, no menu
+    'heatmap_mode',     # overlay on GoL, no menu
+    'pattern_search_mode',  # overlay on GoL, no menu
+    'blueprint_mode',   # overlay on GoL, no menu
+    'mp_mode',          # multi-phase key dispatch, not in registry
+    'tbranch_mode',     # special draw condition, enter=None
+    'screensaver_mode', # non-standard key dispatch (requires running)
+    'evo_mode',         # uses self.running not evo_running, custom step
+    'script_mode',      # draw has extra overlay (_draw_script_source)
+}
+
+# Per-mode overrides for non-standard method names or behavior.
+# Keys: attr value.  Values: dict of overrides.
+_DISPATCH_OVERRIDES = {
+    # ── Non-standard method names ──
+    'anc_mode': {
+        'keys': '_handle_ancestor_search_key',
+        'draw': '_draw_ancestor_search',
+        'menu_attr': '_anc_no_menu',  # anc handles menu internally in key handler
+    },
+    'obs_mode': {
+        'keys': '_handle_observatory_key',
+        'menu_keys': '_handle_observatory_menu_key',
+        'draw': '_draw_observatory',
+        'menu_draw': '_draw_observatory_menu',
+        'step': '_observatory_step',
+    },
+    'cinem_mode': {
+        'keys': '_handle_cinematic_key',
+        'menu_keys': '_handle_cinematic_menu_key',
+        'draw': '_draw_cinematic',
+        'menu_draw': '_draw_cinematic_menu',
+        'step': '_cinematic_step',
+    },
+    'br_mode': {
+        'step': '_br_do_step',
+        'draw': '_draw_battle_royale',
+    },
+    # ── No auto-step (no running state or purely interactive) ──
+    'fractal_mode': {'no_step': True},
+    'qcirc_mode': {'no_step': True},
+    # ── Custom running checks ──
+    'elab_mode': {'running_check': '_is_elab_auto_stepping'},
+    'nca_mode': {'running_check': '_is_nca_auto_stepping'},
+    'nntrain_mode': {'running_check': '_is_nntrain_auto_stepping'},
+    'wfc_mode': {'running_check': '_is_wfc_auto_stepping'},
+    'sortvis_mode': {'running_check': '_is_sortvis_auto_stepping'},
+    'mazesolver_mode': {'running_check': '_is_mazesolver_auto_stepping'},
+    'dnahelix_mode': {'running_check': '_is_dnahelix_auto_stepping'},
+    'anc_mode|running': {'running_check': '_is_anc_auto_stepping'},
+    # ── No delay (real-time or self-timed modes) ──
+    'flythrough_mode': {'use_delay': False},
+    'raymarch_mode': {'use_delay': False},
+    'shadertoy_mode': {'use_delay': False},
+    'musvis_mode': {'use_delay': False},
+    'alife_mode': {'use_delay': False},
+    'doomrc_mode': {'use_delay': False},
+    'tectonic_mode': {'use_delay': False},
+    'weather_mode': {'use_delay': False},
+    'ocean_mode': {'use_delay': False},
+    'volcano_mode': {'use_delay': False},
+    'blackhole_mode': {'use_delay': False},
+    'orrery_mode': {'use_delay': False},
+    'aurora_mode': {'use_delay': False},
+    'pwave_mode': {'use_delay': False},
+    'tornado_mode': {'use_delay': False},
+    'sortvis_mode|delay': {'use_delay': False},
+    'fourier_mode': {'use_delay': False},
+    'snowfall_mode': {'use_delay': False},
+    'matrix_mode': {'use_delay': False},
+    'fluidrope_mode': {'use_delay': False},
+    'lissajous_mode': {'use_delay': False},
+    'mazesolver_mode|delay': {'use_delay': False},
+    'antfarm_mode': {'use_delay': False},
+    'kaleido_mode': {'use_delay': False},
+    'aquarium_mode': {'use_delay': False},
+    'collider_mode': {'use_delay': False},
+    'dnahelix_mode|delay': {'use_delay': False},
+    'ns_mode': {'use_delay': False},
+    'dpend_mode': {'use_delay': False},
+    'chladni_mode': {'use_delay': False},
+    'ifs_mode': {'use_delay': False},
+    'cpm_mode': {'use_delay': False},
+    'magfield_mode': {'use_delay': False},
+    'fdtd_mode': {'use_delay': False},
+    'sph_mode': {'use_delay': False},
+    'rbc_mode': {'use_delay': False},
+}
+
+
+def _build_dispatch_table():
+    """Build the mode dispatch table from MODE_REGISTRY + convention overrides.
+
+    Returns a list of dicts, each with:
+        attr         - mode flag attribute (e.g. 'wolfram_mode')
+        prefix       - short name (e.g. 'wolfram')
+        menu_attr    - menu flag (e.g. 'wolfram_menu')
+        keys         - key handler method name
+        menu_keys    - menu key handler method name
+        draw         - draw method name
+        menu_draw    - menu draw method name
+        step         - step method name
+        running_attr - running flag attribute
+        use_delay    - whether to sleep(SPEEDS[speed_idx]) before stepping
+        no_step      - if True, no auto-step after key handling
+        running_check - optional method name for custom is-running check
+    """
+    table = []
+    seen = set()
+    for entry in MODE_REGISTRY:
+        attr = entry.get('attr')
+        if attr is None or attr in _EXPLICIT_MODES or attr in seen:
+            continue
+        seen.add(attr)
+
+        # Derive prefix: 'wolfram_mode' -> 'wolfram'
+        prefix = attr.replace('_mode', '')
+
+        # Merge all overrides for this attr (including "|" keyed extras)
+        overrides = {}
+        for key, val in _DISPATCH_OVERRIDES.items():
+            base = key.split('|')[0]
+            if base == attr:
+                overrides.update(val)
+
+        md = {
+            'attr': attr,
+            'prefix': prefix,
+            'menu_attr': overrides.get('menu_attr', f'{prefix}_menu'),
+            'keys': overrides.get('keys', f'_handle_{prefix}_key'),
+            'menu_keys': overrides.get('menu_keys', f'_handle_{prefix}_menu_key'),
+            'draw': overrides.get('draw', f'_draw_{prefix}'),
+            'menu_draw': overrides.get('menu_draw', f'_draw_{prefix}_menu'),
+            'step': overrides.get('step', f'_{prefix}_step'),
+            'running_attr': overrides.get('running_attr', f'{prefix}_running'),
+            'use_delay': overrides.get('use_delay', True),
+            'no_step': overrides.get('no_step', False),
+            'running_check': overrides.get('running_check'),
+        }
+        table.append(md)
+    return table
+
+
+MODE_DISPATCH = _build_dispatch_table()

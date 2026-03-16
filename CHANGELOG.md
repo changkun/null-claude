@@ -2,6 +2,47 @@
 
 All notable changes to this project are documented in this file.
 
+## 2026-03-16
+
+### Architecture: Replace manual key/draw dispatch chains with data-driven mode routing table
+
+Replaced the ~2,200 lines of `if/elif` dispatch chains in `app.py` with a declarative `MODE_DISPATCH` table built automatically from `MODE_REGISTRY`. This is the single largest structural improvement to the codebase to date.
+
+**Problem:** Every mode's key handler and draw call was wired through sprawling `if self.xyz_mode` chains in `app.py`'s `run()` and `_draw()` methods. These had to be maintained by hand across 5+ insertion points, and the wiring test infrastructure (711 tests) had to regex-scan the source code to verify correctness. Three modes (Quantum Circuit, Mycelium Network, Tierra) were recently found completely broken because they were never wired in.
+
+**Solution:** A data-driven routing dict in `registry.py` where each mode's `{flag, enter, exit, keys, draw, step, menu}` contract is derived automatically from `MODE_REGISTRY` using naming conventions, with an overrides dict for the ~15 modes with non-standard naming.
+
+**`life/registry.py`** (+158 lines):
+- `MODE_DISPATCH` table auto-built from `MODE_REGISTRY` via convention-based method name derivation
+- `_DISPATCH_OVERRIDES` dict for modes with non-standard naming (e.g., `br_mode` → `_br_do_step`, `obs_mode` → `_handle_observatory_key`)
+
+**`life/app.py`** (−2,172 lines, 8,190 → 6,018):
+- `_dispatch_mode_key(key)` — routes key input to active mode's handler via dispatch table
+- `_dispatch_mode_draw(max_y, max_x)` — routes drawing to active mode via dispatch table
+- `_auto_step_mode(md)` — generic stepping with delay, step count, and custom running checks
+- 8 `_is_*_auto_stepping()` helpers for modes with non-standard running conditions
+- `_any_menu_open()` now iterates the dispatch table instead of a manual list
+- ~1,200-line key dispatch `if/elif` chain → single `_dispatch_mode_key(key)` call + ~40 lines for 4 special cases
+- ~1,000-line draw dispatch `if/elif` chain → single `_dispatch_mode_draw(max_y, max_x)` call + ~30 lines for special cases
+
+**`tests/test_mode_wiring.py`** (rewritten, 711 → 1,165 tests):
+- Old: regex-scanned source code to verify `if/elif` chains existed (fragile)
+- New: verifies dispatch table structure directly (correctness by construction):
+  - Every `MODE_REGISTRY` entry is dispatched or explicitly handled
+  - All referenced methods exist on the App class
+  - Enter/exit methods exist
+  - Menu handlers set mode flags
+
+**Key benefits:**
+- Eliminates the class of bug that broke Quantum Circuit, Mycelium, and Tierra — modes can't be "forgotten" if registration is automatic
+- Makes regex-based wiring tests unnecessary — correctness by construction
+- Shrinks `app.py` by 26% (2,172 lines)
+- Adding a new mode is now one step (add to `MODE_REGISTRY`) instead of editing 5+ places
+
+**Files added:** `.ralph/round-366-thinker.json`, `.ralph/round-366-worker.json`
+
+---
+
 ## 2026-03-15
 
 ### Infrastructure: Ralph Task Logs (All Remaining Rounds)
