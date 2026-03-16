@@ -436,6 +436,9 @@ MODE_REGISTRY = [
     # ── Firefly Synchronization & Bioluminescence ──
     {"name": "Firefly Synchronization & Bioluminescence", "key": "—", "category": "Chemical & Biological",
      "desc": "Integrate-and-fire oscillators with Mirollo-Strogatz coupling — fireflies flash, nudge neighbors' phases, and spontaneously synchronize from chaos, with species variation, predator femme fatales & Kuramoto order parameter tracking", "attr": "firefly_mode", "enter": "_enter_firefly_mode", "exit": "_exit_firefly_mode"},
+    # ── Stellar Lifecycle & Supernova ──
+    {"name": "Stellar Lifecycle & Supernova", "key": "—", "category": "Complex Simulations",
+     "desc": "Stars from birth to death — gas cloud collapse, fusion ignition, main sequence evolution, red giant expansion, supernova core collapse, neutron star/black hole remnants, with HR diagram & core cross-section views", "attr": "stellar_mode", "enter": "_enter_stellar_mode", "exit": "_exit_stellar_mode"},
 ]
 
 

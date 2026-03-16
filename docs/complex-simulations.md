@@ -932,3 +932,99 @@ Organisms have energy budgets, reproduce when energy exceeds a threshold (with a
 - Kelley, D. S. et al. "An off-axis hydrothermal vent field near the Mid-Atlantic Ridge at 30°N." *Nature*, 412, 145–149, 2001. https://doi.org/10.1038/35084000
 - Luther, G. W. et al. "Chemical speciation drives hydrothermal vent ecology." *Nature*, 410, 813–816, 2001. https://doi.org/10.1038/35071069
 - Corliss, J. B. et al. "Submarine thermal springs on the Galápagos Rift." *Science*, 203(4385), 1073–1083, 1979. https://doi.org/10.1126/science.203.4385.1073
+
+
+---
+
+
+## Stellar Lifecycle & Supernova
+
+**Background.** Stars are the fundamental engines of the universe — forging elements in their cores, sculpting galaxies with their radiation and winds, and seeding interstellar space with heavy elements when they die. A star's life is determined almost entirely by its birth mass: low-mass stars burn hydrogen slowly for billions of years and fade as white dwarfs, while massive stars blaze through their fuel in millions of years and detonate as core-collapse supernovae, leaving neutron stars or black holes. The Hertzsprung-Russell diagram — plotting stellar luminosity against surface temperature — reveals the evolutionary tracks stars follow from birth to death. This simulation models the full stellar lifecycle from gas cloud collapse through nucleosynthesis to remnant formation, with supernova shockwaves triggering new generations of star formation in a self-sustaining cycle.
+
+**Formulation.** Each star is an agent with mass, position, velocity, hydrogen fuel fraction, surface temperature, luminosity, radius, and a 6-element fusion shell composition vector. The key physical relations:
+
+```
+Mass-luminosity relation (main sequence):
+  L = M^3.5       (in solar units)
+
+Main sequence lifetime:
+  τ = M^{-2.5}    (massive stars die young)
+
+Surface temperature scaling:
+  T = 5778 · M^{0.505}  K
+
+Radius scaling:
+  R = M^{0.8}     (main sequence)
+  R = M^{0.8} · 10   (red giant)
+  R = M^{0.8} · 20   (supergiant)
+```
+
+**Stellar evolution stages.** Stars progress through up to 12 stages depending on mass:
+
+| Stage | Trigger | Properties |
+|-------|---------|------------|
+| Gas Cloud | Initial state | Low temperature (~100 K), extended radius, near-zero luminosity |
+| Protostar | Gas density + shockwave compression | Contracting, warming (2000–5000 K) |
+| Main Sequence | Age > 30 ticks | Stable hydrogen fusion; L, T, R from mass relations |
+| Subgiant | Fuel ≤ 10% | Expanding, cooling slightly (T × 0.85) |
+| Red Giant | Fuel ≤ 2%, M < 8 M☉ | Radius × 10, luminosity × 5, T drops to ~3000 K |
+| Supergiant | Fuel ≤ 2%, M ≥ 8 M☉ | Radius × 20, luminosity × 10, onion-shell fusion |
+| Supernova | Fuel exhausted (supergiant) | Luminosity spike (10⁶ × M), expanding shockwave |
+| Planetary Nebula | Fuel exhausted (red giant) | Expanding shell of ejected gas |
+| White Dwarf | Nebula radius > 8 | M capped at 1.4 M☉ (Chandrasekhar limit), slowly cooling |
+| Neutron Star | Post-supernova, 8 < M < 25 M☉ | M = 1.4 M☉, tiny radius, extreme temperature |
+| Black Hole | Post-supernova, M > 25 M☉ | M = 0.3 × M_initial, zero luminosity |
+
+**Hydrogen burning.** On the main sequence, fuel decreases at rate proportional to M^{2.5} — a 20 M☉ star burns fuel ~1800× faster than a 1 M☉ star. The fuel fraction drives shell composition: as hydrogen depletes, helium accumulates, then heavier elements build up in massive stars through successive fusion stages (H → He → C → O → Si → Fe).
+
+**Supernova feedback.** When a supergiant exhausts its fuel, it detonates as a core-collapse supernova:
+1. A shockwave is created at the star's position with strength proportional to initial mass
+2. The shockwave expands at 1.2 cells/tick, decaying in strength by 8% per tick
+3. Where the shockwave front intersects dense gas (density > 0.3), it probabilistically triggers collapse of new gas cloud fragments into protostars
+4. The supernova ejects enriched gas into a 6-cell radius, replenishing the interstellar medium
+
+This creates a self-sustaining cycle: supernovae compress gas → new stars form → massive ones evolve fast → more supernovae.
+
+**Binary mass transfer.** A configurable fraction of stars form gravitationally bound pairs. When one partner evolves to red giant or supergiant while the other remains on the main sequence (or is a compact remnant), mass transfers from the expanded star to its companion at a steady rate. This can rejuvenate the accreting star or drive it toward its own premature evolution.
+
+**Wolf-Rayet winds.** Stars with wind strength > 2.0 (set by initial mass and the preset's wind scale) lose mass continuously during the supergiant phase, stripping their outer envelopes before detonation — producing the characteristic Wolf-Rayet phenomenon of ultra-luminous, rapidly evolving massive stars.
+
+**Gas dynamics.** A 2D density grid represents the interstellar medium. Gas clouds are seeded as circular regions with Gaussian-like falloff profiles. Every 5 ticks, the gas field undergoes 4-neighbor diffusion (coefficient 0.02) with mild dissipation (factor 0.92), slowly spreading and fading. Supernova ejecta and planetary nebula shedding inject fresh gas, maintaining the reservoir for future star formation.
+
+**Spectral classification.** Stars are assigned OBAFGKM spectral class from surface temperature:
+
+| Class | Temperature | Color (terminal) |
+|-------|-------------|-------------------|
+| O | > 30,000 K | Cyan/blue, bold |
+| B | 10,000–30,000 K | Cyan/blue, bold |
+| A | 7,500–10,000 K | White, bold |
+| F | 6,000–7,500 K | White, bold |
+| G | 5,200–6,000 K | Yellow, bold |
+| K | 3,700–5,200 K | Red |
+| M | < 3,700 K | Red |
+
+**Presets (6):**
+
+| Preset | Character | Initial Configuration |
+|--------|-----------|----------------------|
+| Open Cluster Nursery | Young stellar nursery — gas clouds collapsing into protostars | 60 stars (0.3–8 M☉), dense gas (0.6), all start as gas clouds, 10% binaries |
+| Red Giant Graveyard | Aging cluster of evolved stars shedding nebulae | 40 stars (0.8–5 M☉), sparse gas (0.15), start as red giants with 2–15% fuel remaining |
+| Supernova Chain Reaction | Massive stars near end of life — cascading detonations | 50 stars (5–40 M☉), moderate gas (0.4), start as supergiants with 1–8% fuel, chain explosions trigger new formation |
+| Binary Star Mass Transfer | Close binary pairs exchanging mass via Roche lobe overflow | 30 stars (1–15 M☉), sparse gas (0.1), 80% binary fraction, main sequence start |
+| Globular Cluster Evolution | Ancient dense cluster with thousands of stars at various ages | 120 stars (0.2–3 M☉), minimal gas (0.05), main sequence start with varied ages, 15% binaries |
+| Wolf-Rayet Wind Bubble | Ultra-massive stars with fierce stellar winds carving bubbles | 25 stars (20–80 M☉), moderate gas (0.3), 5× wind scale, rapid mass loss before explosion |
+
+**View modes (3, cycle with `v`):**
+1. **Star Field** — spatial view of the stellar nursery: gas cloud density rendered as ASCII art (`.:-=+*#%@`), stars as colored glyphs by stage (~ gas cloud, + protostar, * main sequence, O red giant, # supergiant, @ supernova, % planetary nebula, . white dwarf, : neutron star, o black hole), expanding supernova explosion rings, expanding nebula shells, binary link markers, and shockwave fronts
+2. **HR Diagram** — live Hertzsprung-Russell plot with log₁₀(luminosity) on the Y axis (10^{-4} to 10^{+7} L☉) and log₁₀(temperature) on the X axis (reversed: hot O stars at left, cool M stars at right), dotted main sequence guide line, spectral class labels along the temperature axis, stars plotted as colored glyphs by evolutionary stage, and a legend panel
+3. **Core Cross-Section** — concentric onion-layer visualization of the selected star's internal fusion shells (H → He → C → O → Si → Fe), drawn as filled circles with aspect-ratio correction, color-coded by element, with a composition legend showing relative shell fractions, star properties panel (mass, stage, spectral class, temperature, luminosity, radius, age, fuel), and an energy output bar indicator
+
+**Controls:** `Space`=play/pause, `v`=cycle views, `s`=select star (cycle), `+/-`=simulation speed, `r`=reset to menu, `q`=exit.
+
+**What to look for.** In Open Cluster Nursery, watch the gas clouds flicker and collapse one by one into protostars (+ symbols), then ignite as main sequence stars (*) — the most massive ones will be blue (O/B class) at the hot end of the HR diagram, while the numerous low-mass stars cluster as red M dwarfs at the cool end. Switch to the HR diagram to see the population track the classic main sequence band. As time progresses, the most massive stars peel off the main sequence first, swelling into red giants (O) and supergiants (#) — watch them migrate to the upper-right of the HR diagram. When a supergiant detonates (@), the expanding shockwave ring compresses surrounding gas and triggers a new burst of star formation. In Supernova Chain Reaction, the chain detonations are particularly dramatic — each explosion seeds gas that enables the next generation. Switch to Core Cross-Section view and cycle through stars with `s` to see the onion-layer structure of a massive supergiant: hydrogen envelope surrounding helium, carbon, oxygen, silicon, and (just before detonation) an inert iron core. Binary Star Mass Transfer shows pairs linked by dashes, with the expanded partner visibly feeding its companion. Wolf-Rayet Wind Bubble features the most massive stars in the simulation — watch their mass erode from wind losses before they explode spectacularly.
+
+**References.**
+- Kippenhahn, R., Weigert, A. & Weiss, A. *Stellar Structure and Evolution*. 2nd ed., Springer, 2012. https://doi.org/10.1007/978-3-642-30304-3
+- Salpeter, E. E. "The luminosity function and stellar evolution." *Astrophysical Journal*, 121, 161–167, 1955. https://doi.org/10.1086/145971
+- Woosley, S. E. & Weaver, T. A. "The evolution and explosion of massive stars." *Reviews of Modern Physics*, 74(4), 1015–1071, 2002. https://doi.org/10.1103/RevModPhys.74.1015
+- Hertzsprung, E. "Über die Sterne der Unterabteilungen c und ac." *Astronomische Nachrichten*, 179(24), 373–380, 1909. https://doi.org/10.1002/asna.19091792402

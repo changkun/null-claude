@@ -4,6 +4,36 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Stellar Lifecycle & Supernova — stars from birth to death with gas cloud collapse, fusion ignition, HR diagram tracking, core cross-section visualization & supernova-triggered star formation
+
+A stellar evolution simulation where stars are born from collapsing gas clouds, burn through hydrogen on the main sequence, swell into red giants or supergiants, and end their lives as white dwarfs, neutron stars, or black holes — with massive stars exploding as core-collapse supernovae whose shockwaves trigger new generations of star formation. Fills the astrophysics gap between the existing black hole and galaxy formation modes by simulating the lifecycle of individual stars.
+
+**`life/modes/stellar.py`** (new, ~1260 lines):
+
+- **12 evolutionary stages**: Gas cloud → protostar → main sequence → subgiant → red giant → supergiant → supernova → planetary nebula → white dwarf / neutron star / black hole → remnant fade. Stage transitions driven by hydrogen fuel depletion with mass-dependent burn rates.
+- **Mass-luminosity relation** (L ∝ M^3.5) and Salpeter IMF power-law mass distribution produce realistic stellar populations with many dim red dwarfs and few luminous blue giants.
+- **Main sequence lifetime** τ ∝ M^{-2.5}: massive O-type stars burn out in tens of generations while low-mass M dwarfs persist for thousands.
+- **Core-collapse supernovae**: When a supergiant exhausts its fuel, it detonates — emitting an expanding shockwave ring that compresses nearby gas clouds, triggering new star formation (positive feedback loop). Stars > 25 M_sun leave black holes; 8–25 M_sun leave neutron stars.
+- **Planetary nebulae**: Low-mass stars (< 8 M_sun) shed expanding nebula shells and fade as white dwarfs, seeding enriched gas back into the field.
+- **Binary star mass transfer**: Configurable fraction of stars form binary pairs; when one partner expands to red giant/supergiant, it transfers mass to its companion (accretion).
+- **Wolf-Rayet stellar winds**: Ultra-massive stars lose mass via fierce stellar winds before exploding, modeled as continuous mass erosion.
+- **Gas cloud dynamics**: 2D density grid with 4-neighbor diffusion, cloud seeding, and shockwave-triggered compression.
+- **Spectral classification**: Stars assigned OBAFGKM spectral class from surface temperature, with class-appropriate coloring in all views.
+- **Fusion shell tracking**: Each star maintains 6-layer composition array (H, He, C, O, Si, Fe) updated through evolutionary stages — displayed as concentric onion layers in core view.
+- **3 visualization views** (cycle with `v`): Star Field (spatial nursery with gas clouds, color-coded stars, supernova explosion rings, planetary nebulae, binary links, shockwave fronts), HR Diagram (live Hertzsprung-Russell plot with log-luminosity vs log-temperature axes, main sequence guide line, spectral class labels, stage-colored glyphs), Core Cross-Section (concentric fusion shell circles for selected star with composition legend and energy output bar).
+- **6 presets**: Open Cluster Nursery (gas clouds collapsing into protostars), Red Giant Graveyard (evolved stars shedding nebulae), Supernova Chain Reaction (massive supergiants near end of life), Binary Star Mass Transfer (close pairs exchanging mass), Globular Cluster Evolution (dense ancient cluster), Wolf-Rayet Wind Bubble (ultra-massive stars with fierce winds).
+- **Controls**: Space=play/pause, v=cycle views, s=select star, +/-=speed, r=reset to menu, q=exit.
+
+**`life/registry.py`**: Added "Stellar Lifecycle & Supernova" entry in Complex Simulations category.
+
+**`life/modes/__init__.py`**: Added registration import for the stellar module.
+
+**`README.md`**: Added Stellar Lifecycle & Supernova to the Complex Simulations category list.
+
+**`docs/complex-simulations.md`**: Added comprehensive documentation covering stellar evolution physics, mass-luminosity relations, fusion shell mechanics, supernova shockwave feedback, all six presets, three view modes, and astrophysics references.
+
+---
+
 ### Feature: Add Firefly Synchronization & Bioluminescence — integrate-and-fire oscillators with Mirollo-Strogatz coupling, species-specific flash patterns, predator femme fatales & Kuramoto order parameter tracking
 
 A firefly synchronization simulation where thousands of firefly agents, each carrying an internal integrate-and-fire oscillator, flash and couple to neighbors — producing the real-world phenomenon where entire forests of fireflies spontaneously synchronize their blinking from initial chaos. Bridges the gap between the existing abstract Kuramoto oscillator mode and the biological simulations with an ecologically grounded, visually dramatic nightscape of pulsing bioluminescence.

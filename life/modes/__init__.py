@@ -348,6 +348,8 @@ def register_all_modes(App):
     reg_hvent(App)
     from life.modes.firefly import register as reg_firefly
     reg_firefly(App)
+    from life.modes.stellar import register as reg_stellar
+    reg_stellar(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
