@@ -274,6 +274,8 @@ def register_all_modes(App):
     reg_morph(App)
     from life.modes.sparkline_hud import register as reg_sparkline_hud
     reg_sparkline_hud(App)
+    from life.modes.auto_discovery import register as reg_adisco
+    reg_adisco(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

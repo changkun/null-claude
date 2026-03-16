@@ -254,6 +254,35 @@ class App:
         self.elab_tile_w = 8
         self.elab_best_ever: dict | None = None
         self.elab_history: list = []
+        # Auto-Discovery mode state
+        self.adisco_mode = False
+        self.adisco_menu = False
+        self.adisco_menu_sel = 0
+        self.adisco_batch_size = 12
+        self.adisco_eval_steps = 150
+        self.adisco_mutation_rate = 0.15
+        self.adisco_auto_continue = True
+        self.adisco_gallery_max = 50
+        self.adisco_gallery_threshold = 150
+        self.adisco_round = 0
+        self.adisco_sims: list = []
+        self.adisco_genomes: list = []
+        self.adisco_fitness: list = []
+        self.adisco_pop_histories: list = []
+        self.adisco_period_detectors: list = []
+        self.adisco_cursor = 0
+        self.adisco_sim_step = 0
+        self.adisco_phase = "idle"
+        self.adisco_running = False
+        self.adisco_grid_rows = 3
+        self.adisco_grid_cols = 4
+        self.adisco_tile_h = 6
+        self.adisco_tile_w = 8
+        self.adisco_gallery: list = []
+        self.adisco_gallery_view = False
+        self.adisco_gallery_sel = 0
+        self.adisco_gallery_scroll = 0
+        self.adisco_history: list = []
         # Ancestor Search mode state
         self.anc_mode = False
         self.anc_menu = False
@@ -2776,6 +2805,7 @@ class App:
             'rule_menu', 'compare_rule_menu', 'race_rule_menu', 'tbranch_fork_menu',
             'evo_menu', 'ep_menu', 'cast_export_menu', 'script_menu',
             'screensaver_menu', 'pp_menu', 'cinem_menu', 'elab_menu', 'anc_menu',
+            'adisco_menu',
         ]
         for attr in _fixed_menus:
             if getattr(self, attr, False):
@@ -2874,6 +2904,9 @@ class App:
 
     def _is_elab_auto_stepping(self) -> bool:
         return self.elab_running and self.elab_phase == "simulating"
+
+    def _is_adisco_auto_stepping(self) -> bool:
+        return self.adisco_running and self.adisco_phase == "simulating"
 
     def _is_nca_auto_stepping(self) -> bool:
         return self.nca_training or self.nca_running

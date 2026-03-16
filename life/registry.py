@@ -235,6 +235,9 @@ MODE_REGISTRY = [
     # ── Evolution Lab ──
     {"name": "Evolution Lab", "key": "—", "category": "Meta Modes",
      "desc": "Automated GA breeds CA rules scored by entropy, symmetry & stability — discovery engine", "attr": "elab_mode", "enter": "_enter_elab_mode", "exit": "_exit_elab_mode"},
+    # ── Auto-Discovery ──
+    {"name": "Auto-Discovery", "key": "—", "category": "Meta Modes",
+     "desc": "Autonomous explorer that mutates rules & seeds, scores by visual complexity, curates a gallery of beautiful patterns", "attr": "adisco_mode", "enter": "_enter_adisco_mode", "exit": "_exit_adisco_mode"},
     # ── Evolutionary Playground ──
     {"name": "Evolutionary Playground", "key": "Ctrl+Shift+I", "category": "Meta Modes",
      "desc": "Breed novel CA rules through interactive natural selection with crossover & mutation", "attr": "ep_mode", "enter": "_enter_evo_playground", "exit": "_exit_evo_playground"},
@@ -400,6 +403,7 @@ _DISPATCH_OVERRIDES = {
     'qcirc_mode': {'no_step': True},
     # ── Custom running checks ──
     'elab_mode': {'running_check': '_is_elab_auto_stepping'},
+    'adisco_mode': {'running_check': '_is_adisco_auto_stepping'},
     'nca_mode': {'running_check': '_is_nca_auto_stepping'},
     'nntrain_mode': {'running_check': '_is_nntrain_auto_stepping'},
     'wfc_mode': {'running_check': '_is_wfc_auto_stepping'},

@@ -621,6 +621,43 @@ Key handling intercepts arrow keys and vim-style navigation only when the tuner 
 
 ---
 
+## Auto-Discovery
+
+**Source:** `life/modes/auto_discovery.py`
+
+### Background
+
+Auto-Discovery is an autonomous pattern exploration engine that searches the vast cellular automaton rule space for visually striking emergent behavior without human intervention. Where Evolution Lab requires manual fitness preset selection and Evolutionary Playground relies on human-in-the-loop selection, Auto-Discovery is fully autonomous: it generates, simulates, scores, curates, and breeds candidate configurations in a continuous loop, building a gallery of the most interesting patterns it finds.
+
+### How it works
+
+The engine operates in a generate-evaluate-breed cycle:
+
+1. **Generate**: A batch of candidate configurations is created, each with a randomized B/S ruleset, neighborhood type (Moore or von Neumann), and one of six initial condition styles (random, symmetric, clustered, sparse, striped, central). The batch is displayed as a tiled grid of live mini-simulations.
+
+2. **Evaluate**: Each candidate runs for a configurable number of steps (default 150) and is scored on five visual complexity metrics:
+   - **Entropy** — Shannon entropy of the cell density grid, measuring structural complexity
+   - **Symmetry** — horizontal, vertical, and rotational symmetry detection, measuring emergent order
+   - **Stability** — coefficient of variation of the population time series, rewarding the sweet spot between static and chaotic
+   - **Periodicity** — state hash cycle detection, rewarding oscillating patterns
+   - **Longevity** — sustained activity without extinction or grid saturation
+
+3. **Curate**: Candidates exceeding a configurable score threshold are added to a persistent gallery (with deduplication). The gallery is sorted by composite score and bounded to a maximum size.
+
+4. **Breed**: The next batch is produced through crossover and mutation from gallery entries and current top performers, continuously exploring the neighborhood of known-good configurations.
+
+The gallery browser provides a sortable list view with preview thumbnails, the ability to adopt any discovered rule into the main simulation grid, and save/load to disk (`~/.life_saves/auto_discovery_gallery.json`).
+
+### What to explore
+
+- Let it run unattended for several rounds — the gallery accumulates increasingly refined patterns as breeding favors high-scoring configurations.
+- Press `g` to browse the gallery, then Enter to adopt a discovered rule into the main Life grid at full resolution.
+- Adjust mutation rate to balance exploration (high mutation, more novelty) vs. exploitation (low mutation, refinement of known good rules).
+- Save the gallery with `W` and reload it later to continue evolving from your best discoveries.
+- Compare with Evolution Lab: Auto-Discovery explores a broader space (varied seed styles, autonomous curation) while Evolution Lab offers more manual control over fitness weights.
+
+---
+
 ## Mode Morph Transitions
 
 **Source:** `life/modes/morph_transition.py`
