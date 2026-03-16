@@ -1,6 +1,9 @@
 """Tests for life.modes.genome — Genome Sharing System."""
 from tests.conftest import make_mock_app
-from life.modes.genome import register, _encode_genome, _decode_genome
+from life.modes.genome import (
+    register, _encode_genome, _decode_genome,
+    _should_include_attr, _MODE_ABBREVS, _ABBREV_TO_PREFIX,
+)
 
 
 def _make_app():
@@ -41,3 +44,33 @@ def test_exit_cleanup():
     prefix, config = _decode_genome("INVALID")
     assert prefix is None
     assert config is None
+
+
+def test_encode_decode_roundtrip_all_modes():
+    """Encode/decode round-trip preserves data for multiple mode abbreviations."""
+    for prefix, abbrev in [("rd", "RD"), ("wave", "WAV"), ("fire", "FIR")]:
+        config = {"_mode": prefix, "speed_idx": 3, "some_param": 42.0}
+        code = _encode_genome(prefix, config)
+        assert code.startswith(abbrev + "-")
+        p, d = _decode_genome(code)
+        assert p == prefix
+        assert d["speed_idx"] == 3
+        assert d["some_param"] == 42.0
+
+
+def test_should_include_attr_filters():
+    """_should_include_attr correctly accepts config and rejects state attrs."""
+    # Config attr should be included
+    assert _should_include_attr("gol", "gol_wrap") is True
+    # State suffixes should be excluded
+    assert _should_include_attr("gol", "gol_grid") is False
+    assert _should_include_attr("gol", "gol_running") is False
+    assert _should_include_attr("gol", "gol_mode") is False
+    # Wrong prefix should be excluded
+    assert _should_include_attr("rd", "gol_wrap") is False
+
+
+def test_abbrev_reverse_mapping_consistent():
+    """Every abbreviation maps back to the correct prefix."""
+    for prefix, abbrev in _MODE_ABBREVS.items():
+        assert _ABBREV_TO_PREFIX[abbrev] == prefix

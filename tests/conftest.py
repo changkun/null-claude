@@ -1,4 +1,5 @@
 """Shared test fixtures for the Life Simulator test suite."""
+import curses
 import time
 import threading
 import pytest
@@ -8,6 +9,17 @@ from life.constants import SPEEDS, SPEED_LABELS
 from life.rules import RULE_PRESETS, rule_string, parse_rule_string
 from life.patterns import PATTERNS, PUZZLES
 from life.registry import MODE_CATEGORIES, MODE_REGISTRY
+
+# Monkey-patch curses.color_pair so it works without initscr() in tests.
+_original_color_pair = curses.color_pair
+
+def _safe_color_pair(n):
+    try:
+        return _original_color_pair(n)
+    except curses.error:
+        return 0
+
+curses.color_pair = _safe_color_pair
 
 
 class MockStdscr:
@@ -21,6 +33,9 @@ class MockStdscr:
         return self._rows, self._cols
 
     def addstr(self, *args, **kwargs):
+        pass
+
+    def addch(self, *args, **kwargs):
         pass
 
     def clear(self):
@@ -159,6 +174,7 @@ def make_mock_app(rows=40, cols=120, grid_rows=30, grid_cols=50):
     app.detected_patterns = []
     app._pattern_scan_gen = -1
     # Blueprint
+    app.show_minimap = False
     app.blueprint_mode = False
     app.blueprint_anchor = None
     app.blueprints = {}
@@ -321,6 +337,8 @@ def make_mock_app(rows=40, cols=120, grid_rows=30, grid_cols=50):
     app.wolfram_menu_sel = 0
     app.wolfram_width = 80
     # Ant mode defaults
+    # Hex mode
+    app.hex_mode = False
     app.ant_mode = False
     app.ant_menu = False
     app.ant_running = False
@@ -338,12 +356,144 @@ def make_mock_app(rows=40, cols=120, grid_rows=30, grid_cols=50):
 class _MockApp:
     """Lightweight stand-in for life.app.App that modes can bind to."""
 
+    def __getattr__(self, name):
+        """Return a falsy default for any unknown attribute.
+
+        This lets methods like _get_minimap_data that check many mode flags
+        (e.g. self.ww_mode, self.sand_mode) work without explicit stubs
+        for every possible mode attribute.
+        """
+        # Avoid infinite recursion for dunder lookups
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+        return False
+
     def _flash(self, msg):
         self.message = msg
         self.message_time = time.monotonic()
 
     def _prompt_text(self, prompt):
         return None
+
+    def _record_pop(self):
+        self.pop_history.append(self.grid.population)
+
+    def _reset_cycle_detection(self):
+        """Reset cycle detection state (call when grid is modified externally)."""
+        self.state_history.clear()
+        self.cycle_detected = False
+
+    def _check_cycle(self):
+        """Check if the current grid state has been seen before. Auto-pauses on detection."""
+        h = self.grid.state_hash()
+        gen = self.grid.generation
+        if h in self.state_history:
+            period = gen - self.state_history[h]
+            self.running = False
+            self.cycle_detected = True
+            if self.grid.population == 0:
+                self._flash("Extinction detected \u2014 all cells dead")
+            elif period == 1:
+                self._flash("Still life detected")
+            else:
+                self._flash(f"Cycle detected (period {period})")
+        else:
+            self.state_history[h] = gen
+
+    def _push_history(self):
+        """Save the current grid state to the history buffer before advancing."""
+        if self.timeline_pos is not None:
+            self.history = self.history[:self.timeline_pos + 1]
+            self.timeline_pos = None
+        self.history.append((self.grid.to_dict(), len(self.pop_history)))
+        if len(self.history) > self.history_max:
+            self.history = self.history[-self.history_max:]
+
+    def _rewind(self):
+        """Restore the most recent state from the history buffer."""
+        if not self.history:
+            self._flash("No history to rewind")
+            return
+        if self.timeline_pos is None:
+            self.timeline_pos = len(self.history) - 1
+        else:
+            if self.timeline_pos <= 0:
+                self._flash("At oldest recorded state")
+                return
+            self.timeline_pos -= 1
+        self._restore_timeline_pos()
+
+    def _restore_timeline_pos(self):
+        """Restore the grid state at the current timeline position."""
+        grid_dict, pop_len = self.history[self.timeline_pos]
+        self.grid.load_dict(grid_dict)
+        self.pop_history = self.pop_history[:pop_len]
+        self._reset_cycle_detection()
+        self._flash(f"Gen {self.grid.generation}  ({self.timeline_pos + 1}/{len(self.history)})")
+
+    def _scrub_back(self, steps=10):
+        """Scrub backward through the timeline by the given number of steps."""
+        if not self.history:
+            self._flash("No history to scrub")
+            return
+        if self.timeline_pos is None:
+            self.timeline_pos = max(0, len(self.history) - steps)
+        else:
+            self.timeline_pos = max(0, self.timeline_pos - steps)
+        self._restore_timeline_pos()
+
+    def _scrub_forward(self, steps=10):
+        """Scrub forward through the timeline by the given number of steps."""
+        if self.timeline_pos is None:
+            self._flash("Already at latest state")
+            return
+        self.timeline_pos += steps
+        if self.timeline_pos >= len(self.history):
+            self.timeline_pos = None
+            grid_dict, pop_len = self.history[-1]
+            self.grid.load_dict(grid_dict)
+            self.pop_history = self.pop_history[:pop_len]
+            self._reset_cycle_detection()
+            self._flash(f"Latest \u2192 Gen {self.grid.generation} (press n/Space to continue)")
+        else:
+            self._restore_timeline_pos()
+
+    def _add_bookmark(self):
+        """Bookmark the current generation."""
+        gen = self.grid.generation
+        for bg, _, _ in self.bookmarks:
+            if bg == gen:
+                self._flash(f"Gen {gen} already bookmarked")
+                return
+        self.bookmarks.append((gen, self.grid.to_dict(), len(self.pop_history)))
+        self.bookmarks.sort(key=lambda x: x[0])
+        self._flash(f"\u2605 Bookmarked Gen {gen}  ({len(self.bookmarks)} total)")
+
+    def _jump_to_bookmark(self, idx):
+        """Jump to a bookmarked state."""
+        if idx < 0 or idx >= len(self.bookmarks):
+            return
+        gen, grid_dict, pop_len = self.bookmarks[idx]
+        self.grid.load_dict(grid_dict)
+        self.pop_history = self.pop_history[:pop_len]
+        self.timeline_pos = None
+        self._reset_cycle_detection()
+        self._flash(f"\u2605 Jumped to bookmark Gen {gen}")
+
+    def _update_heatmap(self):
+        """Increment heatmap counters for every currently alive cell."""
+        cells = self.grid.cells
+        hm = self.heatmap
+        peak = self.heatmap_max
+        for r in range(self.grid.rows):
+            row_cells = cells[r]
+            row_hm = hm[r]
+            for c in range(self.grid.cols):
+                if row_cells[c] > 0:
+                    row_hm[c] += 1
+                    if row_hm[c] > peak:
+                        peak = row_hm[c]
+        self.heatmap_max = peak
 
 
 @pytest.fixture

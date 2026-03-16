@@ -33,3 +33,37 @@ def test_exit_cleanup():
     app._tbranch_exit()
     assert app.tbranch_mode is False
     assert app.tbranch_grid is None
+
+
+def test_fork_creates_independent_grid():
+    """Forked grid evolves independently from the original."""
+    app = _make_app()
+    # Place a glider on original grid
+    app.grid.set_alive(1, 2)
+    app.grid.set_alive(2, 3)
+    app.grid.set_alive(3, 1)
+    app.grid.set_alive(3, 2)
+    app.grid.set_alive(3, 3)
+    app._tbranch_fork_from_current()
+
+    # Step only the branch grid
+    initial_main_gen = app.grid.generation
+    app._tbranch_step()
+    app._tbranch_step()
+
+    # Main grid should not have advanced
+    assert app.grid.generation == initial_main_gen
+    # Branch grid should have advanced
+    assert app.tbranch_grid.generation == initial_main_gen + 2
+    # Branch pop history should have grown
+    assert len(app.tbranch_pop_history) >= 2
+
+
+def test_fork_copies_rule_set():
+    """Forked grid inherits the birth/survival rules of the original."""
+    app = _make_app()
+    app.grid.birth = {3, 6}
+    app.grid.survival = {2, 3}
+    app._tbranch_fork_from_current()
+    assert app.tbranch_grid.birth == {3, 6}
+    assert app.tbranch_grid.survival == {2, 3}
