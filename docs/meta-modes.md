@@ -1322,3 +1322,64 @@ The mode leverages the analytical infrastructure built by Genesis Protocol, Phas
 - The difference view (red = mismatch) is your most powerful comparison tool. Even when the overall patterns look similar, the diff highlights subtle structural disagreements.
 - On harder difficulties, use the birth/survival count clues to constrain the search space before requesting individual digit hints.
 - Timeline fragments reveal the dynamics — a rule that oscillates vs one that slowly decays vs one that explodes all look different in motion, even if their final states are superficially similar.
+
+---
+
+## Rule Phylogenetics
+
+**Source:** `life/modes/rule_phylogenetics.py`
+
+### Background
+
+Rule Phylogenetics applies comparative genomics to cellular automaton rules. It treats B/S rulesets as 18-bit genetic sequences, computes evolutionary distances between them, builds phylogenetic family trees, and identifies conserved behavioral motifs — minimal rule fragments that reliably produce specific behaviors across many rule variants. It integrates directly with the Genesis Protocol's Hall of Fame, turning a curated collection of interesting rules into a dataset for systematic analysis.
+
+This mode completes the project's analytical arc: Genesis Protocol *breeds* rules, Phase Space Navigator *maps* rule-space landscapes, and Rule Phylogenetics *classifies* the relationships between rules and explains why families of rules share behavioral traits.
+
+### How it works
+
+**Genome encoding:** Each B/S rule is encoded as an 18-bit binary vector — 9 bits for birth conditions (B0–B8) and 9 bits for survival conditions (S0–S8). This uniform representation enables direct bitwise comparison, distance computation, and motif detection across any pair of rules.
+
+**Distance metrics:** Three complementary distance measures are combined with configurable weights:
+
+- **Hamming distance** — raw bit-level difference between two rule genomes, normalized to [0, 1]. Measures syntactic distance.
+- **Jaccard distance** — set-theoretic (1 − intersection/union) computed separately for birth and survival sets, then averaged. Measures structural similarity of the rule logic.
+- **Behavioral distance** — compares classification labels (glider, oscillator, chaotic, etc.) and behavioral scores from simulation. Measures phenotypic similarity regardless of genotype.
+
+**Phylogenetic tree construction:** UPGMA (Unweighted Pair Group Method with Arithmetic Mean) hierarchical clustering builds a dendrogram from the pairwise distance matrix. The tree is rendered as color-coded ASCII art: green for glider/replicator rules, yellow for oscillators, red for chaotic rules, cyan for stable/still-life rules.
+
+**Conserved motif detection:** A library of known behavioral motifs (e.g., "Life core" = B{3} S{2,3}, "Replicator seed" = B{1}, "HighLife extension" = B{3,6} S{2,3}) is checked against all rules in the dataset. For each motif, the mode reports frequency of occurrence, example rules carrying that motif, and a visual frequency bar. This reveals which minimal rule fragments are load-bearing for specific behaviors.
+
+**Lineage tracing:** Reconstructs parent→child breeding relationships from the Genesis Protocol's round-based Hall of Fame history. Shows which specific birth/survival mutations occurred between generations and whether those mutations caused behavioral shifts (e.g., stable→chaotic).
+
+**Rule diff:** Side-by-side genome visualization of any two rules, with bit-level diffs marked by `^` characters, all three distance metrics, and behavioral shift detection.
+
+### Five interactive views
+
+1. **Tree (key: 1)** — Full phylogenetic tree with scroll navigation. Color-coded by behavioral classification. Arrow keys to scroll, Enter to preview a selected rule live.
+
+2. **Motifs (key: 2)** — Conserved motif catalog showing each motif's name, birth/survival fragment, associated behavior, frequency across the dataset, and example rules. Scroll through with arrow keys.
+
+3. **Diff (key: 3)** — Select two rules and see a detailed genome comparison: full 18-bit vectors, birth/survival set differences, Hamming/Jaccard/behavioral distances, and behavioral shift analysis.
+
+4. **Lineage (key: 4)** — Breeding history from Genesis Protocol. Shows generation chains with parent→child arrows, mutation annotations, and behavioral classification at each node. Traces how rule families evolved through the breeding process.
+
+5. **Families (key: 5)** — Cluster summary showing rule families grouped by behavioral similarity. Each family lists its members, shared motifs, and the centroid rule that best represents the group.
+
+### Key controls
+
+| Key | Action |
+|-----|--------|
+| **1–5** | Switch between Tree / Motifs / Diff / Lineage / Families views |
+| **↑/↓** | Scroll within the current view |
+| **Enter** | Preview selected rule as a live mini-simulation |
+| **d** | Enter diff mode — select two rules to compare |
+| **r** | Refresh data from Hall of Fame file |
+| **w** | Adjust distance metric weights |
+| **q / Esc** | Exit mode |
+
+### What to explore
+
+- Look for the "Life core" motif (B{3} S{2,3}) — it appears in a surprising number of behaviorally interesting rules. Rules that share this motif tend to support gliders even when they differ in other positions.
+- Compare the phylogenetic tree against your intuitions from Phase Space Navigator. Rules that are close in the tree should also be close in phase space, but behavioral distance can sometimes group syntactically distant rules together.
+- Use the Lineage view after a long Genesis Protocol session to see which breeding mutations were productive vs neutral. Most single-bit mutations are behavioral no-ops, but flipping certain positions (especially B3, S2, S3) can cause dramatic phase transitions.
+- The Diff view is particularly revealing for "near-miss" rule pairs — rules that differ by a single bit but behave completely differently. These are the phase boundaries of rule-space.

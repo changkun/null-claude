@@ -4,6 +4,27 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Rule Phylogenetics — comparative genomics for CA rule families
+
+Applies biological phylogenetics to cellular automaton rules: treats B/S rulesets as 18-bit genomes, computes evolutionary distances, builds family trees, and identifies conserved behavioral motifs. Integrates with Genesis Protocol's Hall of Fame to trace breeding lineage and explain why mutations cause behavioral shifts. Completes the arc from rule *discovery* (Genesis Protocol) through *mapping* (Phase Space Navigator) to *systematic classification*.
+
+**`life/modes/rule_phylogenetics.py`** (new, ~700 lines):
+
+- **Genome encoding**: 18-bit binary vectors (B0–B8, S0–S8) for uniform rule comparison.
+- **Three distance metrics**: Hamming (bitwise), Jaccard (set-theoretic), and behavioral (classification + score similarity), combined with configurable weights.
+- **UPGMA phylogenetic tree**: Hierarchical clustering rendered as color-coded ASCII art — green for gliders/replicators, yellow for oscillators, red for chaotic, cyan for stable rules.
+- **Conserved motif detection**: Library of known behavioral motifs (Life core, Replicator seed, HighLife extension, Chaos engine, etc.) checked against all rules. Reports frequency, example rules, and visual frequency bars.
+- **Lineage tracing**: Reconstructs parent→child relationships from Genesis Protocol's round-based breeding history with mutation annotations and behavioral shift detection.
+- **Rule diff**: Side-by-side genome visualization with bit-level diff markers, all three distance metrics, and behavioral shift analysis.
+- **Live preview**: Enter on any rule to spawn a mini-simulation with population sparkline and motif annotations.
+- **5 interactive views**: Tree (1), Motifs (2), Diff (3), Lineage (4), Families (5).
+
+**`life/registry.py`**: Added "Rule Phylogenetics" entry in Meta Modes category with `phylo_mode` dispatch.
+
+**`life/modes/__init__.py`**: Added registration call for the rule_phylogenetics module.
+
+---
+
 ### Feature: Add Simulation Archaeology — puzzle game to reverse-engineer unknown CA rules from artifacts
 
 Inverts the simulator's core paradigm: instead of picking rules and watching what emerges, you're presented with a mysterious frozen end-state and must deduce what birth/survival rules produced it. A detective game played in rule-space.

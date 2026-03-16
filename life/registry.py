@@ -370,6 +370,9 @@ MODE_REGISTRY = [
     # ── Simulation Archaeology ──
     {"name": "Simulation Archaeology", "key": "—", "category": "Meta Modes",
      "desc": "Puzzle game — reverse-engineer unknown CA rules from their frozen artifacts using clues, hypothesis testing & deduction", "attr": "archaeo_mode", "enter": "_enter_archaeo_mode", "exit": "_exit_archaeo_mode"},
+    # ── Rule Phylogenetics ──
+    {"name": "Rule Phylogenetics", "key": "—", "category": "Meta Modes",
+     "desc": "Comparative genomics for CA rules — builds evolutionary family trees, identifies conserved behavioral motifs, traces lineage from Hall of Fame", "attr": "phylo_mode", "enter": "_enter_phylo_mode", "exit": "_exit_phylo_mode"},
 ]
 
 

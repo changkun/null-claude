@@ -300,6 +300,8 @@ def register_all_modes(App):
     reg_adversary(App)
     from life.modes.simulation_archaeology import register as reg_archaeo
     reg_archaeo(App)
+    from life.modes.rule_phylogenetics import register as reg_phylo
+    reg_phylo(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 
