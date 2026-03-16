@@ -636,3 +636,106 @@ The Lambda Point Transition preset starts above T_λ (T=2.5 K, normal fluid) and
 - Barenghi, C.F., Skrbek, L., and Sreenivasan, K.R. "Introduction to Quantum Turbulence." *Proceedings of the National Academy of Sciences*, 111(Supplement 1), 2014. https://doi.org/10.1073/pnas.1400033111
 - Vinen, W.F. "Mutual Friction in a Heat Current in Liquid Helium II." *Proceedings of the Royal Society A*, 240(1220), 1957. https://doi.org/10.1098/rspa.1957.0071
 - Tisza, L. "Transport Phenomena in Helium II." *Nature*, 141, 1938. https://doi.org/10.1038/141913a0
+
+---
+
+## Planetary Atmosphere & Weather System
+
+**Background.** Planetary-scale weather emerges from the interaction of differential solar heating, planetary rotation (the Coriolis effect), moisture phase changes, and radiative transfer through a greenhouse atmosphere. George Hadley proposed the first model of tropical atmospheric circulation in 1735, explaining the trade winds as a consequence of heated equatorial air rising and cooler air flowing in to replace it. William Ferrel (1856) extended this to mid-latitudes, showing that the Coriolis force deflects poleward-moving air to create westerly winds and a second circulation cell. The three-cell model (Hadley, Ferrel, Polar) remains the conceptual backbone of general circulation. Vilhelm Bjerknes and the Bergen School (1920s) developed the theory of extratropical cyclones as waves on the polar front, while the understanding of tropical cyclones as heat engines driven by sea surface temperature was formalized by Kerry Emanuel (1986). This mode simulates a complete planetary climate system on a 2D cylindrical (Mercator) projection, coupling atmospheric dynamics, ocean surface temperatures, a hydrological cycle, and greenhouse radiative forcing with ice-albedo feedback.
+
+**Formulation.** The simulation evolves seven coupled fields: temperature, pressure, wind (u and v components), moisture, precipitation, ice coverage, and sea surface temperature, plus tracked storm objects.
+
+```
+Coordinate system:
+  2D cylindrical projection — periodic in longitude (east-west wrap),
+  bounded at poles (north-south).
+  lat_fraction: 0 = north pole, 0.5 = equator, 1.0 = south pole
+
+Solar heating:
+  S(lat) = S_0 * cos(pi * (lat - 0.5))     (max at equator, zero at poles)
+  Tidally locked variant: S(lat, lon) decays radially from substellar point
+
+Albedo:
+  alpha = alpha_ice * ice + (1 - ice) * (alpha_land if land else alpha_ocean)
+  alpha_ice = 0.7, alpha_ocean = 0.06, alpha_land = 0.3
+  Absorbed flux: Q_abs = S * (1 - alpha)
+
+Radiative cooling:
+  Q_out = sigma * T^2 * (1 - GHG)
+  GHG = GHG_base + GHG_CO2_scale * CO2     (greenhouse trapping fraction)
+  GHG_base = 0.35, GHG_CO2_scale = 0.4, sigma = 0.02
+
+Temperature evolution:
+  dT/dt = Q_abs - Q_out + D_T * laplacian(T) + advection
+  D_T = 0.04 (atmospheric thermal diffusion)
+  Advection: semi-Lagrangian upwind from wind field
+
+Pressure (diagnostic from temperature):
+  P_thermal = 1.0 - 0.12 * (T - 0.5)
+  dP/dt = D_P * laplacian(P) + 0.05 * (P_thermal - P)
+  D_P = 0.08
+
+Wind (from pressure gradient + Coriolis):
+  Coriolis parameter: f = 0.15 * sin(pi * (lat - 0.5))
+
+  du/dt = -3.0 * dP/dx + f * v - 0.02 * u + jet_boost
+  dv/dt = -3.0 * dP/dy - f * u - 0.02 * v
+
+  Jet stream: enhanced zonal wind at lat = jet_lat (default 0.45 from pole)
+    boost = 0.3 * (1 - |lat - jet_lat| / 0.08) when within 0.08 of jet
+
+Moisture cycle:
+  Evaporation: E = 0.004 * SST * (1 - moisture)   (ocean cells only, ice < 0.5)
+  Advection: semi-Lagrangian from wind field
+  Diffusion: D_m = 0.03
+  Precipitation: when moisture > 0.85 (saturation threshold),
+    rain = 0.3 * (moisture - 0.85)
+    moisture -= rain
+  Orographic enhancement: extra precip on land when moisture > 0.5
+
+Ice dynamics:
+  Formation: ice += 0.005/tick when T < 0.15 (ocean cells)
+  Melting:   ice -= 0.003/tick when T > 0.22
+
+Sea surface temperature:
+  dSST/dt = 0.01 * (T_atmos - SST)    (slow thermal inertia)
+
+Storm tracking:
+  Genesis (every 8 ticks, 3 random samples):
+    Vorticity: zeta = dv/dx - du/dy
+    If |zeta| > 0.12 and P < 0.95:
+      Tropical cyclone: near equator (|lat-0.5| < 0.2), over ocean, SST > 0.45
+        intensity = 0.5 + SST * 1.5 * 0.3
+      Extratropical: intensity = 0.3 + |zeta| * 2.0
+    Minimum separation: 6 grid cells, max 15 storms
+
+  Motion: advected by local wind + intrinsic drift + poleward steering (tropical)
+  Tropical intensification: +0.005/tick over warm SST (> 0.5)
+  Landfall weakening: -0.02/tick over land
+  Dissipation: -0.003/tick base; removed when intensity < 0.05
+  Storm depresses local pressure within radius 3
+
+Parameters:
+  dt          = 0.2    (integration timestep)
+  CO2         = 0.0–1.0 (adjustable with +/- keys)
+  Coriolis    = 0.15   (scaling factor)
+  Wind clamp  = [-1.0, 1.0]
+  Temp clamp  = [0.0, 1.5]
+```
+
+**What to look for.** The Stable Temperate Earth preset produces a recognizable planetary climate: warm equatorial belt with active tropical convection, mid-latitude cyclones forming along the jet stream, and polar ice caps stabilized by the ice-albedo feedback. Increase CO2 with `+` to watch global temperature rise, ice retreat, and storm intensity grow — a simplified demonstration of greenhouse warming. Decrease CO2 with `-` to trigger ice advance and cooling.
+
+The Tropical Cyclone Season preset starts with elevated tropical SST. Watch `@` tropical cyclone glyphs spawn in the tropics, intensify over warm water, drift poleward, and weaken on landfall or over cold water — reproducing the lifecycle described by Emanuel's potential intensity theory.
+
+The Ice Age Glaciation preset (CO2=0.2) demonstrates ice-albedo positive feedback: low greenhouse forcing allows ice to expand, which raises albedo, which further cools, which expands more ice. The jet stream is pushed equatorward (jet_lat=0.35).
+
+The Runaway Greenhouse Venus preset pushes CO2 to 1.0, producing surface temperatures above 0.85 everywhere with no ice. The Tidally Locked Exoplanet has a permanent hot substellar point and frozen antistellar hemisphere, with powerful terminator jet streams at the day-night boundary. The Snowball Earth Deglaciation starts fully frozen (ice=0.8+) with CO2=0.15 that slowly rises (volcanic outgassing), eventually breaking the ice-albedo lock.
+
+Switch views with `v`: pressure/wind map (isobar shading + wind arrows + storm glyphs + precipitation), temperature/moisture heatmap (5-band color coding + ice extent + SST hints), and 10-metric sparkline time series.
+
+**Presets:** Stable Temperate Earth (CO2=0.5, balanced climate), Tropical Cyclone Season (CO2=0.55, warm tropics), Ice Age Glaciation (CO2=0.2, expanded ice), Runaway Greenhouse Venus (CO2=1.0, mostly land), Tidally Locked Exoplanet (CO2=0.45, permanent day/night), Snowball Earth Deglaciation (CO2=0.15→1.0, volcanic thaw).
+
+**References.**
+- Hadley, G. "Concerning the Cause of the General Trade-Winds." *Philosophical Transactions of the Royal Society*, 39, 1735. https://doi.org/10.1098/rstl.1735.0014
+- Emanuel, K.A. "An Air-Sea Interaction Theory for Tropical Cyclones." *Journal of the Atmospheric Sciences*, 43(6), 1986. https://doi.org/10.1175/1520-0469(1986)043<0585:AASITF>2.0.CO;2
+- Held, I.M. and Hou, A.Y. "Nonlinear Axially Symmetric Circulations in a Nearly Inviscid Atmosphere." *Journal of the Atmospheric Sciences*, 37(3), 1980. https://doi.org/10.1175/1520-0469(1980)037<0515:NASCIA>2.0.CO;2

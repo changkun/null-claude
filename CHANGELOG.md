@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Planetary Atmosphere & Weather System — 2D Mercator planetary climate with Hadley/Ferrel/Polar circulation cells, Coriolis jet streams, cyclone/anticyclone genesis, moisture transport & precipitation, ocean-atmosphere coupling, adjustable CO2 greenhouse forcing with ice-albedo feedback
+
+First planetary-scale climate/weather simulation — bridges fluid dynamics with thermodynamics at a scale none of the existing modes (tornado, aurora, earthquake, atmospheric weather) cover. The existing Atmospheric Weather mode simulates synoptic-scale pressure centers and fronts; this mode simulates the full planetary energy balance, general circulation, and climate feedbacks.
+
+**`life/modes/planetary_atmos.py`** (new, ~1103 lines):
+
+- **Atmospheric circulation**: Latitude-dependent insolation drives equator-to-pole temperature gradients. Warm air rises at the equator (low pressure), sinks at poles (high pressure), creating Hadley/Ferrel/Polar cell analogs via the coupled pressure-temperature-wind equations.
+- **Coriolis deflection**: `f = 0.15 × sin(π(lat - 0.5))` applied to wind field, deflecting winds rightward in NH, leftward in SH. Produces geostrophic balance where winds flow along isobars rather than across them.
+- **Jet streams**: Enhanced zonal wind at configurable jet stream latitude (default 0.45 from pole), boost = 0.3 × (1 - dist/0.08) within 0.08 latitude band. Ice Age preset shifts jet equatorward (0.35).
+- **Pressure-wind coupling**: Pressure gradient force (PGF = -3.0 × ∇P) + Coriolis + surface drag (0.02), with pressure diagnosed from temperature via thermal wind relation P_thermal = 1.0 - 0.12(T - 0.5).
+- **Moisture cycle**: Ocean evaporation E = 0.004 × SST × (1-m), wind advection (semi-Lagrangian), diffusion (D=0.03), precipitation when moisture > 0.85 saturation threshold (rain = 0.3 × excess), orographic enhancement on land.
+- **Ocean-atmosphere coupling**: Sea surface temperature with slow thermal inertia (τ = 1/0.01 ticks). SST fuels tropical cyclone intensification (+0.005/tick when SST > 0.5) and drives evaporation.
+- **Greenhouse forcing**: GHG = 0.35 + 0.4 × CO2, modulating longwave radiation trapping. Adjustable CO2 (0.0–1.0) with +/- keys. Radiative cooling Q_out = 0.02 × T² × (1 - GHG).
+- **Ice-albedo feedback**: Ice forms below T=0.15 (+0.005/tick), melts above T=0.22 (-0.003/tick). Ice albedo 0.7 vs ocean 0.06 — positive feedback loop where ice expansion raises albedo, reduces absorption, cools further.
+- **Cyclone/anticyclone genesis**: Vorticity-based storm spawning (ζ > 0.12, P < 0.95). Tropical cyclones near equator over warm ocean (SST > 0.45), extratropical elsewhere. Poleward tracking, SST intensification, landfall weakening, max 15 simultaneous storms.
+- **3 visualization views**: Pressure/wind map (isobar shading blue=low/red=high + wind arrows at grid points + precipitation overlay .,:;!| + storm glyphs @=tropical/\*=extratropical/#=intense + ice ~ + land #/=), temperature/moisture heatmap (5-band blue→cyan→green→yellow→red + ice extent + humidity overlay + SST current hints), 10-metric sparkline time series (global temp, CO2, storm count, precipitation, jet latitude, ice area, mean pressure, max wind, humidity, GHG forcing).
+- **6 presets**: Stable Temperate Earth (CO2=0.5 balanced climate), Tropical Cyclone Season (CO2=0.55 warm SST tropics), Ice Age Glaciation (CO2=0.2 expanded ice equatorward jet), Runaway Greenhouse Venus (CO2=1.0 scorching mostly-land), Tidally Locked Exoplanet (CO2=0.45 permanent day/night terminator jets), Snowball Earth Deglaciation (CO2=0.15→1.0 volcanic thaw).
+- **Controls**: Space (play/pause), v (cycle views), +/- (adjust CO2), n (single step), r (reset), R/m (menu), q (quit).
+
+**`life/registry.py`**: Added "Planetary Atmosphere & Weather System" entry in Fluid Dynamics category with `use_delay: False`.
+
+**`life/modes/__init__.py`**: Added registration import for the planetary_atmos module.
+
+**`docs/fluid-dynamics.md`**: Added full scientific documentation — coordinate system, insolation formula, albedo/radiative balance, Coriolis wind equations, moisture cycle, ice dynamics, storm tracking algorithm, preset descriptions, observation guide, and 3 references (Hadley 1735, Emanuel 1986, Held & Hou 1980).
+
+---
+
 ### Feature: Add Cortical Neural Dynamics & Seizure Propagation — Wilson-Cowan E/I population model with STDP plasticity, emergent theta/alpha/beta/gamma oscillations, focal seizure onset & wavefront propagation, generalized tonic-clonic phase transitions, spreading cortical depression, and GABAergic anticonvulsant intervention
 
 Brain electrophysiology counterpart to the existing Cardiac Electrophysiology mode — models the cortex rather than the heart, filling the gap between the basic spiking neural network and detailed tissue-level electrophysiology.

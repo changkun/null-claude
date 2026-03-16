@@ -475,6 +475,9 @@ MODE_REGISTRY = [
     # ── Tokamak Fusion Plasma Confinement ──
     {"name": "Tokamak Fusion Plasma Confinement", "key": "—", "category": "Physics & Waves",
      "desc": "Magnetically confined hydrogen plasma — toroidal cross-section with nested flux surfaces, ohmic/NBI/alpha heating, Lawson criterion tracking, sawtooth crashes, ELMs, H-mode transition, disruptions & runaway electrons", "attr": "tokamak_mode", "enter": "_enter_tokamak_mode", "exit": "_exit_tokamak_mode"},
+    # ── Planetary Atmosphere & Weather System ──
+    {"name": "Planetary Atmosphere & Weather System", "key": "—", "category": "Fluid Dynamics",
+     "desc": "2D Mercator planetary climate — Hadley/Ferrel/Polar circulation cells, Coriolis jet streams, cyclone/anticyclone genesis, moisture transport & precipitation, ocean-atmosphere coupling, adjustable CO2 greenhouse forcing with ice-albedo feedback", "attr": "planetary_atmos_mode", "enter": "_enter_planetary_atmos_mode", "exit": "_exit_planetary_atmos_mode"},
 ]
 
 
@@ -597,6 +600,7 @@ _DISPATCH_OVERRIDES = {
     'reverse_life_mode': {'running_check': '_is_reverse_life_auto_stepping', 'use_delay': False},
     'fluidlife_mode': {'running_check': '_is_fluidlife_auto_stepping', 'use_delay': False},
     'spacetime_mode': {'running_check': '_is_spacetime_auto_stepping', 'use_delay': False},
+    'planetary_atmos_mode': {'use_delay': False},
 }
 
 
