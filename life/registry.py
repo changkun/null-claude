@@ -320,6 +320,8 @@ MODE_REGISTRY = [
     # ── Civilization & Cultural Evolution ──
     {"name": "Civilization & Cultural Evolution", "key": "—", "category": "Game Theory & Social",
      "desc": "Tribes emerge, develop tech, trade, and compete — civilizations rise and fall with cultural diffusion", "attr": "civ_mode", "enter": "_enter_civ_mode", "exit": "_exit_civ_mode"},
+    {"name": "Crowd Dynamics & Evacuation", "key": "—", "category": "Game Theory & Social",
+     "desc": "Social-force pedestrian model — arch formation, panic contagion, lane formation & stampede dynamics", "attr": "crowd_mode", "enter": "_enter_crowd_mode", "exit": "_exit_crowd_mode"},
     # ── Ecosystem Evolution & Speciation ──
     {"name": "Ecosystem Evolution & Speciation", "key": "—", "category": "Chemical & Biological",
      "desc": "Landscape-scale macro-evolution with speciation, phylogenetic trees, food webs & mass extinctions", "attr": "evoeco_mode", "enter": "_enter_evoeco_mode", "exit": "_exit_evoeco_mode"},

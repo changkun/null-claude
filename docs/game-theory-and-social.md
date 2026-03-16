@@ -321,3 +321,75 @@ The tech tree contains 20 technologies from Fire and Tool-Making through Gunpowd
 
 - Axelrod, R. "The Dissemination of Culture: A Model with Local Convergence and Global Polarization." *Journal of Conflict Resolution*, 41(2), 203--226 (1997). https://doi.org/10.1177/0022002797041002001
 - Diamond, J. *Guns, Germs, and Steel: The Fates of Human Societies*. W. W. Norton (1997). https://wwnorton.com/books/Guns-Germs-and-Steel/
+
+---
+
+## Crowd Dynamics & Evacuation Simulation
+
+### Background
+
+Pedestrian crowd dynamics sits at the intersection of physics, social science, and safety engineering. Dirk Helbing and Péter Molnár (1995) introduced the social-force model, treating each pedestrian as a Newtonian particle subject to a driving force toward their destination, repulsive forces from other pedestrians and walls, and body contact forces during crushing. This framework reproduces a remarkable range of emergent collective phenomena observed in real crowds: arch/clogging formation at narrow exits, spontaneous lane formation in bidirectional flow, the counterintuitive faster-is-slower effect under panic, and herding contagion waves.
+
+The model is widely used in evacuation safety design and has been validated against empirical crowd data from stadiums, concert venues, and emergency evacuations.
+
+### Formulation
+
+Each agent *i* obeys Newton's second law with the following forces:
+
+```
+Driving force (toward exit):
+  F_drive = (v0 * e_i - v_i) / tau
+  where v0 = desired_speed * (1 + panic * 2.5)
+        e_i = unit vector toward target exit
+        tau = 0.5 s (relaxation time)
+
+Agent-agent repulsion (exponential + contact):
+  F_rep = A * exp((r_ij - d_ij) / B) * n_ij
+  where A = 2.0, B = 0.3
+        r_ij = sum of radii, d_ij = center distance
+        n_ij = unit normal from j to i
+
+  Body contact (when overlapping, d_ij < r_ij):
+    F_contact = k_body * overlap * n_ij      (k_body = 12.0)
+    F_friction = k_fric * overlap * Δv_t * t  (k_fric = 6.0)
+
+Wall repulsion:
+  F_wall = A_w * exp(-d / B_w) * n_wall
+  where A_w = 5.0, B_w = 0.2
+  Plus body contact force for overlap (k = 20.0)
+
+Panic noise:
+  F_noise = panic * 0.5 * (random - 0.5) per axis
+
+Panic contagion:
+  Δpanic_i += 0.01 * panic_j / max(d_ij, 0.5)  for neighbors within 2.5 cells
+  Natural decay: panic -= 0.002 per step
+```
+
+Speed is clamped to `desired_speed * (2.0 + panic * 2.0)`.
+
+### Presets
+
+| Preset | Geometry | Agents | Init Panic | Speed | Key Phenomenon |
+|--------|----------|--------|------------|-------|----------------|
+| Normal Evacuation | Rectangular room, 1 exit | ~15% fill | 0.1 | 1.2 | Arch formation at doorway |
+| Panic Stampede | Rectangular room, 1 exit | ~15% fill | 0.8 | 2.0 | Faster-is-slower, crushing |
+| Concert Venue | Room + stage obstacle, 2 exits | ~12% fill | 0.2–0.5 | 1.3 | Obstacle-mediated flow split |
+| Stadium Exit | Elliptical boundary, 4 vomitoria | ~10% fill | 0.15–0.35 | 1.2 | Merging flows at narrow exits |
+| Counterflow Corridors | Long corridor, open ends | 2 × ~6% fill | 0.0 | 1.0 | Spontaneous lane formation |
+| Black Friday Rush | Open area, entrance at top | ~10% fill | 0.5–0.9 | 1.8 | Inward competitive pushing |
+
+### What to look for
+
+- **Arch formation**: In Normal Evacuation, watch agents self-organize into a semicircular arch around the exit. This is the same mechanism that causes grain hopper clogging — the arch is a force chain analog.
+- **Faster-is-slower effect**: In Panic Stampede, high panic increases desired speed but also increases repulsive forces and noise, paradoxically *decreasing* flow rate through the exit compared to calm evacuation. Press `p`/`P` to raise/lower panic and observe this directly.
+- **Lane formation**: In Counterflow Corridors, two opposing streams spontaneously segregate into parallel lanes (group 0 = blue/cyan, group 1 = green). This minimizes head-on collisions and emerges purely from the repulsive forces — no explicit lane preference exists in the model.
+- **Panic contagion waves**: Watch panic (red coloring) spread radially from initially panicked agents. In Black Friday Rush, panic waves propagate through the dense crowd from the competitive front.
+- **Density crushing**: Monitor the "density" statistic — values above 6–8 in a 3×3 region represent dangerous crowd crush conditions. Compare Normal vs Panic presets to see how panic drives density spikes near exits.
+- **Flow rate dynamics**: The flow rate (escapes/step) shows non-monotonic behavior: it ramps up as agents reach exits, may plateau due to clogging, and eventually drops as the crowd thins.
+
+### References
+
+- Helbing, D. and Molnár, P. "Social force model for pedestrian dynamics." *Physical Review E*, 51(5), 4282--4286 (1995). https://doi.org/10.1103/PhysRevE.51.4282
+- Helbing, D., Farkas, I., and Vicsek, T. "Simulating dynamical features of escape panic." *Nature*, 407, 487--490 (2000). https://doi.org/10.1038/35035023
+- Helbing, D., Johansson, A., and Al-Abideen, H. Z. "Dynamics of crowd disasters: An empirical study." *Physical Review E*, 75(4), 046109 (2007). https://doi.org/10.1103/PhysRevE.75.046109

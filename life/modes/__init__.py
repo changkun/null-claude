@@ -332,6 +332,8 @@ def register_all_modes(App):
     reg_spinice(App)
     from life.modes.percolation import register as reg_perc
     reg_perc(App)
+    from life.modes.crowd import register as reg_crowd
+    reg_crowd(App)
     from life.dashboard import register as reg_dashboard
     reg_dashboard(App)
 

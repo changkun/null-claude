@@ -4,6 +4,27 @@ All notable changes to this project are documented in this file.
 
 ## 2026-03-16
 
+### Feature: Add Crowd Dynamics & Evacuation Simulation — social-force pedestrian model with panic contagion, arch formation & lane dynamics
+
+A social-force model where individual agents navigate rooms, corridors, and doorways with emergent crowd behaviors. Agents feel driving forces toward exits, exponential repulsion from other agents and walls, body contact forces, tangential friction, and panic-driven noise. The model reproduces key phenomena from pedestrian dynamics research: arch/clogging formation at narrow exits, lane formation in bidirectional counterflow, the faster-is-slower effect under panic, and herding/panic contagion waves.
+
+**`life/modes/crowd.py`** (new, ~846 lines):
+
+- **Social-force model**: Helbing-Molnár driving force toward target exits, exponential agent-agent and agent-wall repulsion (A=2.0/B=0.3 for agents, A=5.0/B=0.2 for walls), Hertz-like body contact force (k=12.0) for overlapping agents, tangential friction (k=6.0) for crushing dynamics, and panic-amplified noise.
+- **Panic contagion**: Nearby panicked agents raise panic level via distance-weighted contagion (rate ∝ panic/distance), with natural decay (0.002/step). Interactive panic controls (p/P) for experimenting with faster-is-slower effect.
+- **6 presets**: Normal Evacuation (single room, one exit, orderly arch formation), Panic Stampede (high initial panic, faster-is-slower, crushing near exit), Concert Venue (large venue with stage obstacle and two exits), Stadium Exit (elliptical boundary with 4 narrow vomitoria), Counterflow Corridors (two groups walking opposite directions → emergent lane formation), Black Friday Rush (crowd rushing inward toward store entrance).
+- **Statistics**: Average speed, average panic level, maximum local density (3×3 window), flow rate (escapes per step over trailing 50-step window), escape count.
+- **Visualization**: Density-mapped Unicode characters (● single, ▓ double, █ triple+), panic-to-color mapping (blue/cyan calm → magenta medium → red high panic), group coloring for counterflow, walls as dim █, exits as ▒.
+- **Controls**: space=play/pause, n=step, p/P=±panic, +/-=timestep, r=reset, R=menu, q=exit.
+
+**`life/registry.py`**: Added "Crowd Dynamics & Evacuation" entry in Game Theory & Social category.
+
+**`life/modes/__init__.py`**: Added registration import for the crowd module.
+
+**`life/app.py`**: Added state flags (crowd_mode, crowd_menu, crowd_menu_sel, crowd_running).
+
+---
+
 ### Feature: Add Earthquake & Seismic Wave Propagation — Burridge-Knopoff fault model with stick-slip ruptures, P/S-wave radiation & Gutenberg-Richter scaling
 
 A 2D Burridge-Knopoff spring-block fault model where tectonic stress accumulates on a heterogeneous fault plane until stick-slip ruptures cascade as earthquakes, radiating P-waves and S-waves through layered crust. The model naturally produces emergent power-law statistics (Gutenberg-Richter frequency-magnitude scaling), Omori's law aftershock clustering, and characteristic earthquake cycles — a showcase for self-organized criticality.

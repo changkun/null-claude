@@ -2744,6 +2744,12 @@ class App:
         self.perc_menu_sel = 0
         self.perc_running = False
 
+        # ── Crowd Dynamics state ──
+        self.crowd_mode = False
+        self.crowd_menu = False
+        self.crowd_menu_sel = 0
+        self.crowd_running = False
+
         self._rebuild_pattern_list()
 
         if pattern:
